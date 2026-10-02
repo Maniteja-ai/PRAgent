@@ -12,6 +12,7 @@ class Settings(BaseModel):
     neo4j_password: SecretStr = SecretStr("")
     neo4j_database: str = "neo4j"
     openai_api_key: SecretStr = SecretStr("")
+    gemini_api_key: SecretStr = SecretStr("")
     ingestion_model: str = ""
     request_timeout: float = Field(default=90, gt=0, le=600)
     model_retries: int = Field(default=2, ge=0, le=5)
@@ -43,3 +44,9 @@ class Settings(BaseModel):
             or not self.openai_api_key.get_secret_value()
         ):
             raise ValueError("Set EMBEDDING_MODEL, EMBEDDING_DIMENSIONS and OPENAI_API_KEY in local .env")
+
+    def require_gemini(self) -> None:
+        from .errors import ConfigurationError
+
+        if not self.gemini_api_key.get_secret_value():
+            raise ConfigurationError("Set GEMINI_API_KEY in local .env for the Gemini provider")

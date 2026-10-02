@@ -1,6 +1,6 @@
 # Ingestion library: simple low-level design
 
-Status: implemented library structure, version 0.3. Live Neo4j publication is verified; real model extraction and embeddings still require credentials. Read this before the larger future-platform proposal.
+Status: implemented library structure, version 0.4. Live Neo4j publication is verified; real model extraction and embeddings still require credentials. Read this before the larger future-platform proposal.
 
 ## The idea
 
@@ -39,8 +39,8 @@ The graph and vector branches run as separate explicit commands. Extraction does
 | `SourceLoader` | Fetch one or more raw documents | `web`, `github_file`, `local_file` |
 | `DocumentParser` | Convert bytes to normalized text | `html`, `markdown` |
 | `Chunker` | Split text while retaining section/source identity | `section` |
-| `RequirementExtractor` | Propose structured requirements with exact source quotes | `langchain` |
-| `EmbeddingProvider` | Embed document text and queries with the same profile | `openai` |
+| `RequirementExtractor` | Propose structured requirements with exact source quotes | configured `gemini`, `openai`; legacy `langchain` |
+| `EmbeddingProvider` | Embed document text and queries with the same profile | `gemini`, `openai` |
 | `GraphStore` | Publish requirements, provenance and relationships | `neo4j` |
 | `VectorStore` | Store, verify and search vectors within one project/run/profile | `qdrant` |
 | `ArtifactStore` | Save files, manifests, caches and checkpoints | `local` |
@@ -114,6 +114,16 @@ These are extension examples, not already supplied plugins. SDK registrations li
 
 A genuinely new stage, such as browser exploration, needs its own contract and orchestration. Existing interfaces should not be stretched to represent every future feature.
 
+## Provider settings
+
+`Project.extractor` accepts either a registered plugin name or an `ExtractionConfig` object with `provider`, `model`, `max_output_tokens`, optional `thinking_level`, and `requests_per_minute`. `Project.embedding_provider` similarly accepts a plugin name or an `EmbeddingConfig` object with `provider`, `model`, `dimensions`, and `requests_per_minute`.
+
+The registry supports `register_configured_factory(name, factory)` for a factory receiving that configuration. It caches each instance by provider plus the complete configuration, so two projects selecting different models cannot accidentally share the wrong model instance. Factories resolve secrets from `Settings`; no secret fields are accepted in provider JSON objects. Factory creation is lazy, so collecting documents still needs no model credentials.
+
+The project configuration is frozen into each corpus manifest. New model selections require a new collection run; older runs retain their saved provider settings. Provider API failures checkpoint and stop extraction, while invalid extracted content remains a per-chunk validation error. This prevents a quota failure from triggering requests for every remaining chunk.
+
+See [the full JSON example](ingestion.md#choose-the-provider-directly-in-json).
+
 ## What goes where
 
 **Neo4j:** project/run/source/snapshot identities, small chunk references, structured requirement candidates, citation links and coverage assessments. A `ChunkRef` stores a heading, text hash and artifact path, not the full chunk body. Short citation quotes remain on relationships. Initially coverage is `NOT_EVALUATED`.
@@ -145,7 +155,7 @@ Current storage plugins use filesystem paths. `corpus.json` remains the local en
 - **Adapter:** LangChain, Neo4j and Qdrant APIs stay inside their implementations.
 - **Dependency injection:** the pipeline receives components; it does not choose vendors internally.
 
-LangChain is used for structured model output and embeddings. Ordinary source loading, file handling and deterministic validation remain small Python components.
+LangChain is used for structured model output and OpenAI embeddings. Gemini Embedding 2 uses the Google SDK behind the same embedding interface to support its different request format. Ordinary source loading, file handling and deterministic validation remain small Python components.
 
 ## Read the code in this order
 

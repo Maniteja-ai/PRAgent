@@ -151,8 +151,19 @@
     }
   ],
   "chunker": "section",
-  "extractor": "langchain",
-  "embedding_provider": "openai",
+  "extractor": {
+    "provider": "gemini",
+    "model": "gemini-3.7-flash",
+    "thinking_level": "low",
+    "max_output_tokens": 6000,
+    "requests_per_minute": 5
+  },
+  "embedding_provider": {
+    "provider": "gemini",
+    "model": "gemini-embedding-2",
+    "dimensions": 768,
+    "requests_per_minute": 10
+  },
   "storage": {
     "graph": "neo4j",
     "vector": "qdrant",

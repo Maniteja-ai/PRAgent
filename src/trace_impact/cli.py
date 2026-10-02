@@ -24,7 +24,9 @@ def main():
     gather.add_argument("--output", type=Path, default=Path("runs"))
     extraction = commands.add_parser("extract")
     extraction.add_argument("run_dir", type=Path)
-    extraction.add_argument("--model", default=None)
+    extraction.add_argument(
+        "--model", default=None, help="Legacy string selections only; JSON model settings take precedence"
+    )
     extraction.add_argument("--max-chunks", type=int, default=100)
     commands.add_parser("components")
     index = commands.add_parser("index")
@@ -73,6 +75,8 @@ def dispatch(args, app: IngestionPipeline):
                     "project_id": project.project_id,
                     "sources": len(project.sources),
                     "scope": project.scope,
+                    "extractor": project.model_dump()["extractor"],
+                    "embedding_provider": project.model_dump()["embedding_provider"],
                 },
                 indent=2,
             )
@@ -87,6 +91,7 @@ def dispatch(args, app: IngestionPipeline):
                         "NEO4J_USERNAME",
                         "NEO4J_PASSWORD",
                         "OPENAI_API_KEY",
+                        "GEMINI_API_KEY",
                         "INGESTION_MODEL",
                         "EMBEDDING_MODEL",
                         "EMBEDDING_DIMENSIONS",

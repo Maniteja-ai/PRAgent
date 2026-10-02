@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from time import monotonic
 
-from trace_impact.errors import ExtractionError, SourceReadError
+from trace_impact.errors import ExtractionError, ProviderError, SourceReadError
 from trace_impact.interfaces import (
     ArtifactRepository,
     DocumentProcessor,
@@ -170,6 +170,10 @@ class ExtractionService:
                     cache_hit=int(cached),
                     candidates=len(validated),
                 )
+            except ProviderError as exc:
+                run.errors.append({"chunk_id": chunk.id, "error_type": exc.code})
+                self._checkpoint(run_dir, run)
+                raise
             except ExtractionError as exc:
                 run.errors.append({"chunk_id": chunk.id, "error_type": exc.code})
                 self.events.emit("chunk.failed", run_id=run.id, chunk_id=chunk.id, code=exc.code)

@@ -9,7 +9,7 @@ Implemented: a reusable Python ingestion library with configuration-selected loa
 ## Start with the extension example
 
 ```sh
-uv sync --locked --extra openai --extra vector
+uv sync --locked --extra openai --extra gemini --extra vector
 uv run python examples/custom_parser.py
 uv run trace-impact components
 uv run trace-impact collect projects/saleor/project.json
@@ -24,6 +24,12 @@ The example shows the library's main idea: implement a parser, register it under
 - [Saleor configuration](projects/saleor/project.json)
 
 Add another application through its own project configuration. Add a new implementation through the relevant interface and registry. New stages such as browser exploration need their own design; this release does not claim universal repository/framework support.
+
+## Provider selection
+
+The Saleor JSON now selects Gemini 3.7 Flash for requirement extraction and Gemini Embedding 2 (768 dimensions) for retrieval. Each stage has an explicit `provider` and `model` object in [the project JSON](projects/saleor/project.json). OpenAI remains selectable through the same configuration. Credentials stay in `.env`; for the current selection add `GEMINI_API_KEY`.
+
+See [provider configuration and quota handling](docs/ingestion.md#choose-the-provider-directly-in-json). Gemini SDK requests, structured output, embedding batching and failure recovery are verified with mock HTTP responses. Live Gemini access and semantic quality remain unverified until a key is configured and the sample evaluation is run.
 
 ## Repositories and experiment
 

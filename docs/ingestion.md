@@ -5,7 +5,7 @@
 Run from the repository root with Python 3.11–3.14:
 
 ```sh
-uv sync --locked --extra openai --extra vector
+uv sync --locked --extra openai --extra gemini --extra vector
 uv run trace-impact components
 uv run trace-impact validate-project projects/saleor/project.json
 uv run python examples/custom_parser.py
@@ -29,8 +29,9 @@ The Saleor public documentation is marked `current-online-unpinned`; retrieval t
 
 Copy `.env.example` to `.env` only if you do not already have a local `.env`. Fill it locally; project JSON/YAML must not contain credentials.
 
-- Extraction: `OPENAI_API_KEY`, `INGESTION_MODEL`.
-- Embeddings: `OPENAI_API_KEY`, `EMBEDDING_MODEL`, `EMBEDDING_DIMENSIONS`. Choose a model that supports the configured dimensions; the adapter passes dimensions explicitly.
+- Gemini (selected in the Saleor JSON): `GEMINI_API_KEY`. Use a Google AI Studio project on the Free tier to follow this assignment's zero-cost preference; the library does not enable billing or switch providers automatically. API access and quotas still depend on your account.
+- OpenAI: `OPENAI_API_KEY` when its provider is selected. The JSON supplies model names and dimensions.
+- Legacy string selections still use `INGESTION_MODEL`, `EMBEDDING_MODEL`, and `EMBEDDING_DIMENSIONS` from the environment. These do not override explicit JSON model choices.
 - Neo4j: `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, `NEO4J_DATABASE`. Use the actual database name shown by your instance; it is not always `neo4j`. This Aura instance uses its instance ID as the database name. If needed, inspect `SHOW DATABASES` on the `system` database with the authenticated driver.
 - Qdrant: leave `QDRANT_URL` blank for local disk storage at `QDRANT_PATH=.vector-store`. For a server, set its URL and optional `QDRANT_API_KEY`.
 
@@ -41,6 +42,48 @@ uv run trace-impact doctor
 Doctor reports whether environment values are present. It does not verify credentials, dimensional compatibility or service connectivity. The CLI loads `.env` without overriding existing environment variables.
 
 The Python SDK uses explicit settings. To read environment variables, call `create_pipeline(Settings.from_env())`; load a dotenv file yourself if needed. `create_pipeline()` alone uses default settings, sufficient for collection and custom local plugins.
+
+## Choose the provider directly in JSON
+
+The current Saleor project selects:
+
+```json
+{
+  "extractor": {
+    "provider": "gemini",
+    "model": "gemini-3.7-flash",
+    "thinking_level": "low",
+    "max_output_tokens": 6000,
+    "requests_per_minute": 5
+  },
+  "embedding_provider": {
+    "provider": "gemini",
+    "model": "gemini-embedding-2",
+    "dimensions": 768,
+    "requests_per_minute": 10
+  }
+}
+```
+
+These fields are part of the full project JSON alongside sources, repository and storage. Extraction and embeddings can select different providers. Both support `gemini` and `openai`. To choose OpenAI, change the provider and model fields, supply appropriate embedding dimensions, and remove the Gemini-only `thinking_level`. Do not put API keys in JSON: extra fields are rejected and the project configuration is retained in run artifacts.
+
+Run `validate-project` to see the selected providers and models before collection. A collection snapshots its project configuration in `corpus.json`; extraction, indexing and search use that saved configuration. After changing provider/model settings, collect a new run and use its returned directory. Editing project JSON does not silently change an older run or invalidate its provenance. `--model` is a legacy convenience for string-based extractor selections only; JSON model settings take precedence.
+
+Gemini extraction uses LangChain native structured output. Gemini Embedding 2 uses the Google SDK behind our `EmbeddingProvider` interface because the installed LangChain embedding wrapper sends the older `task_type` field. Our adapter uses document/query retrieval prefixes and one explicit `Content` per document. This avoids combining multiple chunks into one vector. Its preprocessing version is part of the embedding profile and cache identity.
+
+`requests_per_minute` spaces application calls within each provider instance; `0` disables pacing. The configured values are conservative starting settings, not a statement of your actual quota. Server retries, multiple processes, per-token limits and daily quotas remain separate. A provider failure stops extraction with a saved partial checkpoint; retry after fixing access or after quota resets. Already successful extraction results and embeddings are reused. No paid provider fallback is performed.
+
+To add another configured provider in your Python entry point:
+
+```python
+pipeline.components.extractors.register_configured_factory(
+    "my_provider", lambda config: MyExtractor(model=config.model)
+)
+```
+
+Then select an `extractor` object with `provider: my_provider` and its model in JSON. Existing instance registrations and string selections still work for custom plugins.
+
+Google references: [LangChain chat integration](https://docs.langchain.com/oss/python/integrations/chat/google_generative_ai), [Embedding 2 task formatting](https://ai.google.dev/gemini-api/docs/embeddings), and [account-specific rate limits](https://ai.google.dev/gemini-api/docs/rate-limits).
 
 ## Extract requirements and publish Neo4j
 

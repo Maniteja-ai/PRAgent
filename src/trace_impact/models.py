@@ -53,6 +53,21 @@ class StorageConfig(StrictModel):
     artifacts: str = "local"
 
 
+class ExtractionConfig(StrictModel):
+    provider: str = Field(min_length=1, pattern=r"^[a-z0-9_-]+$")
+    model: str = Field(min_length=1)
+    max_output_tokens: int = Field(default=6000, ge=256, le=32000)
+    thinking_level: Literal["low", "medium", "high"] | None = None
+    requests_per_minute: int = Field(default=10, ge=0, le=10000)
+
+
+class EmbeddingConfig(StrictModel):
+    provider: str = Field(min_length=1, pattern=r"^[a-z0-9_-]+$")
+    model: str = Field(min_length=1)
+    dimensions: int = Field(gt=0, le=65536)
+    requests_per_minute: int = Field(default=10, ge=0, le=10000)
+
+
 class Project(StrictModel):
     schema_version: Literal[1] = 1
     project_id: str = Field(pattern=r"^[a-z0-9_-]+$")
@@ -65,8 +80,8 @@ class Project(StrictModel):
     max_chunk_chars: int = Field(default=8000, ge=1000, le=32000)
     excluded_inputs: list[str] = Field(default_factory=list)
     chunker: str = "section"
-    extractor: str = "langchain"
-    embedding_provider: str = "openai"
+    extractor: str | ExtractionConfig = "langchain"
+    embedding_provider: str | EmbeddingConfig = "openai"
     storage: StorageConfig = Field(default_factory=StorageConfig)
 
     @model_validator(mode="after")

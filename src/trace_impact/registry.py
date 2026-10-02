@@ -5,6 +5,8 @@ from contextlib import ExitStack
 from dataclasses import dataclass, field
 from typing import Generic, TypeVar
 
+from pydantic import BaseModel
+
 from .errors import ConfigurationError
 from .interfaces import (
     ArtifactStore,
@@ -24,7 +26,8 @@ class Registry(Generic[T]):
     def __init__(self, stage: str):
         self.stage = stage
         self._factories: dict[str, Callable[[], T]] = {}
-        self._instances: dict[str, T] = {}
+        self._configured_factories: dict[str, Callable[[BaseModel], T]] = {}
+        self._instances: dict[str | tuple[str, str], T] = {}
         self._resources = ExitStack()
         self._closed = False
         self._resource_ids: set[int] = set()
@@ -39,25 +42,42 @@ class Registry(Generic[T]):
             raise ConfigurationError(f"{self.stage} '{name}' is already registered")
         self._factories[name] = factory
 
-    def require(self, name: str) -> None:
+    def register_configured_factory(self, name: str, factory: Callable[[BaseModel], T]) -> None:
+        """Add JSON-configured construction; a legacy zero-argument factory may coexist."""
         if self._closed:
             raise RuntimeError("This registry is closed; create a new pipeline")
-        if name not in self._factories:
-            raise ConfigurationError(f"Unknown {self.stage} '{name}'. Available: {', '.join(self.names())}")
+        if name in self._configured_factories:
+            raise ConfigurationError(f"Configured {self.stage} '{name}' is already registered")
+        self._configured_factories[name] = factory
 
-    def resolve(self, name: str) -> T:
-        self.require(name)
-        if name not in self._instances:
-            instance = self._factories[name]()
-            self._instances[name] = instance
+    def require(self, selection: str | BaseModel) -> None:
+        if self._closed:
+            raise RuntimeError("This registry is closed; create a new pipeline")
+        name = selection if isinstance(selection, str) else selection.provider
+        factories = self._factories if isinstance(selection, str) else self._configured_factories
+        if name not in factories:
+            raise ConfigurationError(
+                f"Unknown {self.stage} '{name}' for this configuration form. Available: {', '.join(sorted(factories))}"
+            )
+
+    def resolve(self, selection: str | BaseModel) -> T:
+        self.require(selection)
+        key = selection if isinstance(selection, str) else (selection.provider, selection.model_dump_json())
+        if key not in self._instances:
+            instance = (
+                self._factories[selection]()
+                if isinstance(selection, str)
+                else self._configured_factories[selection.provider](selection)
+            )
+            self._instances[key] = instance
             close = getattr(instance, "close", None)
             if callable(close) and id(instance) not in self._resource_ids:
                 self._resource_ids.add(id(instance))
                 self._resources.callback(close)
-        return self._instances[name]
+        return self._instances[key]
 
     def names(self) -> list[str]:
-        return sorted(self._factories)
+        return sorted(self._factories.keys() | self._configured_factories.keys())
 
     def close(self) -> None:
         try:

@@ -4,7 +4,7 @@ from .config import Settings
 from .pipeline import IngestionPipeline
 from .registry import Components
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __all__ = ["create_pipeline", "IngestionPipeline", "Components", "Settings"]
 
 

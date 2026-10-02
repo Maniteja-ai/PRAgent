@@ -23,3 +23,7 @@ class RunBusyError(IngestionError):
 
 class ConfigurationError(IngestionError, ValueError):
     code = "CONFIGURATION_ERROR"
+
+
+class ProviderError(IngestionError):
+    code = "PROVIDER_REQUEST_FAILED"
