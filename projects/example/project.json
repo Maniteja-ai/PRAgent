@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "project_id": "example-library",
+  "name": "Synthetic library integration example (replace before real use)",
+  "repository": {"url":"https://example.com/replace-with-your-repository","baseline_commit":"0000000000000000000000000000000000000000","code_roots":["src"]},
+  "baseline_url": "https://example.com/replace-with-your-application",
+  "scope": ["Book search", "Loan renewals"],
+  "allowed_document_hosts": [],
+  "sources": [
+    {"id":"product-spec","location":"spec.md","format":"markdown","authority":"frontend_spec","version":"synthetic-v1","scope":["search","renewal"]}
+  ]
+}

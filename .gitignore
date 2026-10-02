@@ -7,4 +7,8 @@ node_modules/
 .vercel/
 artifacts/private/
 *.log
-
+runs/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
