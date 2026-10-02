@@ -1,0 +1,17 @@
+{
+  "checkout": {
+    "voucherCode": null,
+    "shippingPrice": {
+      "gross": {
+        "amount": 33.44,
+        "currency": "USD"
+      }
+    },
+    "totalPrice": {
+      "gross": {
+        "amount": 53.12,
+        "currency": "USD"
+      }
+    }
+  }
+}

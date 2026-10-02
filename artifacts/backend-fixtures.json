@@ -1,0 +1,95 @@
+{
+  "observed_at": "2026-10-02T03:09:51.109Z",
+  "method": "Direct public API fixture smoke check; separate from storefront UI testing.",
+  "product": "Monospace Tee",
+  "variant": "S",
+  "quantity": 1,
+  "before": {
+    "voucherCode": null,
+    "discount": {
+      "amount": 0,
+      "currency": "USD"
+    },
+    "subtotalPrice": {
+      "gross": {
+        "amount": 16,
+        "currency": "USD"
+      }
+    },
+    "totalPrice": {
+      "gross": {
+        "amount": 16,
+        "currency": "USD"
+      }
+    }
+  },
+  "valid": {
+    "errors": [],
+    "checkout": {
+      "voucherCode": "TSIGMA10",
+      "discount": {
+        "amount": 1.6,
+        "currency": "USD"
+      },
+      "subtotalPrice": {
+        "gross": {
+          "amount": 14.4,
+          "currency": "USD"
+        }
+      },
+      "totalPrice": {
+        "gross": {
+          "amount": 14.4,
+          "currency": "USD"
+        }
+      }
+    }
+  },
+  "remove": {
+    "errors": [],
+    "checkout": {
+      "voucherCode": null,
+      "discount": {
+        "amount": 0,
+        "currency": "USD"
+      },
+      "subtotalPrice": {
+        "gross": {
+          "amount": 16,
+          "currency": "USD"
+        }
+      },
+      "totalPrice": {
+        "gross": {
+          "amount": 16,
+          "currency": "USD"
+        }
+      }
+    }
+  },
+  "invalid": {
+    "errors": [
+      {
+        "code": "INVALID",
+        "message": "Promo code is invalid"
+      }
+    ],
+    "checkout": null
+  },
+  "shipping_without_address": {
+    "errors": [
+      {
+        "code": "VOUCHER_NOT_APPLICABLE",
+        "message": "Voucher is not applicable to this checkout."
+      }
+    ],
+    "checkout": null
+  },
+  "checks": {
+    "apply": true,
+    "discount": true,
+    "remove": true,
+    "invalid": true,
+    "shipping_prerequisite": true
+  }
+}

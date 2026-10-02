@@ -12,7 +12,7 @@ Channel: `default-channel`. A public products query succeeded on 2026-10-02 and 
 
 Keep the existing sample catalog. Choose a stocked, published product in the default channel. Use a supported destination country, shipping zone, and shipping method. All test orders must remain in this sandbox.
 
-Configure two reusable test vouchers with no usage cap or single-use setting:
+Two reusable test vouchers were created and verified active in the dashboard on 2026-10-02, in Channel-USD (`default-channel`), with no usage cap, single-use setting, minimum purchase, or end date:
 
 | Code | Type | Value | Purpose |
 |---|---|---|---|
@@ -24,7 +24,7 @@ Ensure voucher channel availability and dates include the test time. Do not assu
 
 ## Storefront setup
 
-Use Node 20.x and pnpm 10.28.1 as required by the pinned repository. Install with the lockfile unchanged:
+The original repository pins Node 20.x. Vercel rejected that runtime as discontinued, so both deployment branches use the same one-line change to `package.json`: Node `>=22 <23`. The original analysis branches remain unchanged. Use Node 22.x and pnpm 10.28.1 for the deployment branches. Install with the lockfile unchanged:
 
 ```sh
 pnpm install --frozen-lockfile
@@ -43,7 +43,9 @@ NEXT_BUILD_RETRIES=1
 
 `pnpm build` runs GraphQL generation before the Next.js build; it therefore needs the actual backend to respond. Test schema compatibility rather than assuming current documentation matches this historical storefront.
 
-Create two Vercel projects, one for each branch. Confirm the actual deployed source SHA in build details. Preserve any platform-required deployment changes on distinct deployment branches and document them; do not silently mix compatibility fixes into the PR diff.
+The two Vercel projects are `testsigma-saleor-baseline` and `testsigma-saleor-patched`, using `assignment/deploy-baseline-pr-1199` and `assignment/deploy-patched-pr-1199`. Confirm the actual deployed source SHA in build details. Platform compatibility changes are identical on both branches and excluded from the original PR analysis.
+
+The initial build also reproduced `USE_CACHE_TIMEOUT` in cached navigation on account routes. In `src/lib/graphql.ts`, authenticated requests now bypass the shared public-data queue: a request waiting for runtime cookies must not hold a slot needed by prerendered public data. This matches Next.js 16.2.6's `use cache` guidance on avoiding shared promises across cached and runtime contexts. Both deployment branches receive this adjustment; their cross-branch diff still contains only the original two checkout files. Build and runtime results are recorded separately from this diagnosis.
 
 ## Validation order
 
@@ -57,5 +59,4 @@ Create two Vercel projects, one for each branch. Confirm the actual deployed sou
 
 Do not complete a real payment. Stop before payment, or use an explicitly configured sandbox payment provider if order completion becomes part of the later scope.
 
-The expected difference based on source review is that the baseline's local promo-code handling does not redeem real vouchers, while the patch adds API-backed apply/remove and error handling. This is a hypothesis to verify in the browser, not a result already observed.
-
+Manual browser testing confirmed the core difference: baseline did not redeem `TSIGMA10`, while the patch applied and removed it through Saleor and displayed invalid-code errors. Shipping prerequisite and successful shipping-voucher checks also passed on the patched storefront. See [validation and evidence](validation.md) for the exact scope and observations. This manual setup validation is separate from the future agent's evaluation.

@@ -8,14 +8,18 @@
   "baseline": {
     "branch": "assignment/baseline-pr-1199",
     "commit": "23bc49ccd22e13e182b30daff562d5e5c9af874c",
-    "deployment_url": null,
-    "deployment_status": "PENDING"
+    "deployment_url": "https://testsigma-saleor-baseline.vercel.app",
+    "deployment_status": "READY",
+    "deployment_branch": "assignment/deploy-baseline-pr-1199",
+    "deployment_commit": "6e55bd8b924c0341e21a85d4666ca510838ed4e5"
   },
   "patched": {
     "branch": "assignment/patched-pr-1199",
     "commit": "221be2247f5b1a8ef94f007639fe83f53a6384b8",
-    "deployment_url": null,
-    "deployment_status": "PENDING"
+    "deployment_url": "https://testsigma-saleor-patched.vercel.app",
+    "deployment_status": "READY",
+    "deployment_branch": "assignment/deploy-patched-pr-1199",
+    "deployment_commit": "9fb3467650807d4ee0ee8548ffb75cb4ea728eae"
   },
   "backend": {
     "graphql_url": "https://store-vlrmbn6z.saleor.cloud/graphql/",
@@ -24,18 +28,23 @@
     "sample_products_query": "PASS",
     "version_policy": "Cloud sandbox updates automatically; record backend version and fixture state per run."
   },
-  "node": "20.x",
+  "node": "22.x",
   "package_manager": "pnpm@10.28.1",
   "changed_files": [
     "src/checkout/views/saleor-checkout/order-summary.tsx",
     "src/checkout/views/saleor-checkout/saleor-checkout.tsx"
   ],
   "fixtures": {
-    "status": "PENDING",
+    "status": "CREATED_AND_API_SMOKE_VERIFIED",
     "order_voucher": "TSIGMA10",
     "shipping_voucher": "TSIGMASHIP",
-    "invalid_voucher": "TSIGMA-NOT-A-CODE"
+    "invalid_voucher": "TSIGMA-NOT-A-CODE",
+    "evidence": "artifacts/backend-fixtures.json"
   },
-  "runtime_validation": "NOT_RUN"
+  "runtime_validation": "MANUAL_SMOKE_VERIFIED",
+  "deployment_adjustments": [
+    "Identical Node 22 engine constraint in both deployment branches",
+    "Identical authenticated-request queue bypass to resolve Next.js prerender cache timeout"
+  ],
+  "validation_report": "docs/validation.md"
 }
-

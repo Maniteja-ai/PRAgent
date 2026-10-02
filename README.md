@@ -21,7 +21,17 @@ The baseline is the immediate parent of the merged fix. GitHub's original PR bas
 - [Setup and evaluation procedure](docs/setup.md): deployment and fixture instructions.
 - [Evidence policy](docs/evidence-policy.md): source provenance, uncertainty, and evaluation separation.
 
-Requirements are reference data for subsequent ingestion/evaluation, not evidence that a crawler discovered anything. Coverage starts at `NOT_EVALUATED`. Deployment and runtime verification remain pending until recorded in the manifest.
+Requirements are reference data for subsequent ingestion/evaluation, not evidence that a crawler discovered anything. Coverage starts at `NOT_EVALUATED`; manual setup smoke checks are recorded separately.
+
+## Live experiment
+
+- [Baseline storefront](https://testsigma-saleor-baseline.vercel.app)
+- [Patched storefront](https://testsigma-saleor-patched.vercel.app)
+- [Manual validation and evidence](docs/validation.md)
+
+Both production builds passed on Vercel with Node 22. Each deployment branch contains the same compatibility adjustments (runtime version and isolation of session requests from the prerender queue). The difference between the deployed application trees remains exactly the two checkout files in PR #1199.
+
+Manual testing confirmed that `TSIGMA10` leaves a $16 cart unchanged on the baseline, while the patched storefront applies the real voucher and displays $14.40, matching Saleor's API. Removal restores $16. These checks demonstrate a usable experiment; they do not replace the assignment's future autonomous exploration and impact analysis.
 
 ## Reproduce source comparison
 
@@ -32,4 +42,3 @@ git diff 23bc49ccd22e13e182b30daff562d5e5c9af874c 221be2247f5b1a8ef94f007639fe83
 ```
 
 Preserve the upstream storefront's license. This preparation repository does not relicense Saleor code or documentation.
-

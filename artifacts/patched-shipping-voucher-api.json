@@ -1,0 +1,17 @@
+{
+  "checkout": {
+    "voucherCode": "TSIGMASHIP",
+    "shippingPrice": {
+      "gross": {
+        "amount": 0.0,
+        "currency": "USD"
+      }
+    },
+    "totalPrice": {
+      "gross": {
+        "amount": 19.68,
+        "currency": "USD"
+      }
+    }
+  }
+}
