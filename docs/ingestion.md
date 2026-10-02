@@ -4,14 +4,16 @@
 
 `trace_impact` is application-independent. Saleor is configured in `projects/saleor/project.json`; the original `configs/saleor.json` remains the deployment/evaluation manifest. `projects/example/` is a clearly synthetic second application used to verify portability.
 
-| Module | Responsibility | Replace or extend when |
+Read the [low-level design](low-level-design.md) first for class responsibilities, interfaces, patterns, runtime sequence, recovery behavior, and production release gates.
+
+| Layer | Responsibility | Main entry points |
 |---|---|---|
-| `models.py` | Versioned project, document, requirement, and run contracts | Adding an input field or compatible artifact version |
-| `documents.py` | Allowlisted HTTPS/local reads, snapshots, HTML/Markdown normalization, section chunks | Supporting a new document format or page layout |
-| `extraction.py` | Extractor protocol, optional OpenAI adapter, citation checks, exact-field deduplication | Adding another LLM provider |
-| `pipeline.py` | Collection, extraction cache, progress, partial-failure handling | Adding orchestration or scheduling |
-| `graph.py` | Parameterized Neo4j transactions and uniqueness constraints | Adding UI/code mapping stages |
-| `cli.py` | Thin command entry points | Adding a service or UI can reuse library functions |
+| `domain/` | Versioned contracts and deterministic evidence rules | `models.py`, `GroundingPolicy` |
+| `application/` | Dependency ports and injected use cases | `CollectionService`, `ExtractionService`, `GraphPublicationService` |
+| `infrastructure/` | IO and vendor adapters | Readers, `FileArtifactRepository`, `LangChainRequirementExtractor`, `Neo4jStore` |
+| `bootstrap.py` | Select implementations and own client lifetimes | `ApplicationContainer` |
+| `settings.py` | Validated settings and masked secrets | `Settings` |
+| `cli.py` | Arguments, JSON results, exit codes | `trace-impact` |
 
 No Saleor URL, voucher name, PR ID, or checkout selector is embedded in the ingestion implementation.
 
@@ -37,9 +39,9 @@ uv run trace-impact extract <run_dir> --max-chunks 200
 uv run trace-impact load-graph <run_dir> --with-requirements
 ```
 
-The first graph load publishes only sources and chunks. Extraction is a separate, billable LLM stage and requires an explicit `INGESTION_MODEL`. The current CLI exposes the OpenAI adapter; another provider must implement `Extractor.extract` and be wired into the CLI. `store=False` is set on Responses API calls. Schema adherence does not prove a claim is true: deterministic quote validation and human review remain necessary.
+The first graph load publishes only sources and chunks. Extraction is a separate, billable LLM stage and requires an explicit `INGESTION_MODEL`. The current CLI exposes a LangChain structured-output adapter backed by ChatOpenAI. Another provider must implement the `RequirementExtractor` port, including provider-specific failure handling, and be wired into the composition root. `store=False` is set on Responses API calls. Schema adherence does not prove a claim is true: deterministic quote validation and human review remain necessary.
 
-The extraction command processes every chunk up to the explicit call limit. A lower limit produces `PARTIAL`, exit code 1, and a resumable cache; it does not claim complete ingestion. Rerun against the same run directory with a sufficient limit. Cache keys include provider, model, prompt, output schema, project configuration, authority, and chunk identity. Successful cached results are reused; failed calls are retried on rerun. Separate extraction histories are retained. The adapter retries transient API failures at most twice per call. Collection failures remain explicit; extraction refuses a partial corpus.
+The extraction command processes every chunk up to the explicit call limit. A lower limit produces `PARTIAL`, exit code 1, and a resumable cache; it does not claim complete ingestion. Rerun against the same run directory with a sufficient limit. Cache keys include provider, model, prompt, output schema, project configuration, authority, and chunk identity. Successful cached results are reused; failed calls are retried on rerun. Corrupt caches fail explicitly. An OS-backed run lock prevents overlapping extraction/publication on the same host, and atomic JSON replacement preserves earlier checkpoints if a write fails. Separate extraction histories are retained. The adapter retries transient API failures at most twice per call. Collection failures remain explicit; extraction refuses a partial corpus, including interrupted collections with missing sources. Collection itself restarts as a new run. JSON events go to stderr and command results to stdout.
 
 ## Neo4j setup
 
@@ -96,5 +98,7 @@ uv run trace-impact collect projects/example/project.json
 ```
 
 Offline tests use labeled test doubles, not fabricated production extractions. Live source collection, live LLM extraction, and live graph roundtrips are separate checks and must be reported separately. This module does not yet include RAG, embeddings, semantic conflict detection, automated entailment verification, or a review UI.
+
+The old package-root modules are compatibility facades. New extension code should target the layer directories described above. This is a production-oriented architecture, with the remaining release gates explicitly listed in the design; it is not yet a production-certified service.
 
 Implementation references: [Neo4j managed transactions](https://neo4j.com/docs/python-manual/current/transactions/), [Aura instance creation](https://neo4j.com/docs/aura/getting-started/create-instance/), [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs).

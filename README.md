@@ -2,7 +2,7 @@
 
 An application-configured foundation for an agent that connects documented requirements, observed UI, and source code to explain a real pull request's impact. Saleor is the first integration, not a hardcoded dependency.
 
-Implemented: project contracts, public HTML/Markdown collection, versioned snapshots, section chunking, a replaceable extraction interface with an optional OpenAI adapter, citation validation, a review queue, and a Neo4j schema/loader. **Live LLM extraction and Neo4j connectivity are pending credentials.** The autonomous crawler, UI/code mappings, and PR impact analyzer remain to be implemented. The earlier “steps 1–4” referred to environment preparation, not completion of all four assignment capabilities.
+Implemented: project contracts, public HTML/Markdown collection, versioned snapshots, section chunking, injected application services and ports, a LangChain structured-output adapter, atomic checkpoint storage and run locking, citation validation, a review queue, and a Neo4j schema/loader. **Live LLM extraction and Neo4j connectivity are pending credentials.** The autonomous crawler, UI/code mappings, and PR impact analyzer remain to be implemented. The earlier “steps 1–4” referred to environment preparation, not completion of all four assignment capabilities.
 
 ## Start ingestion
 
@@ -14,6 +14,7 @@ uv run trace-impact collect projects/saleor/project.json
 
 The collection stage works without database or LLM credentials. All nine configured Saleor sources were collected successfully. See the [source inventory](artifacts/ingestion/source-inventory.json).
 
+- [Low-level design: classes, patterns, recovery, and release gates](docs/low-level-design.md)
 - [Modular setup, Neo4j connection and extraction commands](docs/ingestion.md)
 - [Graph schema, absence model and future UI/code links](docs/graph-schema.md)
 - [Saleor project configuration](projects/saleor/project.json)

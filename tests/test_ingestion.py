@@ -130,6 +130,8 @@ class EmptyTestExtractor:
 
     provider = "unit-test"
     model = "test-model"
+    fingerprint = "unit-test-v1"
+    prompt_version = "test-v1"
 
     def __init__(self):
         self.calls = 0

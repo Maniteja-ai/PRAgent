@@ -2,15 +2,16 @@
 
 import argparse
 import json
+import logging
 import os
 from pathlib import Path
 
 from dotenv import load_dotenv
 
-from .extraction import OpenAIExtractor
-from .graph import Neo4jStore
-from .models import Corpus, ExtractionRun, load_project
-from .pipeline import collect, extract
+from .bootstrap import ApplicationContainer
+from .domain.errors import IngestionError
+from .domain.models import load_project
+from .settings import Settings
 
 
 def main():
@@ -33,94 +34,94 @@ def main():
     graph.add_argument("--with-requirements", action="store_true")
     args = parser.parse_args()
     load_dotenv(args.env_file, override=False)
+    logger = logging.getLogger("trace_impact.events")
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("%(message)s"))
+        logger.addHandler(handler)
     try:
-        if args.command == "validate-project":
-            project = load_project(args.config)
-            print(
-                json.dumps(
-                    {
-                        "project_id": project.project_id,
-                        "sources": len(project.sources),
-                        "scope": project.scope,
-                    },
-                    indent=2,
-                )
-            )
-        elif args.command == "doctor":
-            print(
-                json.dumps(
-                    {
-                        name: bool(os.getenv(name))
-                        for name in [
-                            "NEO4J_URI",
-                            "NEO4J_USERNAME",
-                            "NEO4J_PASSWORD",
-                            "OPENAI_API_KEY",
-                            "INGESTION_MODEL",
-                        ]
-                    },
-                    indent=2,
-                )
-            )
-        elif args.command == "collect":
-            folder, corpus = collect(args.config, args.output)
-            print(
-                json.dumps(
-                    {
-                        "run_dir": str(folder),
-                        "sources": len(corpus.snapshots),
-                        "chunks": len(corpus.chunks),
-                        "errors": corpus.errors,
-                    },
-                    indent=2,
-                )
-            )
-            if corpus.errors:
-                raise SystemExit(1)
-        elif args.command == "extract":
-            if args.max_chunks < 1:
-                raise ValueError("--max-chunks must be positive")
-            adapter = OpenAIExtractor(
-                args.model or os.getenv("INGESTION_MODEL", ""), os.getenv("OPENAI_API_KEY", "")
-            )
-            run = extract(args.run_dir, adapter, args.max_chunks)
-            print(
-                json.dumps(
-                    {
-                        "status": run.status,
-                        "requirements": len(run.requirements),
-                        "processed_chunks": len(run.processed_chunk_ids),
-                        "errors": run.errors,
-                    },
-                    indent=2,
-                )
-            )
-            if run.status != "COMPLETE":
-                raise SystemExit(1)
-        else:
-            store = Neo4jStore.from_env()
-            try:
-                store.initialize()
-                if args.command == "load-graph":
-                    corpus = Corpus.model_validate_json((args.run_dir / "corpus.json").read_text("utf-8"))
-                    requirements = None
-                    if args.with_requirements:
-                        requirements = ExtractionRun.model_validate_json(
-                            (args.run_dir / "extraction.json").read_text("utf-8")
-                        )
-                    store.load(corpus, requirements)
-                    print(json.dumps(store.counts(corpus.project.project_id), indent=2))
-                else:
-                    print("Neo4j connectivity verified; uniqueness constraints initialized.")
-            finally:
-                store.close()
-    except (ValueError, FileNotFoundError) as exc:
-        parser.exit(1, f"Configuration/input error: {exc}\n")
+        with ApplicationContainer(Settings.from_env()) as app:
+            return dispatch(args, app)
+    except IngestionError as exc:
+        parser.exit(1, f"{exc.code}: {exc}\n")
+    except (ValueError, FileNotFoundError):
+        parser.exit(1, "Invalid configuration/input; check the project file and local settings.\n")
     except Exception as exc:
-        # Avoid echoing provider/driver details that might contain credentials or document content.
         parser.exit(
             1, f"Stage failed ({type(exc).__name__}); check service access and local configuration.\n"
         )
+
+
+def dispatch(args, app: ApplicationContainer):
+    if args.command == "validate-project":
+        project = load_project(args.config)
+        print(
+            json.dumps(
+                {
+                    "project_id": project.project_id,
+                    "sources": len(project.sources),
+                    "scope": project.scope,
+                },
+                indent=2,
+            )
+        )
+    elif args.command == "doctor":
+        print(
+            json.dumps(
+                {
+                    name: bool(os.getenv(name))
+                    for name in [
+                        "NEO4J_URI",
+                        "NEO4J_USERNAME",
+                        "NEO4J_PASSWORD",
+                        "OPENAI_API_KEY",
+                        "INGESTION_MODEL",
+                    ]
+                },
+                indent=2,
+            )
+        )
+    elif args.command == "collect":
+        folder, corpus = app.collection().collect(args.config, args.output)
+        print(
+            json.dumps(
+                {
+                    "run_dir": str(folder),
+                    "sources": len(corpus.snapshots),
+                    "chunks": len(corpus.chunks),
+                    "errors": corpus.errors,
+                },
+                indent=2,
+            )
+        )
+        if corpus.errors:
+            raise SystemExit(1)
+    elif args.command == "extract":
+        if args.max_chunks < 1:
+            raise ValueError("--max-chunks must be positive")
+        run = app.extraction(args.model).extract(args.run_dir, args.max_chunks)
+        print(
+            json.dumps(
+                {
+                    "status": run.status,
+                    "requirements": len(run.requirements),
+                    "processed_chunks": len(run.processed_chunk_ids),
+                    "errors": run.errors,
+                },
+                indent=2,
+            )
+        )
+        if run.status != "COMPLETE":
+            raise SystemExit(1)
+    else:
+        store = app.database()
+        store.initialize()
+        if args.command == "load-graph":
+            print(json.dumps(app.publication(store).publish(args.run_dir, args.with_requirements), indent=2))
+        else:
+            print("Neo4j connectivity verified; uniqueness constraints initialized.")
 
 
 if __name__ == "__main__":

@@ -6,8 +6,9 @@ import pytest
 
 from trace_impact.extraction import validate_candidate
 from trace_impact.graph import Neo4jStore
-from trace_impact.models import Candidate, ExtractionRun
+from trace_impact.models import Candidate, ExtractionRun, stable_id
 from trace_impact.pipeline import collect
+from trace_impact.settings import Settings
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -103,7 +104,14 @@ def test_live_neo4j_roundtrip_is_idempotent(tmp_path):
         errors=[],
         requirements=[req],
     )
-    store = Neo4jStore.from_env()
+    settings = Settings.from_env()
+    settings.require_database()
+    store = Neo4jStore(
+        settings.neo4j_uri,
+        settings.neo4j_username,
+        settings.neo4j_password.get_secret_value(),
+        settings.neo4j_database,
+    )
     try:
         store.initialize()
         store.load(corpus, extraction)
@@ -112,5 +120,17 @@ def test_live_neo4j_roundtrip_is_idempotent(tmp_path):
         assert store.counts(corpus.project.project_id) == first
         assert first["requirements"] == 1
         assert first["chunks"] == len(corpus.chunks)
+        later = extraction.model_copy(deep=True)
+        later.id = uuid.uuid4().hex
+        later.requirements[0].validation = "NEEDS_REVIEW"
+        later.requirements[0].review_reasons = ["Test changed validation policy"]
+        store.load(corpus, later)
+        records, _, _ = store.driver.execute_query(
+            "MATCH (r:Requirement {id:$rid}) RETURN r.validation AS validation",
+            rid=stable_id(extraction.id, req.id),
+            database_=store.database,
+        )
+        assert records[0]["validation"] == req.validation
+        assert store.counts(corpus.project.project_id)["requirements"] == 2
     finally:
         store.close()

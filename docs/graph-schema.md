@@ -14,7 +14,7 @@ flowchart LR
     A -->|ASSESSES| R
 ```
 
-All node IDs have uniqueness constraints. Source, snapshot, chunk and requirement identities incorporate the project. A new collection has its own run ID, while identical versioned snapshots and chunks can be reused. Snapshot identity includes raw and normalized hashes and the normalizer version. The run-to-snapshot relationship records that run's retrieval time. Requirement identity includes content and evidence; semantic revision lineage is a future feature. Model and prompt provenance live on `ExtractionRun`.
+All node IDs have uniqueness constraints. Source, snapshot, chunk and requirement identities incorporate the project. A new collection has its own run ID, while identical versioned snapshots and chunks can be reused. Snapshot identity includes the full source configuration (including authority and scope), raw and normalized hashes, and the normalizer version. Older retained runs keep their original identities. The run-to-snapshot relationship records that run's retrieval time. A requirement node ID includes the extraction run and candidate identity, preserving previous validation results. Its `candidate_id` includes content and evidence; semantic revision lineage is a future feature. Model and prompt provenance live on `ExtractionRun`.
 
 The code baseline is the actual deployed commit, including shared compatibility fixes, so future source mappings match the observed website. The original upstream comparison remains in the evaluation manifest. These are separate concepts.
 
