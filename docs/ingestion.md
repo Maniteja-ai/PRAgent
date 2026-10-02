@@ -31,7 +31,7 @@ Copy `.env.example` to `.env` only if you do not already have a local `.env`. Fi
 
 - Extraction: `OPENAI_API_KEY`, `INGESTION_MODEL`.
 - Embeddings: `OPENAI_API_KEY`, `EMBEDDING_MODEL`, `EMBEDDING_DIMENSIONS`. Choose a model that supports the configured dimensions; the adapter passes dimensions explicitly.
-- Neo4j: `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, `NEO4J_DATABASE`.
+- Neo4j: `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, `NEO4J_DATABASE`. Use the actual database name shown by your instance; it is not always `neo4j`. This Aura instance uses its instance ID as the database name. If needed, inspect `SHOW DATABASES` on the `system` database with the authenticated driver.
 - Qdrant: leave `QDRANT_URL` blank for local disk storage at `QDRANT_PATH=.vector-store`. For a server, set its URL and optional `QDRANT_API_KEY`.
 
 ```sh
@@ -93,3 +93,17 @@ uv build
 The Neo4j integration test is skipped unless `RUN_NEO4J_INTEGRATION=1` and credentials are supplied as process environment variables. It writes data under a unique test project namespace; it never clears the database. Local Qdrant tests run without external services and use labeled deterministic embeddings strictly as test fixtures.
 
 The original version 0.2 module paths were replaced by the simpler 0.3 public structure. See `trace_impact`, `trace_impact.models`, and `trace_impact.interfaces`. Existing run artifacts remain readable; the graph now uses `ChunkRef` instead of full-text `Chunk` nodes. No legacy graph data is automatically deleted or migrated.
+
+
+## View the collected graph
+
+Live document publication is verified in [the recorded evidence](../artifacts/ingestion/neo4j-verification.json). In Aura Query, connect to your instance and run the following to view a sample of the document relationships:
+
+```cypher
+MATCH path = (:Project {id: 'saleor-storefront'})-[:HAS_CORPUS]->(:CorpusRun)
+             -[:USES_SNAPSHOT]->(:DocumentSnapshot)-[:HAS_CHUNK]->(:ChunkRef)
+RETURN path
+LIMIT 25;
+```
+
+The graph currently has nine Saleor document snapshots and 121 chunk references. Requirement extraction remains pending model configuration. The live integration test creates labeled synthetic requirements in a separate `integration-*` project; those are not extracted Saleor requirements. Use the project filter above to keep the views separate.

@@ -1,6 +1,6 @@
 # Ingestion library: simple low-level design
 
-Status: implemented library structure, version 0.3. Live extraction and Neo4j verification still require credentials. Read this before the larger future-platform proposal.
+Status: implemented library structure, version 0.3. Live Neo4j publication is verified; real model extraction and embeddings still require credentials. Read this before the larger future-platform proposal.
 
 ## The idea
 
@@ -166,4 +166,4 @@ src/trace_impact/implementations/  Concrete implementations
 
 Implemented here: reusable document ingestion, extraction adapter and validation, graph publication adapter, embedding/indexing adapter and dense retrieval. Tests exercise the real local Qdrant store using explicitly labeled test embeddings; those are not production semantic results.
 
-Pending live credentials: real model extraction/embedding and Neo4j round-trip verification. Pending assignment stages: autonomous browser crawl, code analysis, evidence-backed UI/code/requirement mapping, PR blast-radius reporting, full RAG answer generation and evaluation. The broader proposed platform document is a future review draft, not an implementation status report.
+Verified live: Neo4j document publication, repeat-load behavior and the isolated integration test. Pending live credentials: real model extraction/embedding. Pending assignment stages: autonomous browser crawl, code analysis, evidence-backed UI/code/requirement mapping, PR blast-radius reporting, full RAG answer generation and evaluation. The broader proposed platform document is a future review draft, not an implementation status report.

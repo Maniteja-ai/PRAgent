@@ -4,7 +4,7 @@ An application-configured foundation for an agent that connects documented requi
 
 Implemented: a reusable Python ingestion library with configuration-selected loaders, parsers, chunkers, extraction, embeddings and storage. Neo4j holds requirement/evidence relationships; Qdrant holds searchable chunks and vectors. Original evidence and checkpoints stay in local artifacts.
 
-**Live model extraction/embedding and Neo4j verification are pending credentials.** Local Qdrant storage/search is tested with labeled test embeddings. Autonomous browser exploration, code analysis, UI/code mapping, full RAG answers and PR impact analysis remain future work. The earlier steps 1-4 referred to environment preparation, not completion of all four assignment capabilities.
+**Neo4j connectivity and document publication are verified:** nine document snapshots and 121 chunk references, with repeat-load and live integration checks passing. See [verification evidence](artifacts/ingestion/neo4j-verification.json). **Live model extraction/embedding is pending credentials.** Local Qdrant storage/search is tested with labeled test embeddings. Autonomous browser exploration, code analysis, UI/code mapping, full RAG answers and PR impact analysis remain future work. The earlier steps 1-4 referred to environment preparation, not completion of all four assignment capabilities.
 
 ## Start with the extension example
 

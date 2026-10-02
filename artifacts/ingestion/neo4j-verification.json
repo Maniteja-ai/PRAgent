@@ -1,0 +1,31 @@
+{
+  "verified_at": "2026-10-02T05:36:45.697987+00:00",
+  "project_id": "saleor-storefront",
+  "corpus_run_id": "14be4279406f45808145d9af8d366338",
+  "status": "DOCUMENT_PROVENANCE_PUBLISHED",
+  "connectivity": "verified",
+  "counts": {
+    "corpus_runs": 1,
+    "snapshots": 9,
+    "chunks": 121,
+    "requirements": 0
+  },
+  "chunk_reference_checks": {
+    "references": 121,
+    "full_text_properties": 0,
+    "artifact_references": 121,
+    "content_hashes": 121
+  },
+  "repeat_load": "same corpus loaded twice; counts unchanged",
+  "integration_test": {
+    "result": "passed",
+    "test": "test_live_neo4j_roundtrip_is_idempotent",
+    "fixture_scope": "separate integration-* project, synthetic requirement fixture"
+  },
+  "pending": [
+    "real model requirement extraction",
+    "real embeddings and semantic retrieval",
+    "UI and code ingestion/mapping"
+  ],
+  "note": "No Saleor requirements have been extracted yet. Integration fixtures are not Saleor findings."
+}
