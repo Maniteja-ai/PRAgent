@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "prepared_on": "2026-10-02",
+  "upstream": "https://github.com/saleor/storefront",
+  "fork": "https://github.com/Maniteja-ai/storefront",
+  "pull_request": 1199,
+  "original_pr_base": "6eb0b97b25bd4344d8139515a1cabf763d703b39",
+  "baseline": {
+    "branch": "assignment/baseline-pr-1199",
+    "commit": "23bc49ccd22e13e182b30daff562d5e5c9af874c",
+    "deployment_url": null,
+    "deployment_status": "PENDING"
+  },
+  "patched": {
+    "branch": "assignment/patched-pr-1199",
+    "commit": "221be2247f5b1a8ef94f007639fe83f53a6384b8",
+    "deployment_url": null,
+    "deployment_status": "PENDING"
+  },
+  "backend": {
+    "graphql_url": "https://store-vlrmbn6z.saleor.cloud/graphql/",
+    "channel": "default-channel",
+    "version_observed_in_cloud": "3.23.37",
+    "sample_products_query": "PASS",
+    "version_policy": "Cloud sandbox updates automatically; record backend version and fixture state per run."
+  },
+  "node": "20.x",
+  "package_manager": "pnpm@10.28.1",
+  "changed_files": [
+    "src/checkout/views/saleor-checkout/order-summary.tsx",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx"
+  ],
+  "fixtures": {
+    "status": "PENDING",
+    "order_voucher": "TSIGMA10",
+    "shipping_voucher": "TSIGMASHIP",
+    "invalid_voucher": "TSIGMA-NOT-A-CODE"
+  },
+  "runtime_validation": "NOT_RUN"
+}
+

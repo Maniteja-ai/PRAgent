@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "prepared_on": "2026-10-02",
+  "method": "Manually curated from official documentation. Not output from an implemented ingestion agent.",
+  "version_caveat": "Storefront README is pinned to the baseline commit. Online API documentation describes current Saleor and must be checked against the backend schema before runtime evaluation.",
+  "sources": {
+    "storefront_readme": {"url": "https://github.com/saleor/storefront/blob/23bc49ccd22e13e182b30daff562d5e5c9af874c/README.md", "section": "What's in the Box; Product Pages Done Right; Open Checkout", "kind": "version_pinned_product_documentation"},
+    "vouchers": {"url": "https://docs.saleor.io/developer/discounts/vouchers", "section": "Types; Minimal Order Value", "kind": "current_backend_specification"},
+    "apply_vouchers": {"url": "https://docs.saleor.io/developer/discounts/apply-vouchers", "section": "Apply a Voucher Code", "kind": "current_backend_specification"},
+    "add_promo": {"url": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-add-promo-code", "section": "Mutation and return type", "kind": "current_api_contract"},
+    "remove_promo": {"url": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-remove-promo-code", "section": "Mutation and return type", "kind": "current_api_contract"}
+  },
+  "requirements": [
+    {"id":"REQ-PRODUCT-001","statement":"Shoppers can browse a product listing and open product details.","sources":["storefront_readme"],"support":"documented_capability","acceptance":"Open a catalog item; verify its identity on the detail page.","coverage":"NOT_EVALUATED"},
+    {"id":"REQ-PRODUCT-002","statement":"Shoppers can choose product variant attributes before adding an item.","sources":["storefront_readme"],"support":"documented_capability","acceptance":"Select an available variant; verify the cart contains that variant.","coverage":"NOT_EVALUATED"},
+    {"id":"REQ-CART-001","statement":"A shopper can add an available product to the cart.","sources":["storefront_readme"],"support":"documented_capability","acceptance":"Add an item and verify its name and quantity in the cart.","coverage":"NOT_EVALUATED"},
+    {"id":"REQ-CART-002","statement":"The cart supports editing item quantity.","sources":["storefront_readme"],"support":"documented_capability","acceptance":"Change quantity and verify the backend checkout and displayed quantity agree.","coverage":"NOT_EVALUATED"},
+    {"id":"REQ-CHECKOUT-001","statement":"Guest shoppers can use the multistep checkout.","sources":["storefront_readme"],"support":"documented_capability","acceptance":"Reach checkout from the cart without signing in; record reachable steps.","coverage":"NOT_EVALUATED"},
+    {"id":"REQ-PROMO-001","statement":"An eligible voucher can be applied to a checkout.","sources":["add_promo","apply_vouchers"],"support":"documented_api_capability","acceptance":"Apply TSIGMA10 to an eligible cart; verify the API returns the voucher without errors.","coverage":"NOT_EVALUATED"},
+    {"id":"REQ-PROMO-002","statement":"The checkout display should reflect backend-calculated voucher discounts and totals.","sources":["apply_vouchers"],"support":"ui_acceptance_inferred_from_backend_contract","acceptance":"After applying a voucher, compare visible discount and total with the API response; do not apply the discount twice.","coverage":"NOT_EVALUATED"},
+    {"id":"REQ-PROMO-003","statement":"An applied voucher can be removed from a checkout.","sources":["remove_promo"],"support":"documented_api_capability","acceptance":"Remove TSIGMA10 and verify the backend voucher is cleared; compare refreshed totals.","coverage":"NOT_EVALUATED"},
+    {"id":"REQ-PROMO-004","statement":"The UI should expose unsuccessful voucher application without claiming success.","sources":["add_promo"],"support":"ui_acceptance_inferred_from_api_error_contract","acceptance":"Submit TSIGMA-NOT-A-CODE; verify the API error is shown and no success state is invented.","coverage":"NOT_EVALUATED"},
+    {"id":"REQ-PROMO-005","statement":"Shipping vouchers require shippable goods, a shipping address, and a selected shipping method.","sources":["vouchers"],"support":"documented_business_rule","acceptance":"Try TSIGMASHIP before shipping prerequisites are present, then retry after they are satisfied.","coverage":"NOT_EVALUATED"},
+    {"id":"REQ-PROMO-006","statement":"A voucher with a minimum subtotal is inapplicable below that threshold.","sources":["vouchers"],"support":"documented_business_rule","acceptance":"If a minimum-spend fixture is configured, compare below-threshold and eligible carts. Otherwise mark BLOCKED_BY_FIXTURE.","coverage":"NOT_EVALUATED"},
+    {"id":"REQ-PROMO-007","statement":"An entire-order percentage voucher reduces the applicable checkout subtotal according to its configuration.","sources":["vouchers","apply_vouchers"],"support":"documented_business_rule","acceptance":"For the 10 percent test voucher, compare the API-calculated discount with eligible subtotal and confirm the visible result.","coverage":"NOT_EVALUATED"}
+  ]
+}
+
