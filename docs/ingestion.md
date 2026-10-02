@@ -1,104 +1,95 @@
-# Reusable ingestion module
+# Run and extend ingestion
 
-## Boundaries
+## Install and inspect
 
-`trace_impact` is application-independent. Saleor is configured in `projects/saleor/project.json`; the original `configs/saleor.json` remains the deployment/evaluation manifest. `projects/example/` is a clearly synthetic second application used to verify portability.
-
-Read the [low-level design](low-level-design.md) first for class responsibilities, interfaces, patterns, runtime sequence, recovery behavior, and production release gates.
-
-| Layer | Responsibility | Main entry points |
-|---|---|---|
-| `domain/` | Versioned contracts and deterministic evidence rules | `models.py`, `GroundingPolicy` |
-| `application/` | Dependency ports and injected use cases | `CollectionService`, `ExtractionService`, `GraphPublicationService` |
-| `infrastructure/` | IO and vendor adapters | Readers, `FileArtifactRepository`, `LangChainRequirementExtractor`, `Neo4jStore` |
-| `bootstrap.py` | Select implementations and own client lifetimes | `ApplicationContainer` |
-| `settings.py` | Validated settings and masked secrets | `Settings` |
-| `cli.py` | Arguments, JSON results, exit codes | `trace-impact` |
-
-No Saleor URL, voucher name, PR ID, or checkout selector is embedded in the ingestion implementation.
-
-## Run locally
-
-Requires Python 3.11–3.14 and uv. From the repository root:
+Run from the repository root with Python 3.11–3.14:
 
 ```sh
-uv sync --locked --extra openai
+uv sync --locked --extra openai --extra vector
+uv run trace-impact components
 uv run trace-impact validate-project projects/saleor/project.json
+uv run python examples/custom_parser.py
+```
+
+The extension example ingests the supplied synthetic JSON requirements with a user-registered parser. It needs no model or database credentials. Open `examples/custom_parser.py` first in PyCharm; select the repository `.venv` as its interpreter.
+
+## Collect documentation
+
+```sh
 uv run trace-impact collect projects/saleor/project.json
 ```
 
-Collection needs neither an API key nor Neo4j. The command prints a unique `run_dir`; use that exact path below. Each run retains raw files, normalized text, content hashes, source versions, section chunks, and a machine-readable inventory. Generated full-text snapshots are local under ignored `runs/`; do not republish third-party documentation without checking its license.
+Save the returned `run_dir`; use that exact directory in every command below. Collection fetches the explicitly listed pages and pinned README, not the entire documentation website. It produces a corpus manifest, inventory, original bytes and normalized chunks under ignored `runs/`.
 
-Copy `.env.example` to `.env` and fill the credentials locally. `doctor` prints presence flags, never credential values:
+Each source chooses `loader` and `parser`. Built-ins are `web`, `github_file`, `local_file` and `html`, `markdown`. Project files may be JSON or YAML. The local loader resolves paths relative to the project file. `github_file` options specify `repository`, a 40-character `revision` matching `version`, and repository-relative `path`. Add `raw.githubusercontent.com` to the allowed hosts. Web pages also need their hosts in `allowed_document_hosts`.
+
+The Saleor public documentation is marked `current-online-unpinned`; retrieval timestamps and content hashes record exactly what was read. These current backend docs may differ from the historical storefront behavior and need review. The README is pinned to the baseline upstream commit.
+
+## Configure live services
+
+Copy `.env.example` to `.env` only if you do not already have a local `.env`. Fill it locally; project JSON/YAML must not contain credentials.
+
+- Extraction: `OPENAI_API_KEY`, `INGESTION_MODEL`.
+- Embeddings: `OPENAI_API_KEY`, `EMBEDDING_MODEL`, `EMBEDDING_DIMENSIONS`. Choose a model that supports the configured dimensions; the adapter passes dimensions explicitly.
+- Neo4j: `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, `NEO4J_DATABASE`.
+- Qdrant: leave `QDRANT_URL` blank for local disk storage at `QDRANT_PATH=.vector-store`. For a server, set its URL and optional `QDRANT_API_KEY`.
 
 ```sh
 uv run trace-impact doctor
-uv run trace-impact init-db
-uv run trace-impact load-graph <run_dir>
-uv run trace-impact extract <run_dir> --max-chunks 200
-uv run trace-impact load-graph <run_dir> --with-requirements
 ```
 
-The first graph load publishes only sources and chunks. Extraction is a separate, billable LLM stage and requires an explicit `INGESTION_MODEL`. The current CLI exposes a LangChain structured-output adapter backed by ChatOpenAI. Another provider must implement the `RequirementExtractor` port, including provider-specific failure handling, and be wired into the composition root. `store=False` is set on Responses API calls. Schema adherence does not prove a claim is true: deterministic quote validation and human review remain necessary.
+Doctor reports whether environment values are present. It does not verify credentials, dimensional compatibility or service connectivity. The CLI loads `.env` without overriding existing environment variables.
 
-The extraction command processes every chunk up to the explicit call limit. A lower limit produces `PARTIAL`, exit code 1, and a resumable cache; it does not claim complete ingestion. Rerun against the same run directory with a sufficient limit. Cache keys include provider, model, prompt, output schema, project configuration, authority, and chunk identity. Successful cached results are reused; failed calls are retried on rerun. Corrupt caches fail explicitly. An OS-backed run lock prevents overlapping extraction/publication on the same host, and atomic JSON replacement preserves earlier checkpoints if a write fails. Separate extraction histories are retained. The adapter retries transient API failures at most twice per call. Collection failures remain explicit; extraction refuses a partial corpus, including interrupted collections with missing sources. Collection itself restarts as a new run. JSON events go to stderr and command results to stdout.
+The Python SDK uses explicit settings. To read environment variables, call `create_pipeline(Settings.from_env())`; load a dotenv file yourself if needed. `create_pipeline()` alone uses default settings, sufficient for collection and custom local plugins.
 
-## Neo4j setup
+## Extract requirements and publish Neo4j
 
-Use an existing Neo4j database or create an Aura Free instance in [Aura Console](https://console.neo4j.io/), named `testsigma-impact-agent`. A database instance is infrastructure; a `Project` node is our application's logical namespace. Multiple repositories can share one database using distinct project IDs. Separate databases/accounts are preferable when different tenants need security isolation; project IDs alone are not access control.
-
-Enter the actual URI, username, password, and database in `.env`. Instance creation, account terms, and initial password handling are performed by the account owner. No paid instance is needed for the intended small prototype; check the offered tier before creating it. `init-db` verifies connectivity and creates constraints. Nothing drops or clears existing data.
-
-The code uses the official Neo4j driver and managed write transactions. Re-loading the same run merges the same IDs and relationships. Live validation remains pending until credentials are supplied. To explicitly run the database integration test after configuring the environment:
-
-```powershell
-$env:RUN_NEO4J_INTEGRATION = "1"
-uv run --env-file .env pytest -q -m integration
-```
-
-The test writes a uniquely named synthetic project and leaves it for inspection; it never wipes a shared graph.
-
-## Add another repository
-
-1. Copy `projects/example/` to a new project directory.
-2. Replace the synthetic repository URL, placeholder commit, application URL, scope, and sources.
-3. Pin the actual deployed baseline commit. Configure document hosts explicitly and label each source's authority/version.
-4. Validate and collect using the same CLI. Compare the inventory with the chosen scope.
-5. Select an extraction adapter and review the output before connecting UI and code observations.
-
-Supported now: explicit public HTTPS HTML/Markdown sources and local Markdown/HTML files inside the project configuration folder. Not yet supported: arbitrary authenticated wikis, PDF parsing, automatic whole-site discovery, or private GitHub source fetching. Those require adapters, not core changes. The repository URL and code roots are inputs for the future code stage; this phase does not pretend to analyze code.
-
-## Evidence, ambiguity, and absence
-
-Every candidate carries actor, behavior, preconditions, expected outcome, exceptions, layer, supporting quote, and uncertainty reasons. The pipeline attaches source/chunk IDs itself. It checks exact quotes after whitespace normalization and rejects missing citations or empty behavior fields. Inferred claims and frontend claims sourced only from backend/API documents enter `NEEDS_REVIEW`. `GROUNDED_CANDIDATE` means a quote exists, not that semantic correctness was proved. Rejected candidates remain in the audit output; consumers must filter validation states.
-
-Deduplication merges only identical structured fields and keeps evidence from all source chunks. Similar meanings with different wording are not automatically merged. Conflicting statements are not automatically resolved. Review and evaluation are necessary before treating candidates as definitive intent; a calibrated confidence score is not claimed.
-
-Coverage is per assessment/run, not a permanent boolean on a requirement. Ingestion initializes `NOT_EVALUATED` with `INGESTION_ONLY` scope. Future crawl assessments may be `OBSERVED`, `NOT_OBSERVED`, or `BLOCKED`, with an action budget, reason and evidence. Merely seeing a control does not establish that its business behavior works. An unseen feature is not declared missing.
-
-## Assignment requirements retained
-
-| Assignment requirement | Current boundary |
-|---|---|
-| Autonomous browser exploration with DOM, screenshots, transitions | Future browser module; manual setup screenshots are not agent output |
-| Parse a public spec into structured requirements | Collection and extraction code implemented; live model run requires credentials |
-| Neo4j connects requirements, UI and code | Requirement provenance schema and loader implemented; live DB and other layers pending |
-| Real PR blast radius for a non-engineer | Future analyzer; PR/patched evidence is excluded from ingestion inputs |
-| Explain absence, ambiguity and confidence | Explicit candidate validation and per-run assessment model |
-| Evaluation, scope decisions, design document and demo | Unit/integration tests and design notes begin here; full evaluation and final deliverables remain |
-
-The manually curated `requirements/saleor.json`, PR description/diff, patched deployment, and manual validation evidence are not ingestion sources. They remain separate evaluation materials. Online Saleor backend docs are unpinned and may differ from the sandbox's version; document hashes record what was read, not a guarantee of compatibility.
-
-## Validation
+Replace `RUN_DIR` below with the collected directory:
 
 ```sh
-uv run ruff check src tests
-uv run pytest -q
-uv run trace-impact collect projects/example/project.json
+uv run trace-impact extract RUN_DIR --max-chunks 200
+uv run trace-impact init-db
+uv run trace-impact load-graph RUN_DIR --with-requirements
 ```
 
-Offline tests use labeled test doubles, not fabricated production extractions. Live source collection, live LLM extraction, and live graph roundtrips are separate checks and must be reported separately. This module does not yet include RAG, embeddings, semantic conflict detection, automated entailment verification, or a review UI.
+Extraction uses LangChain structured output and validates citations locally. It writes `extraction.json`, immutable per-attempt records under `extractions/`, a response cache, and `review.json`. A partial attempt exits unsuccessfully and cannot publish requirements. Re-run with a sufficient chunk cap to reuse cached responses and complete the corpus.
 
-The old package-root modules are compatibility facades. New extension code should target the layer directories described above. This is a production-oriented architecture, with the remaining release gates explicitly listed in the design; it is not yet a production-certified service.
+`load-graph RUN_DIR` without the flag publishes document provenance only. `init-db` verifies the Neo4j connection and creates uniqueness constraints. The graph stores requirement candidates, their source relationships, chunk references, and initial `NOT_EVALUATED` assessments. A graph load does not establish UI coverage.
 
-Implementation references: [Neo4j managed transactions](https://neo4j.com/docs/python-manual/current/transactions/), [Aura instance creation](https://neo4j.com/docs/aura/getting-started/create-instance/), [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
+## Index and search Qdrant
+
+```sh
+uv run trace-impact index RUN_DIR --batch-size 16
+uv run trace-impact search RUN_DIR "What happens when a voucher is applied?" --limit 5
+```
+
+Indexing calls the configured embedding model and stores text/vector records in Qdrant. It writes `vector-index.json` and an embedding cache. An interrupted publication stays `PARTIAL`; repeat the command to reuse embeddings and upsert/verify records again. The embedding cache is within the run directory, not a shared cache across collection runs.
+
+Search returns evidence chunks and references, not a generated answer. It requires the complete index for the exact corpus and embedding profile. Graph traversal, reranking and answer generation are future work. Qdrant local mode supports this single-process development workflow; use a Qdrant server for concurrent application workers.
+
+## Write a plugin
+
+Read [the simple LLD](low-level-design.md), implement the matching interface in your own module, register an instance or lazy factory, and select its name in project config:
+
+```python
+pipeline.components.parsers.register("json_features", JsonFeatureParser())
+# or, for a provider that should be constructed only when used:
+pipeline.components.extractors.register_factory("my_extractor", build_my_extractor)
+```
+
+Unknown and duplicate names fail clearly. A new behavior that fits an existing interface needs no pipeline edit. For custom plugins use your Python entry point; the stock CLI loads the built-in registry. Keep implementation versions/fingerprints accurate when changing behavior so caches and snapshots cannot silently mix processing versions.
+
+Artifact storage currently retains a local corpus entry manifest. Remote-only artifact storage requires a further bootstrap change. Plugins are trusted Python application code; the YAML/JSON file cannot load arbitrary modules.
+
+## Verify
+
+```sh
+uv run ruff check src tests examples
+uv run ruff format --check src tests examples
+uv run pytest -q
+uv build
+```
+
+The Neo4j integration test is skipped unless `RUN_NEO4J_INTEGRATION=1` and credentials are supplied as process environment variables. It writes data under a unique test project namespace; it never clears the database. Local Qdrant tests run without external services and use labeled deterministic embeddings strictly as test fixtures.
+
+The original version 0.2 module paths were replaced by the simpler 0.3 public structure. See `trace_impact`, `trace_impact.models`, and `trace_impact.interfaces`. Existing run artifacts remain readable; the graph now uses `ChunkRef` instead of full-text `Chunk` nodes. No legacy graph data is automatically deleted or migrated.

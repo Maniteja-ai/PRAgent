@@ -1,9 +1,10 @@
 {
   "project_id": "saleor-storefront",
-  "run_id": "c10d060ea4a04be9b4f9c3ca57ac6269",
+  "run_id": "14be4279406f45808145d9af8d366338",
   "status": "COLLECTED",
   "sources_requested": 9,
   "sources_collected": 9,
+  "documents": 9,
   "chunks": 121,
   "characters": 110938,
   "oversized_chunks": [],

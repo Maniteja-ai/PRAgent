@@ -1,3 +1,14 @@
-"""Reusable, application-configured impact-analysis building blocks."""
+"""TraceImpact: configurable ingestion with replaceable stage implementations."""
 
-__version__ = "0.2.0"
+from .config import Settings
+from .pipeline import IngestionPipeline
+from .registry import Components
+
+__version__ = "0.3.0"
+__all__ = ["create_pipeline", "IngestionPipeline", "Components", "Settings"]
+
+
+def create_pipeline(settings: Settings | None = None) -> IngestionPipeline:
+    from .bootstrap import default_components
+
+    return IngestionPipeline(default_components(settings or Settings()))

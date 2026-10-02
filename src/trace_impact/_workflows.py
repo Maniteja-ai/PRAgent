@@ -6,9 +6,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from time import monotonic
 
-from ..domain.errors import ExtractionError, SourceReadError
-from ..domain.models import Corpus, Extraction, ExtractionRun, Project, stable_id
-from .ports import (
+from trace_impact.errors import ExtractionError, SourceReadError
+from trace_impact.interfaces import (
     ArtifactRepository,
     DocumentProcessor,
     EventSink,
@@ -16,15 +15,16 @@ from .ports import (
     RequirementExtractor,
     RequirementPolicy,
 )
+from trace_impact.models import Corpus, Extraction, ExtractionRun, Project, load_project, stable_id
 
 
 class CollectionService:
     def __init__(self, processor: DocumentProcessor, artifacts: ArtifactRepository, events: EventSink):
         self.processor, self.artifacts, self.events = processor, artifacts, events
 
-    def collect(self, config: Path, output_root: Path) -> tuple[Path, Corpus]:
+    def collect(self, config: Path, output_root: Path, project: Project | None = None) -> tuple[Path, Corpus]:
         started = monotonic()
-        project = self.artifacts.read(config, Project)
+        project = project or load_project(config)
         run_id = uuid.uuid4().hex
         run_dir = output_root / project.project_id / run_id
         corpus = Corpus(
@@ -41,11 +41,15 @@ class CollectionService:
         with self.artifacts.lock(run_dir):
             for source in project.sources:
                 try:
-                    snapshot, chunks = self.processor.process(source, project, config.parent, run_dir)
-                    corpus.snapshots.append(snapshot)
-                    corpus.chunks.extend(chunks)
+                    documents = self.processor.process(source, project, config.parent, run_dir)
+                    for snapshot, chunks in documents:
+                        corpus.snapshots.append(snapshot)
+                        corpus.chunks.extend(chunks)
                     self.events.emit(
-                        "source.collected", run_id=run_id, source_id=source.id, chunks=len(chunks)
+                        "source.collected",
+                        run_id=run_id,
+                        source_id=source.id,
+                        chunks=sum(len(chunks) for _, chunks in documents),
                     )
                 except SourceReadError as exc:
                     corpus.errors.append({"source_id": source.id, "error_type": exc.code})
@@ -59,7 +63,8 @@ class CollectionService:
                     "run_id": run_id,
                     "status": "PARTIAL" if corpus.errors else "COLLECTED",
                     "sources_requested": len(project.sources),
-                    "sources_collected": len(corpus.snapshots),
+                    "sources_collected": len({s.source_id for s in corpus.snapshots}),
+                    "documents": len(corpus.snapshots),
                     "chunks": len(corpus.chunks),
                     "characters": sum(len(c.text) for c in corpus.chunks),
                     "oversized_chunks": [c.id for c in corpus.chunks if c.oversized],
@@ -88,7 +93,7 @@ class CollectionService:
 def require_complete_corpus(corpus: Corpus) -> None:
     expected = {source.id for source in corpus.project.sources}
     actual = {source.source_id for source in corpus.snapshots}
-    if corpus.errors or expected != actual or len(corpus.snapshots) != len(expected):
+    if corpus.errors or expected != actual:
         raise ValueError("Source collection is partial; fix the sources and collect again before extraction")
     snapshots = {snapshot.id for snapshot in corpus.snapshots}
     if len(snapshots) != len(corpus.snapshots) or any(c.snapshot_id not in snapshots for c in corpus.chunks):

@@ -2,19 +2,20 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 
 from neo4j import GraphDatabase
 
-from ..domain.models import Corpus, ExtractionRun, stable_id
-from ..domain.policies import normalized
+from trace_impact.models import Corpus, ExtractionRun, stable_id
+from trace_impact.policies import normalized
 
 LABELS = (
     "Project",
     "CorpusRun",
     "Source",
     "DocumentSnapshot",
-    "Chunk",
+    "ChunkRef",
     "ExtractionRun",
     "Requirement",
     "CoverageAssessment",
@@ -63,6 +64,7 @@ class Neo4jStore:
     def _load_tx(tx, corpus: Corpus, extraction: ExtractionRun | None):
         pid = corpus.project.project_id
         chunk_texts = {chunk.id: chunk.text for chunk in corpus.chunks}
+        snapshots = {snapshot.id: snapshot for snapshot in corpus.snapshots}
         tx.run(
             """MERGE (p:Project {id: $pid}) SET p.name = $name
             MERGE (run:CorpusRun {id: $run})
@@ -100,9 +102,16 @@ class Neo4jStore:
         tx.run(
             """UNWIND $chunks AS row
             MATCH (d:DocumentSnapshot {id:row.snapshot_id})
-            MERGE (c:Chunk {id:row.id}) SET c += row
+            MERGE (c:ChunkRef {id:row.id}) SET c += row
             MERGE (d)-[:HAS_CHUNK]->(c)""",
-            chunks=[c.model_dump() for c in corpus.chunks],
+            chunks=[
+                {
+                    **c.model_dump(exclude={"text"}),
+                    "text_sha256": hashlib.sha256(c.text.encode()).hexdigest(),
+                    "artifact_path": snapshots[c.snapshot_id].text_file,
+                }
+                for c in corpus.chunks
+            ],
         ).consume()
         if extraction is None:
             return
@@ -144,7 +153,7 @@ class Neo4jStore:
             ).consume()
             for evidence in req.evidence:
                 tx.run(
-                    """MATCH (r:Requirement {id:$rid}), (c:Chunk {id:$cid})
+                    """MATCH (r:Requirement {id:$rid}), (c:ChunkRef {id:$cid})
                     MERGE (r)-[e:CITES {quote:$quote}]->(c)
                     SET e.quote_verified=$verified, e.semantic_verified=false""",
                     rid=graph_requirement_id,

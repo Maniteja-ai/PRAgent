@@ -10,6 +10,6 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           version: "0.12.10"
-      - run: uv sync --locked --extra openai --python 3.12
-      - run: uv run ruff check src tests
+      - run: uv sync --locked --extra openai --extra vector --python 3.12
+      - run: uv run ruff check src tests examples
       - run: uv run pytest -q -m 'not integration'

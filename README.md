@@ -2,27 +2,28 @@
 
 An application-configured foundation for an agent that connects documented requirements, observed UI, and source code to explain a real pull request's impact. Saleor is the first integration, not a hardcoded dependency.
 
-Implemented: project contracts, public HTML/Markdown collection, versioned snapshots, section chunking, injected application services and ports, a LangChain structured-output adapter, atomic checkpoint storage and run locking, citation validation, a review queue, and a Neo4j schema/loader. **Live LLM extraction and Neo4j connectivity are pending credentials.** The autonomous crawler, UI/code mappings, and PR impact analyzer remain to be implemented. The earlier “steps 1–4” referred to environment preparation, not completion of all four assignment capabilities.
+Implemented: a reusable Python ingestion library with configuration-selected loaders, parsers, chunkers, extraction, embeddings and storage. Neo4j holds requirement/evidence relationships; Qdrant holds searchable chunks and vectors. Original evidence and checkpoints stay in local artifacts.
 
-## Start ingestion
+**Live model extraction/embedding and Neo4j verification are pending credentials.** Local Qdrant storage/search is tested with labeled test embeddings. Autonomous browser exploration, code analysis, UI/code mapping, full RAG answers and PR impact analysis remain future work. The earlier steps 1-4 referred to environment preparation, not completion of all four assignment capabilities.
+
+## Start with the extension example
 
 ```sh
-uv sync --locked --extra openai
-uv run trace-impact validate-project projects/saleor/project.json
+uv sync --locked --extra openai --extra vector
+uv run python examples/custom_parser.py
+uv run trace-impact components
 uv run trace-impact collect projects/saleor/project.json
 ```
 
-The collection stage works without database or LLM credentials. All nine configured Saleor sources were collected successfully. See the [source inventory](artifacts/ingestion/source-inventory.json).
+The example shows the library's main idea: implement a parser, register it under a name, and let user configuration select it. It runs without credentials. Collection works the same way for the Saleor README and public documentation. See the [source inventory](artifacts/ingestion/source-inventory.json).
 
-- [Low-level design: classes, patterns, recovery, and release gates](docs/low-level-design.md)
-- [Modular setup, Neo4j connection and extraction commands](docs/ingestion.md)
-- [Graph schema, absence model and future UI/code links](docs/graph-schema.md)
-- [Saleor project configuration](projects/saleor/project.json)
-- [Synthetic second integration/template](projects/example/project.json)
+- [Simple LLD: interfaces, flow, storage and extension points](docs/low-level-design.md)
+- [Working custom parser](examples/custom_parser.py) and [its user configuration](projects/plugin-example/project.yaml)
+- [Setup, extraction, indexing and search commands](docs/ingestion.md)
+- [Graph schema and future UI/code relationships](docs/graph-schema.md)
+- [Saleor configuration](projects/saleor/project.json)
 
-To add another application, provide its documentation sources, repository and deployed baseline commit, application URL, and scope through a separate project configuration. HTML/Markdown source adapters are implemented; unsupported formats need an adapter. This is not a claim of universal repository/framework support.
-
-Copy `.env.example` to a local `.env` for Neo4j and model credentials. Never commit that file. Full source snapshots and extraction runs stay under ignored `runs/`. See the setup guide for the remaining live checks.
+Add another application through its own project configuration. Add a new implementation through the relevant interface and registry. New stages such as browser exploration need their own design; this release does not claim universal repository/framework support.
 
 ## Repositories and experiment
 

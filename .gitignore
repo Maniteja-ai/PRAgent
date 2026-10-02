@@ -12,3 +12,4 @@ runs/
 .ruff_cache/
 *.egg-info/
 dist/
+.vector-store/

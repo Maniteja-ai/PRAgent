@@ -6,7 +6,7 @@ flowchart LR
     P -->|HAS_SOURCE| S[Source]
     S -->|HAS_SNAPSHOT| D[DocumentSnapshot]
     CR -->|USES_SNAPSHOT| D
-    D -->|HAS_CHUNK| C[Chunk]
+    D -->|HAS_CHUNK| C[ChunkRef]
     CR -->|HAS_EXTRACTION| E[ExtractionRun]
     E -->|PRODUCED| R[Requirement candidate]
     R -->|CITES| C
@@ -18,6 +18,8 @@ All node IDs have uniqueness constraints. Source, snapshot, chunk and requiremen
 
 The code baseline is the actual deployed commit, including shared compatibility fixes, so future source mappings match the observed website. The original upstream comparison remains in the evaluation manifest. These are separate concepts.
 
+ChunkRef contains chunk identity, heading, content hash, and artifact reference. Full document/chunk text stays in local artifacts and the vector payload. Neo4j retains short exact citation quotes on CITES relationships for traceability.
+
 ## Questions supported now
 
 Get a project's candidate requirements and exact supporting sections:
@@ -25,7 +27,7 @@ Get a project's candidate requirements and exact supporting sections:
 ```cypher
 MATCH (p:Project {id: $project_id})-[:HAS_CORPUS]->(c)
       -[:HAS_EXTRACTION]->(e:ExtractionRun {id: $extraction_id})
-      -[:PRODUCED]->(r:Requirement)-[s:CITES]->(chunk:Chunk)
+      -[:PRODUCED]->(r:Requirement)-[s:CITES]->(chunk:ChunkRef)
 RETURN r.statement, r.validation, chunk.heading, s.quote, chunk.source_id
 ```
 

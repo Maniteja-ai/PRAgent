@@ -1,12 +1,13 @@
 """LangChain adapter: structured model IO, separated from evidence policy."""
 
 import json
+from collections.abc import Callable
 from typing import Any
 
-from ..application.ports import EventSink
-from ..application.prompts import PROMPT_VERSION, SYSTEM_PROMPT
-from ..domain.errors import ExtractionError
-from ..domain.models import Chunk, Extraction, Snapshot, stable_id
+from trace_impact.errors import ExtractionError
+from trace_impact.interfaces import EventSink
+from trace_impact.models import Chunk, Extraction, Snapshot, stable_id
+from trace_impact.prompts import PROMPT_VERSION, SYSTEM_PROMPT
 
 
 class LangChainRequirementExtractor:
@@ -20,11 +21,13 @@ class LangChainRequirementExtractor:
         model: str,
         configuration_id: str,
         events: EventSink | None = None,
+        close: Callable[[], None] | None = None,
     ):
         # structured_model is a LangChain Runnable; injected so tests never need API credentials.
         self.structured_model = structured_model
         self.provider, self.model = provider, model
         self.events = events
+        self._close = close
         self.fingerprint = stable_id(
             "langchain-v1",
             provider,
@@ -33,6 +36,11 @@ class LangChainRequirementExtractor:
             SYSTEM_PROMPT,
             json.dumps(Extraction.model_json_schema(), sort_keys=True),
         )
+
+    def close(self) -> None:
+        if self._close is not None:
+            self._close()
+            self._close = None
 
     def extract(self, chunk: Chunk, snapshot: Snapshot, scope: list[str]) -> Extraction:
         from langchain_core.exceptions import OutputParserException

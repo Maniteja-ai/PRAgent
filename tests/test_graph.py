@@ -4,11 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from trace_impact.extraction import validate_candidate
-from trace_impact.graph import Neo4jStore
+from trace_impact.config import Settings
+from trace_impact.implementations.storage.neo4j import Neo4jStore
 from trace_impact.models import Candidate, ExtractionRun, stable_id
 from trace_impact.pipeline import collect
-from trace_impact.settings import Settings
+from trace_impact.policies import validate_candidate
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -134,3 +134,22 @@ def test_live_neo4j_roundtrip_is_idempotent(tmp_path):
         assert store.counts(corpus.project.project_id)["requirements"] == 2
     finally:
         store.close()
+
+
+def test_graph_stores_chunk_references_without_full_document_text(tmp_path):
+    _, corpus = collect(ROOT / "projects/example/project.json", tmp_path)
+    calls = []
+
+    class Transaction:
+        def run(self, query, **parameters):
+            calls.append((query, parameters))
+            return self
+
+        def consume(self):
+            pass
+
+    Neo4jStore._load_tx(Transaction(), corpus, None)
+    query, params = next((q, p) for q, p in calls if "chunks" in p)
+    assert "ChunkRef" in query
+    assert len(params["chunks"]) == len(corpus.chunks)
+    assert all("text" not in row and row["text_sha256"] and row["artifact_path"] for row in params["chunks"])

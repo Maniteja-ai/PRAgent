@@ -9,8 +9,8 @@ from pathlib import Path
 from filelock import FileLock, Timeout
 from pydantic import BaseModel, ValidationError
 
-from ..application.ports import ModelT
-from ..domain.errors import ArtifactError, RunBusyError
+from trace_impact.errors import ArtifactError, RunBusyError
+from trace_impact.interfaces import ModelT
 
 
 class FileArtifactRepository:
@@ -22,15 +22,15 @@ class FileArtifactRepository:
 
     def write(self, path: Path, value: BaseModel | dict) -> None:
         data = value.model_dump(mode="json") if isinstance(value, BaseModel) else value
+        self.write_bytes(path, (json.dumps(data, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
+
+    def write_bytes(self, path: Path, data: bytes) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         temp = None
         try:
-            with tempfile.NamedTemporaryFile(
-                mode="w", encoding="utf-8", dir=path.parent, delete=False
-            ) as file:
+            with tempfile.NamedTemporaryFile(mode="wb", dir=path.parent, delete=False) as file:
                 temp = Path(file.name)
-                json.dump(data, file, ensure_ascii=False, indent=2)
-                file.write("\n")
+                file.write(data)
                 file.flush()
                 os.fsync(file.fileno())
             os.replace(temp, path)

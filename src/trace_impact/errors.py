@@ -19,3 +19,7 @@ class ArtifactError(IngestionError):
 
 class RunBusyError(IngestionError):
     code = "RUN_BUSY"
+
+
+class ConfigurationError(IngestionError, ValueError):
+    code = "CONFIGURATION_ERROR"

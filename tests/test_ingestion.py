@@ -3,10 +3,11 @@ from pathlib import Path
 
 import pytest
 
-from trace_impact.documents import make_chunks, normalize, read_source
-from trace_impact.extraction import deduplicate, validate_candidate
+from trace_impact.implementations.loaders import read_source
+from trace_impact.implementations.parsers import make_chunks, normalize
 from trace_impact.models import Candidate, Extraction, Project, Source, load_project
 from trace_impact.pipeline import collect, extract
+from trace_impact.policies import deduplicate, validate_candidate
 
 ROOT = Path(__file__).resolve().parents[1]
 

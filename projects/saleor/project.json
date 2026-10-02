@@ -5,22 +5,157 @@
   "repository": {
     "url": "https://github.com/Maniteja-ai/storefront",
     "baseline_commit": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
-    "code_roots": ["src/app", "src/ui", "src/checkout", "src/lib", "src/graphql"]
+    "code_roots": [
+      "src/app",
+      "src/ui",
+      "src/checkout",
+      "src/lib",
+      "src/graphql"
+    ]
   },
   "baseline_url": "https://testsigma-saleor-baseline.vercel.app",
-  "scope": ["Product browsing and variant selection", "Cart lines and quantities", "Guest checkout before payment", "Shipping addresses and delivery selection", "Voucher application, removal and errors", "Channel-dependent prices and availability"],
-  "allowed_document_hosts": ["raw.githubusercontent.com", "docs.saleor.io"],
+  "scope": [
+    "Product browsing and variant selection",
+    "Cart lines and quantities",
+    "Guest checkout before payment",
+    "Shipping addresses and delivery selection",
+    "Voucher application, removal and errors",
+    "Channel-dependent prices and availability"
+  ],
+  "allowed_document_hosts": [
+    "raw.githubusercontent.com",
+    "docs.saleor.io"
+  ],
   "max_chunk_chars": 8000,
-  "excluded_inputs": ["PR description and diff", "Patched deployment", "Manually curated requirements/saleor.json", "Manual validation artifacts", "Repository AGENTS.md and coding skills", "Real payment and order completion"],
+  "excluded_inputs": [
+    "PR description and diff",
+    "Patched deployment",
+    "Manually curated requirements/saleor.json",
+    "Manual validation artifacts",
+    "Repository AGENTS.md and coding skills",
+    "Real payment and order completion"
+  ],
   "sources": [
-    {"id":"storefront-readme","location":"https://raw.githubusercontent.com/saleor/storefront/23bc49ccd22e13e182b30daff562d5e5c9af874c/README.md","format":"markdown","authority":"frontend_spec","version":"23bc49ccd22e13e182b30daff562d5e5c9af874c","scope":["browsing","variants","cart","checkout"]},
-    {"id":"products","location":"https://docs.saleor.io/developer/products/overview","format":"html","authority":"backend_contract","version":"current-online-unpinned","scope":["products","variants","availability"]},
-    {"id":"checkout","location":"https://docs.saleor.io/developer/checkout/overview","format":"html","authority":"backend_contract","version":"current-online-unpinned","scope":["cart","checkout","channels"]},
-    {"id":"checkout-lifecycle","location":"https://docs.saleor.io/developer/checkout/lifecycle","format":"html","authority":"backend_contract","version":"current-online-unpinned","scope":["guest-checkout","quantities"]},
-    {"id":"shipping-address","location":"https://docs.saleor.io/developer/checkout/address","format":"html","authority":"backend_contract","version":"current-online-unpinned","scope":["addresses","shipping"]},
-    {"id":"vouchers","location":"https://docs.saleor.io/developer/discounts/vouchers","format":"html","authority":"backend_contract","version":"current-online-unpinned","scope":["voucher-eligibility"]},
-    {"id":"apply-vouchers","location":"https://docs.saleor.io/developer/discounts/apply-vouchers","format":"html","authority":"backend_contract","version":"current-online-unpinned","scope":["voucher-discounts"]},
-    {"id":"add-promo-api","location":"https://docs.saleor.io/api-reference/checkout/mutations/checkout-add-promo-code","format":"html","authority":"api_contract","version":"current-online-unpinned","scope":["voucher-application"]},
-    {"id":"remove-promo-api","location":"https://docs.saleor.io/api-reference/checkout/mutations/checkout-remove-promo-code","format":"html","authority":"api_contract","version":"current-online-unpinned","scope":["voucher-removal"]}
-  ]
+    {
+      "id": "storefront-readme",
+      "location": "https://raw.githubusercontent.com/saleor/storefront/23bc49ccd22e13e182b30daff562d5e5c9af874c/README.md",
+      "authority": "frontend_spec",
+      "version": "23bc49ccd22e13e182b30daff562d5e5c9af874c",
+      "scope": [
+        "browsing",
+        "variants",
+        "cart",
+        "checkout"
+      ],
+      "parser": "markdown",
+      "loader": "github_file",
+      "options": {
+        "repository": "saleor/storefront",
+        "revision": "23bc49ccd22e13e182b30daff562d5e5c9af874c",
+        "path": "README.md"
+      }
+    },
+    {
+      "id": "products",
+      "location": "https://docs.saleor.io/developer/products/overview",
+      "authority": "backend_contract",
+      "version": "current-online-unpinned",
+      "scope": [
+        "products",
+        "variants",
+        "availability"
+      ],
+      "parser": "html",
+      "loader": "web"
+    },
+    {
+      "id": "checkout",
+      "location": "https://docs.saleor.io/developer/checkout/overview",
+      "authority": "backend_contract",
+      "version": "current-online-unpinned",
+      "scope": [
+        "cart",
+        "checkout",
+        "channels"
+      ],
+      "parser": "html",
+      "loader": "web"
+    },
+    {
+      "id": "checkout-lifecycle",
+      "location": "https://docs.saleor.io/developer/checkout/lifecycle",
+      "authority": "backend_contract",
+      "version": "current-online-unpinned",
+      "scope": [
+        "guest-checkout",
+        "quantities"
+      ],
+      "parser": "html",
+      "loader": "web"
+    },
+    {
+      "id": "shipping-address",
+      "location": "https://docs.saleor.io/developer/checkout/address",
+      "authority": "backend_contract",
+      "version": "current-online-unpinned",
+      "scope": [
+        "addresses",
+        "shipping"
+      ],
+      "parser": "html",
+      "loader": "web"
+    },
+    {
+      "id": "vouchers",
+      "location": "https://docs.saleor.io/developer/discounts/vouchers",
+      "authority": "backend_contract",
+      "version": "current-online-unpinned",
+      "scope": [
+        "voucher-eligibility"
+      ],
+      "parser": "html",
+      "loader": "web"
+    },
+    {
+      "id": "apply-vouchers",
+      "location": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+      "authority": "backend_contract",
+      "version": "current-online-unpinned",
+      "scope": [
+        "voucher-discounts"
+      ],
+      "parser": "html",
+      "loader": "web"
+    },
+    {
+      "id": "add-promo-api",
+      "location": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-add-promo-code",
+      "authority": "api_contract",
+      "version": "current-online-unpinned",
+      "scope": [
+        "voucher-application"
+      ],
+      "parser": "html",
+      "loader": "web"
+    },
+    {
+      "id": "remove-promo-api",
+      "location": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-remove-promo-code",
+      "authority": "api_contract",
+      "version": "current-online-unpinned",
+      "scope": [
+        "voucher-removal"
+      ],
+      "parser": "html",
+      "loader": "web"
+    }
+  ],
+  "chunker": "section",
+  "extractor": "langchain",
+  "embedding_provider": "openai",
+  "storage": {
+    "graph": "neo4j",
+    "vector": "qdrant",
+    "artifacts": "local"
+  }
 }

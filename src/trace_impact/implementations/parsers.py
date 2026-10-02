@@ -4,9 +4,23 @@ from bs4 import BeautifulSoup
 from markdown_it import MarkdownIt
 from markdownify import markdownify
 
-from ..domain.models import Chunk, stable_id
+from trace_impact.models import Chunk, Document, RawDocument, stable_id
 
 NORMALIZER_VERSION = "main-markdown-v1"
+
+
+class HtmlParser:
+    version = "html-main-markdown-v1"
+
+    def parse(self, raw: RawDocument) -> Document:
+        return Document(text=normalize(raw.content, "html"))
+
+
+class MarkdownParser:
+    version = "markdown-v1"
+
+    def parse(self, raw: RawDocument) -> Document:
+        return Document(text=normalize(raw.content, "markdown"))
 
 
 def normalize(raw: bytes, fmt: str) -> str:

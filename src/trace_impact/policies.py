@@ -3,7 +3,7 @@
 import json
 import re
 
-from .models import Candidate, Chunk, Evidence, Requirement, Snapshot, stable_id
+from trace_impact.models import Candidate, Chunk, Evidence, Requirement, Snapshot, stable_id
 
 
 def normalized(text: str) -> str:

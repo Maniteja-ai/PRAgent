@@ -10,44 +10,42 @@ import pytest
 from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnableLambda
 
-from trace_impact.application.services import ExtractionService
-from trace_impact.domain.errors import ArtifactError, ExtractionError, RunBusyError
-from trace_impact.domain.models import Extraction, ExtractionRun, load_project
-from trace_impact.domain.policies import GroundingPolicy
-from trace_impact.infrastructure.artifacts import FileArtifactRepository
-from trace_impact.infrastructure.events import JsonEventSink
-from trace_impact.infrastructure.langchain_extractor import LangChainRequirementExtractor
-from trace_impact.infrastructure.sources import HttpSourceReader
+from trace_impact._workflows import ExtractionService
+from trace_impact.config import Settings
+from trace_impact.errors import ArtifactError, ExtractionError, RunBusyError
+from trace_impact.events import JsonEventSink
+from trace_impact.implementations.extractors import LangChainRequirementExtractor
+from trace_impact.implementations.loaders import HttpSourceReader
+from trace_impact.implementations.storage.artifacts import FileArtifactRepository
+from trace_impact.models import Extraction, ExtractionRun, load_project
 from trace_impact.pipeline import collect
-from trace_impact.settings import Settings
+from trace_impact.policies import GroundingPolicy
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_inner_layers_cannot_import_adapters_or_provider_libraries():
-    for layer in ["domain", "application"]:
-        for path in (ROOT / "src/trace_impact" / layer).glob("*.py"):
-            tree = ast.parse(path.read_text())
-            for node in ast.walk(tree):
-                modules = []
-                if isinstance(node, ast.Import):
-                    modules = [alias.name for alias in node.names]
-                elif isinstance(node, ast.ImportFrom):
-                    modules = [node.module or ""]
-                for module in modules:
-                    assert not any(
-                        part in module.split(".")
-                        for part in [
-                            "infrastructure",
-                            "bootstrap",
-                            "langchain_openai",
-                            "openai",
-                            "neo4j",
-                            "httpx",
-                        ]
-                    ), path
-                    if layer == "domain":
-                        assert "application" not in module.split("."), path
+def test_core_cannot_import_concrete_implementations():
+    for name in ["models.py", "interfaces.py", "policies.py", "_workflows.py", "_indexing.py"]:
+        path = ROOT / "src/trace_impact" / name
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            modules = []
+            if isinstance(node, ast.Import):
+                modules = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                modules = [node.module or ""]
+            for module in modules:
+                assert not any(
+                    part in module.split(".")
+                    for part in [
+                        "implementations",
+                        "bootstrap",
+                        "langchain_openai",
+                        "openai",
+                        "neo4j",
+                        "qdrant_client",
+                        "httpx",
+                    ]
+                ), path
 
 
 def test_artifact_write_failure_preserves_previous_checkpoint(tmp_path, monkeypatch):
@@ -58,7 +56,7 @@ def test_artifact_write_failure_preserves_previous_checkpoint(tmp_path, monkeypa
     def disk_failure(*args):
         raise OSError("Test injected failure")
 
-    monkeypatch.setattr("trace_impact.infrastructure.artifacts.os.replace", disk_failure)
+    monkeypatch.setattr("trace_impact.implementations.storage.artifacts.os.replace", disk_failure)
     with pytest.raises(OSError):
         repo.write(path, {"new": True})
     assert json.loads(path.read_text()) == {"old": True}
