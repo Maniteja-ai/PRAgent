@@ -8,7 +8,7 @@ from typing import Literal
 
 from pydantic import Field, TypeAdapter
 
-from trace_coordinator.application.coordinator import Coordinator
+from trace_coordinator.analysis_workflow.coordinator import Coordinator
 from trace_coordinator.config import CallLimits, HumanReviewPolicy
 from trace_coordinator.decision_model.implementations.fixture import FixtureDecisionModel
 from trace_coordinator.domain.contracts import AnalysisReportPayload, JsonObject, as_json_object

@@ -19,8 +19,8 @@ from trace_coordinator.domain.contracts import (
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
 from trace_coordinator.domain.models import Evidence, Record, ToolContext, ToolResult
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.artifacts import save_artifact
-from trace_coordinator.infrastructure.ledger import canonical, digest
+from trace_coordinator.storage.artifacts import save_artifact
+from trace_coordinator.storage.call_ledger import canonical, digest
 
 if TYPE_CHECKING:
     from playwright.sync_api import Browser, BrowserContext, ElementHandle, Page, Playwright, Route

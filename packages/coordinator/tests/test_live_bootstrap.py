@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from trace_coordinator.bootstrap import create_coordinator
 from trace_coordinator.decision_model.implementations.fixture import FixtureDecisionModel
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import AnalysisRequest, Evidence, ToolResult
+from trace_coordinator.setup import create_coordinator
 from trace_coordinator.tool.implementations.fixture import FixtureTool
 
 ROOT = Path(__file__).resolve().parents[1]

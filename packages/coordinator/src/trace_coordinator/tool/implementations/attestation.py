@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
 from trace_coordinator.domain.models import Evidence, Record, ToolContext, ToolResult
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.ledger import canonical, digest
+from trace_coordinator.storage.call_ledger import canonical, digest
 
 
 class AttestationInput(Record):

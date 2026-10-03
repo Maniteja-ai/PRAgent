@@ -8,7 +8,6 @@ from typing import Any
 
 from pydantic import BaseModel, TypeAdapter
 
-from trace_coordinator.application.mapping import MappingConfig
 from trace_coordinator.domain.contracts import (
     AnalysisReportPayload,
     ArtifactPayload,
@@ -23,9 +22,10 @@ from trace_coordinator.domain.contracts import (
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import Evidence, ToolContext, ToolResult
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.artifacts import save_artifact
-from trace_coordinator.infrastructure.ledger import canonical, digest
+from trace_coordinator.storage.artifacts import save_artifact
+from trace_coordinator.storage.call_ledger import canonical, digest
 from trace_coordinator.tool.implementations.fixture import QueryInput
+from trace_coordinator.ui_analysis.mapping import MappingConfig
 
 
 class TypeScriptMappingInspector:
@@ -135,8 +135,8 @@ def prepare_ui_snapshot(
     from trace_impact.ingestion.code.typescript_analyzer import TypeScriptAnalyzer
     from trace_impact.shared.graph_models import GraphSnapshot
 
-    from trace_coordinator.application.mapping import MappingConfig, project_snapshot, validate_mappings
     from trace_coordinator.domain.project import load_application
+    from trace_coordinator.ui_analysis.mapping import MappingConfig, project_snapshot, validate_mappings
 
     config_path = Path(config_path).resolve()
     config = MappingConfig.model_validate_json(config_path.read_text(encoding="utf-8-sig"))

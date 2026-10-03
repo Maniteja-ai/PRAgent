@@ -8,7 +8,7 @@ import jsonschema
 import pytest
 from pydantic import ValidationError
 
-from trace_coordinator.application.verification import (
+from trace_coordinator.behavior_testing.voucher_test import (
     VoucherVerificationConfig,
     VoucherVerifier,
     run_verification,
@@ -19,8 +19,8 @@ from trace_coordinator.config import CallLimits
 from trace_coordinator.domain.errors import RunMismatch, ToolFailure, UncertainExecution
 from trace_coordinator.domain.models import Evidence, ToolContext, ToolResult
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.ledger import CallLedger
-from trace_coordinator.tool.implementations.voucher_verification import (
+from trace_coordinator.storage.call_ledger import CallLedger
+from trace_coordinator.tool.implementations.saleor_voucher_tools import (
     EmptyInput,
     FixtureInput,
     FixtureTool,
@@ -227,7 +227,7 @@ def test_oracle_rejects_wrong_percentage_currency_and_line_set(inputs):
 
 
 def test_saved_run_replays_report_not_side_effects_and_rejects_changed_config(inputs, tmp_path, monkeypatch):
-    from trace_coordinator.tool.implementations import voucher_verification
+    from trace_coordinator.tool.implementations import saleor_voucher_tools
 
     config, app = inputs
     Path(tmp_path / "graph-config.json").write_text(
@@ -268,7 +268,7 @@ def test_saved_run_replays_report_not_side_effects_and_rejects_changed_config(in
         calls.append(1)
         yield World(config).tools()
 
-    monkeypatch.setattr(voucher_verification, "verification_tools", tools)
+    monkeypatch.setattr(saleor_voucher_tools, "verification_tools", tools)
     first = run_verification(path, "test")
     assert run_verification(path, "test") == first
     assert len(calls) == 1
@@ -366,7 +366,7 @@ def test_json_schema_is_current():
 
 
 def test_verification_cli(inputs, tmp_path, monkeypatch, capsys):
-    from trace_coordinator.application import verification
+    from trace_coordinator.behavior_testing import voucher_test as verification
     from trace_coordinator.cli import main
 
     result, _ = execute(inputs, tmp_path)

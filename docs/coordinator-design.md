@@ -16,26 +16,32 @@ repository/
     pyproject.toml                  Own dependencies and CLI
     uv.lock                         Own reproducible environment
     src/trace_coordinator/
-      bootstrap.py                  Composition root only
+      setup.py                      Construct one configured coordinator
       config.py                     Typed JSON definitions and validation
-      application/                  LangGraph workflow and use cases
+      analysis_workflow/            Coordinator, graph, execution and workflow stages
+      ui_analysis/                  Exploration, evidence and source mapping
+      behavior_testing/             Test runners and pluggable behavior scenarios
       domain/                       Coordinator-owned models and contracts
       decision_model/               Interface, implementations, dependencies, factory
       tool/                         Interface, implementations, dependencies, factory
-      verification_scenario/        Interface, implementations, factory
       response_formatter/           Interface, implementations, dependencies, factory
       security/artifact_security/   Interface, implementations, factory and policy
-      infrastructure/               Ledger, artifacts, webhook and observability
+      storage/                      Artifacts and call ledger
+      github_integration/           Webhook contracts, implementations and service
+      monitoring/                   LangSmith tracing
+      startup/                      Resolved startup context
       evaluation/                   Golden, live-model and release evaluations
     configs/, schemas/, tests/, docs/
 ```
 
-Dependency direction: **application -> feature interfaces <- implementations -> external systems**.
+Dependency direction: **analysis workflow -> feature interfaces <- implementations -> external systems**.
 Only the knowledge tool implementation imports `trace_impact`; core coordinator code does not import
 its models, shared utilities, registry, settings or databases. The existing library never imports the
 coordinator or LangGraph.
 
-Use Python Protocols and small composed classes. Avoid a base-agent inheritance hierarchy. `bootstrap.py` performs dependency injection from an explicit provider registry. Adapters translate library objects into coordinator-owned, JSON-serializable records.
+Use Python Protocols and small composed classes. Avoid a base-agent inheritance hierarchy. `setup.py`
+performs dependency injection from explicit factories. Implementations translate external objects into
+coordinator-owned, JSON-serializable records.
 
 The `trace-impact` integration is an optional package extra. Local development can use an editable installation; release builds use a tested version range and lockfile, never a machine-specific path. Coordinator CI also runs with a fake knowledge adapter and without `trace-impact` installed. Later extraction moves `packages/coordinator` to a new repository; a future HTTP knowledge adapter can replace the local one without changing stages. HTTP transport is not required initially.
 

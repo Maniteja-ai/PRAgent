@@ -11,7 +11,7 @@ from trace_coordinator.decision_model.dependencies import create_chat_model
 from trace_coordinator.decision_model.interface import DecisionModel
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
 from trace_coordinator.domain.models import Decision
-from trace_coordinator.infrastructure.ledger import canonical, digest
+from trace_coordinator.storage.call_ledger import canonical, digest
 
 
 class ModelFinding(BaseModel):

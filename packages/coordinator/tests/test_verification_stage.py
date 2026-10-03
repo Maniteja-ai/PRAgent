@@ -12,20 +12,20 @@ from trace_coordinator import (
     HumanReviewPolicy,
     ReviewResponse,
 )
-from trace_coordinator.application.verification import VoucherVerificationConfig
-from trace_coordinator.application.verification_stage import VerificationStage
+from trace_coordinator.analysis_workflow.behavior_test_stage import VerificationStage
+from trace_coordinator.behavior_testing.scenarios.implementations.voucher import VoucherScenario
+from trace_coordinator.behavior_testing.voucher_test import VoucherVerificationConfig
 from trace_coordinator.config import ScenarioBinding, VerificationPolicy
 from trace_coordinator.decision_model.implementations.fixture import FixtureDecisionModel
 from trace_coordinator.domain.errors import RunMismatch
 from trace_coordinator.domain.models import ChangeSet, Evidence, ToolResult
 from trace_coordinator.domain.project import ApplicationConfig
 from trace_coordinator.tool.implementations.fixture import FixtureTool
-from trace_coordinator.verification_scenario.implementations.voucher import VoucherScenario
 
 
 @pytest.fixture
 def setup(tmp_path, monkeypatch):
-    from trace_coordinator.tool.implementations import voucher_verification
+    from trace_coordinator.tool.implementations import saleor_voucher_tools
 
     app = ApplicationConfig(
         project_id="p",
@@ -122,7 +122,7 @@ def setup(tmp_path, monkeypatch):
         calls.append("factory")
         yield World(config).tools()
 
-    monkeypatch.setattr(voucher_verification, "verification_tools", factory)
+    monkeypatch.setattr(saleor_voucher_tools, "verification_tools", factory)
     model = FixtureDecisionModel(
         [
             {

@@ -8,16 +8,16 @@ from types import SimpleNamespace
 import jsonschema
 import pytest
 
-from trace_coordinator.application.mapping import (
+from trace_coordinator.domain.project import ApplicationConfig
+from trace_coordinator.storage.artifacts import save_artifact
+from trace_coordinator.tool.implementations import knowledge
+from trace_coordinator.ui_analysis.evidence import ui_index
+from trace_coordinator.ui_analysis.mapping import (
     MappingConfig,
     project_snapshot,
     validate_mappings,
     verified_bytes,
 )
-from trace_coordinator.application.ui_evidence import ui_index
-from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.artifacts import save_artifact
-from trace_coordinator.tool.implementations import knowledge
 
 ROOT = Path(__file__).resolve().parents[1]
 REV = "b" * 40

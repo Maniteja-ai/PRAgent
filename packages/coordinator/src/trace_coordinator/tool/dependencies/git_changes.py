@@ -12,7 +12,7 @@ from trace_coordinator.domain.contracts import as_json_value
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import ChangeSet, Evidence, FileChange, ToolContext, ToolResult
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.artifacts import save_artifact
+from trace_coordinator.storage.artifacts import save_artifact
 from trace_coordinator.tool.implementations.fixture import PRInput
 
 

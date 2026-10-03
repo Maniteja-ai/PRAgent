@@ -9,10 +9,10 @@ from types import SimpleNamespace
 import httpx
 import pytest
 
-from trace_coordinator.infrastructure.github_webhook import (
+from trace_coordinator.github_integration import (
     GitHubAppTokenProvider,
-    GitHubCommentPublisher,
-    WebhookConfig,
+    GitHubPullRequestCommentPublisher,
+    GitHubWebhookConfig,
     WebhookRejected,
     WebhookService,
     run_next_job,
@@ -21,7 +21,7 @@ from trace_coordinator.response_formatter import TemplateResponseFormatter
 
 
 def config(tmp_path):
-    return WebhookConfig(
+    return GitHubWebhookConfig(
         allowed_repositories=("saleor/storefront",),
         database_file=str(tmp_path / "jobs.sqlite"),
         coordinator_config_file=str(tmp_path / "coordinator.json"),
@@ -122,7 +122,9 @@ def test_comment_publisher_updates_one_marker_comment():
             assert installation_id == 42
             return "installation-token"
 
-    publisher = GitHubCommentPublisher(Auth(), client=httpx.Client(transport=httpx.MockTransport(handler)))
+    publisher = GitHubPullRequestCommentPublisher(
+        Auth(), client=httpx.Client(transport=httpx.MockTransport(handler))
+    )
     result = publisher.publish(
         {"repository": "saleor/storefront", "pull_request": 1199, "installation_id": 42},
         "report",
@@ -271,7 +273,7 @@ def test_comment_publisher_creates_once_and_rejects_ambiguous_state():
             return httpx.Response(200, json=[])
         return httpx.Response(201, json={"id": 11})
 
-    publisher = GitHubCommentPublisher(
+    publisher = GitHubPullRequestCommentPublisher(
         Auth(), client=httpx.Client(transport=httpx.MockTransport(create_handler))
     )
     job = {"repository": "saleor/storefront", "pull_request": 1199, "installation_id": 42}
@@ -284,12 +286,12 @@ def test_comment_publisher_creates_once_and_rejects_ambiguous_state():
         return httpx.Response(
             200,
             json=[
-                {"id": 1, "body": GitHubCommentPublisher.marker},
-                {"id": 2, "body": GitHubCommentPublisher.marker},
+                {"id": 1, "body": GitHubPullRequestCommentPublisher.marker},
+                {"id": 2, "body": GitHubPullRequestCommentPublisher.marker},
             ],
         )
 
-    ambiguous = GitHubCommentPublisher(
+    ambiguous = GitHubPullRequestCommentPublisher(
         Auth(), client=httpx.Client(transport=httpx.MockTransport(ambiguous_handler))
     )
     with pytest.raises(RuntimeError, match="Multiple"):
@@ -324,7 +326,7 @@ def test_worker_completes_current_job_without_publishing(monkeypatch, tmp_path):
     def fake_coordinator(_path):
         yield Coordinator()
 
-    monkeypatch.setattr("trace_coordinator.bootstrap.create_coordinator", fake_coordinator)
+    monkeypatch.setattr("trace_coordinator.setup.create_coordinator", fake_coordinator)
     result = run_next_job(
         config_file,
         auth=Auth(),

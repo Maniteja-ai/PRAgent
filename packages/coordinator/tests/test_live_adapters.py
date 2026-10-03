@@ -16,7 +16,7 @@ from trace_coordinator.domain.project import (
     RetrievalConfigFile,
     load_application,
 )
-from trace_coordinator.infrastructure.artifacts import save_artifact
+from trace_coordinator.storage.artifacts import save_artifact
 from trace_coordinator.tool.implementations.fixture import PRInput
 from trace_coordinator.tool.implementations.github import GitHubDiffTool
 from trace_coordinator.tool.implementations.local_git import LocalGitDiffTool

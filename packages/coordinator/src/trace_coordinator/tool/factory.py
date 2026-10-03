@@ -1,4 +1,4 @@
-"""Tool factory for fixture and live infrastructure strategies."""
+"""Select fixture or live tool implementations from validated configuration."""
 
 import json
 from contextlib import ExitStack
@@ -6,13 +6,13 @@ from contextlib import ExitStack
 from trace_coordinator.config import FixtureProvider, LiveToolProvider
 from trace_coordinator.domain.contracts import as_json_object
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.dependencies import BootstrapContext
+from trace_coordinator.startup import StartupContext
 from trace_coordinator.tool.implementations.fixture import FixtureTool
 from trace_coordinator.tool.interface import Tool
 
 
 class ToolFactory:
-    def __init__(self, resources: ExitStack, context: BootstrapContext) -> None:
+    def __init__(self, resources: ExitStack, context: StartupContext) -> None:
         self.resources = resources
         self.context = context
 

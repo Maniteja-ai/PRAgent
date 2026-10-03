@@ -4,7 +4,7 @@ import sqlite3
 import httpx
 import pytest
 
-from trace_coordinator.application.additional_behavior import (
+from trace_coordinator.behavior_testing.additional_scenarios import (
     AdditionalBehaviorConfig,
     additional_behavior_schema,
     run_additional_behavior,

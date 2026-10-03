@@ -102,8 +102,8 @@ document.querySelector('#code').textContent='';document.querySelector('data').se
 
 
 def test_voucher_probe_waits_for_ui_updates_and_preserves_fresh_action_handles(browser):
-    from trace_coordinator.application.verification import VoucherVerificationConfig
-    from trace_coordinator.tool.implementations.voucher_verification import ProbeInput, VoucherProbe
+    from trace_coordinator.behavior_testing.voucher_test import VoucherVerificationConfig
+    from trace_coordinator.tool.implementations.saleor_voucher_tools import ProbeInput, VoucherProbe
 
     navigate(browser)
     browser.app = browser.app.model_copy(
@@ -190,8 +190,8 @@ def test_voucher_probe_waits_for_ui_updates_and_preserves_fresh_action_handles(b
     ],
 )
 def test_voucher_probe_rejects_invalid_or_ambiguous_total(browser, total_markup):
-    from trace_coordinator.application.verification import VoucherVerificationConfig
-    from trace_coordinator.tool.implementations.voucher_verification import ProbeInput, VoucherProbe
+    from trace_coordinator.behavior_testing.voucher_test import VoucherVerificationConfig
+    from trace_coordinator.tool.implementations.saleor_voucher_tools import ProbeInput, VoucherProbe
 
     navigate(browser)
     html = VERIFICATION_PAGE.replace('<data class="total" value="16">$16.00</data>', total_markup)

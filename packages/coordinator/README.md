@@ -368,24 +368,26 @@ Current evidence:
 | Module | Responsibility |
 | --- | --- |
 | `domain/` | Pydantic domain models plus typed checkpoint, report and persistence contracts |
-| `application/` | LangGraph workflow, guarded dispatch, verification and mapping use cases |
+| `analysis_workflow/` | Coordinator API, LangGraph definition, guarded execution and behavior-test stage |
+| `ui_analysis/` | Bounded UI exploration, observed evidence and code-to-UI mapping |
+| `behavior_testing/` | Voucher test runner, additional behavior tests and pluggable scenario implementations |
 | `decision_model/` | Decision-model interface, fixture/LangChain implementations, chat-client dependency and factory |
 | `tool/` | Tool interface, live/fixture implementations, Git/JS dependencies and factory |
-| `verification_scenario/` | Approved-scenario interface, voucher implementation and factory |
 | `response_formatter/` | Formatter interface, template/LLM/fallback implementations, renderer dependency and factory |
-| `infrastructure/ledger.py` | Transactional quotas, receipts and recovery |
-| `infrastructure/github_webhook.py` | Signed webhook intake, durable jobs and PR comments |
-| `infrastructure/dependencies/` | Shared bootstrap context used while factories assemble one run |
+| `storage/` | Hashed artifacts, transactional call quotas, receipts and recovery |
+| `github_integration/` | Webhook contracts, configuration, GitHub API implementations and job processing |
+| `monitoring/` | Optional LangSmith tracing |
+| `startup/`, `setup.py` | Resolve configuration and construct one coordinator |
 | `security/artifact_security/` | Scanner interface, baseline/Google implementations, factory, configuration and enforcement policy |
 | `security/guardrails.py` | Request, evidence, prompt-injection and output guardrails |
 | `evaluation/` | Golden, real-PR, live-model, campaign and release-gate evaluation |
 | `cli.py` | Command-line entry point |
-| `config.py`, `bootstrap.py` | Strict configuration schemas and dependency construction |
+| `config.py`, `setup.py` | Strict configuration schemas and dependency construction |
 
 Replaceable features use the same small shape: `interface.py` defines the contract,
 `implementations/` contains provider-specific code, `dependencies/` contains shared external helpers
 when needed, and `factory.py` selects an implementation from validated configuration. Ordinary domain
-and workflow modules remain direct files because they are application logic rather than provider choices.
+and workflow modules remain direct files because they contain one clear operation rather than a provider choice.
 
 Plain JSON is limited to provider, webhook, checkpoint and artifact boundaries. Those values are
 validated immediately into Pydantic models or named `TypedDict` contracts before application code
@@ -396,11 +398,11 @@ configuration, dispatch interfaces, the runtime and the call ledger.
 
 Keep the coordinator unchanged. Add a new strict application JSON, immutable repository inputs,
 ingested documents, graph snapshots, deployments with attestation, and reviewed golden cases.
-Implement a new deterministic scenario behind `ApprovedScenario` when the behavior differs.
+Implement a new deterministic scenario behind `BehaviorScenario` when the behavior differs.
 
 New tools implement the `Tool` protocol: canonical name, version fingerprint, Pydantic input,
 trusted agent allowlist, and one bounded `execute` operation. Register providers explicitly in
-bootstrap. JSON never imports arbitrary Python. Provider SDK retries must remain disabled so all
+setup. JSON never imports arbitrary Python. Provider SDK retries must remain disabled so all
 attempts pass through the shared ledger.
 
 The package can move to a separate repository. Replace the monorepo `tool.uv.sources` entry for

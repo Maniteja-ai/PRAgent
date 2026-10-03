@@ -9,7 +9,6 @@ from typing import Literal, NotRequired, TypedDict
 
 from pydantic import Field, TypeAdapter
 
-from trace_coordinator.application.mapping import verified_bytes
 from trace_coordinator.domain.contracts import (
     ArtifactPayload,
     JsonObject,
@@ -17,6 +16,7 @@ from trace_coordinator.domain.contracts import (
     as_json_value,
 )
 from trace_coordinator.domain.models import Record
+from trace_coordinator.ui_analysis.mapping import verified_bytes
 
 
 class ProductionGateConfig(Record):

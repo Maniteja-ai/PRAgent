@@ -11,10 +11,10 @@ from trace_coordinator import (
     HumanReviewPolicy,
     ReviewResponse,
 )
-from trace_coordinator.bootstrap import create_coordinator
 from trace_coordinator.decision_model.implementations.fixture import FixtureDecisionModel
 from trace_coordinator.domain.errors import RunMismatch, ToolFailure
 from trace_coordinator.domain.models import Evidence, ToolResult
+from trace_coordinator.setup import create_coordinator
 from trace_coordinator.tool.implementations.attestation import AttestationInput
 from trace_coordinator.tool.implementations.fixture import FixtureTool
 
@@ -340,7 +340,7 @@ def test_bootstrap_resolves_paths_against_config(tmp_path, monkeypatch):
 
 
 def test_crash_after_tool_completion_before_graph_checkpoint_uses_cached_result(tmp_path, monkeypatch):
-    from trace_coordinator.application.runtime import ToolRuntime
+    from trace_coordinator.analysis_workflow.execution import ToolRuntime
 
     class SimulatedCrash(BaseException):
         pass

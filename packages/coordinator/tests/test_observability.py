@@ -6,8 +6,8 @@ from pydantic import ValidationError
 
 from trace_coordinator.config import LangSmithObservability
 from trace_coordinator.domain.models import AnalysisRequest
-from trace_coordinator.infrastructure.ledger import CallLedger
-from trace_coordinator.infrastructure.observability import CoordinatorObservability, TraceSession
+from trace_coordinator.monitoring.langsmith import CoordinatorObservability, TraceSession
+from trace_coordinator.storage.call_ledger import CallLedger
 
 REQUEST = AnalysisRequest(
     project_id="saleor-storefront",
@@ -48,7 +48,7 @@ def test_missing_key_is_fail_open_and_audited(tmp_path, monkeypatch):
 
 
 def test_langsmith_callback_hides_content_and_uses_safe_metadata(monkeypatch):
-    from trace_coordinator.infrastructure import observability
+    from trace_coordinator.monitoring import langsmith as observability
 
     captured = {}
 

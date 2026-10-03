@@ -94,7 +94,7 @@ untrusted data. Secrets never enter checkpoints, reports or comments.
 
 ## 4. Additional behavioral scenarios
 
-Implement each scenario behind `ApprovedScenario` with its own JSON, requirement contracts,
+Implement each scenario behind `BehaviorScenario` with its own JSON, requirement contracts,
 fixture namespace, run ID and call budget. Do not append every check to the existing voucher
 scenario: it already uses five browser actions and five browser checks.
 

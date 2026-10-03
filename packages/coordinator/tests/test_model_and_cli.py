@@ -174,10 +174,10 @@ def test_structured_parser_failure_is_not_a_transient_provider_error():
 
 @pytest.mark.parametrize("sdk_parser", [False, True])
 def test_opt_in_invalid_output_retry_is_counted_and_strict(model_stubs, monkeypatch, tmp_path, sdk_parser):
-    from trace_coordinator.application.runtime import ToolRegistry, ToolRuntime
+    from trace_coordinator.analysis_workflow.execution import ToolRegistry, ToolRuntime
     from trace_coordinator.config import CallLimits
     from trace_coordinator.domain.models import ToolContext
-    from trace_coordinator.infrastructure.ledger import CallLedger
+    from trace_coordinator.storage.call_ledger import CallLedger
 
     adapter = LangChainDecisionModel(
         GeminiProvider(

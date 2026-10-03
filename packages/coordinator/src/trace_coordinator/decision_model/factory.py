@@ -7,11 +7,11 @@ from trace_coordinator.config import FixtureProvider, GeminiProvider, OpenAIProv
 from trace_coordinator.decision_model.implementations.fixture import FixtureDecisionModel
 from trace_coordinator.decision_model.interface import DecisionModel
 from trace_coordinator.domain.contracts import as_json_object
-from trace_coordinator.infrastructure.dependencies import BootstrapContext
+from trace_coordinator.startup import StartupContext
 
 
 class DecisionModelFactory:
-    def __init__(self, resources: ExitStack, context: BootstrapContext) -> None:
+    def __init__(self, resources: ExitStack, context: StartupContext) -> None:
         self.resources = resources
         self.context = context
 

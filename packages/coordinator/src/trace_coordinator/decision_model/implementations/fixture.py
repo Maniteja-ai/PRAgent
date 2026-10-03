@@ -4,7 +4,7 @@ from collections.abc import Mapping, Sequence
 
 from trace_coordinator.decision_model.interface import DecisionModel
 from trace_coordinator.domain.models import Decision
-from trace_coordinator.infrastructure.ledger import digest
+from trace_coordinator.storage.call_ledger import digest
 
 
 class FixtureDecisionModel(DecisionModel):

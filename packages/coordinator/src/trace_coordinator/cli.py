@@ -6,10 +6,10 @@ from pathlib import Path
 
 from pydantic import TypeAdapter
 
-from trace_coordinator.bootstrap import create_coordinator, create_response_formatter
 from trace_coordinator.config import schema
 from trace_coordinator.domain.contracts import AnalysisReportPayload, VerificationResultPayload
 from trace_coordinator.domain.models import AnalysisRequest, ReviewResponse
+from trace_coordinator.setup import create_coordinator, create_response_formatter
 
 
 def main() -> None:
@@ -76,7 +76,7 @@ def main() -> None:
     run.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.command == "production-schema":
-        from trace_coordinator.application.additional_behavior import additional_behavior_schema
+        from trace_coordinator.behavior_testing.additional_scenarios import additional_behavior_schema
         from trace_coordinator.config import runtime_schema, verification_policy_schema
         from trace_coordinator.domain.project import (
             application_schema,
@@ -89,7 +89,7 @@ def main() -> None:
         from trace_coordinator.evaluation.llm import live_llm_schema
         from trace_coordinator.evaluation.readiness import gate_schema
         from trace_coordinator.evaluation.real_pr import real_pr_dataset_schema
-        from trace_coordinator.infrastructure.github_webhook import webhook_schema
+        from trace_coordinator.github_integration import github_webhook_schema
 
         args.output_directory.mkdir(parents=True, exist_ok=True)
         for name, document in {
@@ -117,14 +117,14 @@ def main() -> None:
             json.dumps(real_pr_dataset_schema(), indent=2) + "\n", encoding="utf-8"
         )
         (args.output_directory / "github-webhook.schema.json").write_text(
-            json.dumps(webhook_schema(), indent=2) + "\n", encoding="utf-8"
+            json.dumps(github_webhook_schema(), indent=2) + "\n", encoding="utf-8"
         )
         (args.output_directory / "additional-behavior.schema.json").write_text(
             json.dumps(additional_behavior_schema(), indent=2) + "\n", encoding="utf-8"
         )
         return
     if args.command == "verify-additional":
-        from trace_coordinator.application.additional_behavior import run_additional_behavior
+        from trace_coordinator.behavior_testing.additional_scenarios import run_additional_behavior
 
         result = run_additional_behavior(args.config, args.run_id)
         args.output.mkdir(parents=True, exist_ok=True)
@@ -136,12 +136,12 @@ def main() -> None:
             import uvicorn
         except ImportError as exc:
             raise ValueError("Install the coordinator 'webhook' extra to serve HTTP") from exc
-        from trace_coordinator.infrastructure.github_webhook import create_webhook_app
+        from trace_coordinator.github_integration import create_webhook_app
 
         uvicorn.run(create_webhook_app(args.config), host=args.host, port=args.port)
         return
     if args.command == "webhook-run-once":
-        from trace_coordinator.infrastructure.github_webhook import run_next_job
+        from trace_coordinator.github_integration import run_next_job
 
         print(json.dumps(run_next_job(args.config)))
         return
@@ -200,7 +200,7 @@ def main() -> None:
         print(json.dumps({"status": result["status"], "output": str(args.output)}))
         return
     if args.command == "verify-voucher":
-        from trace_coordinator.application.verification import run_verification, verification_markdown
+        from trace_coordinator.behavior_testing.voucher_test import run_verification, verification_markdown
 
         result = run_verification(args.config, args.run_id)
         verification_result = TypeAdapter(VerificationResultPayload).validate_python(result)

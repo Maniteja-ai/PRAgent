@@ -3,12 +3,12 @@ import json
 import pytest
 
 from trace_coordinator import AnalysisRequest, CallLimits, Coordinator
-from trace_coordinator.application.ui_evidence import label_in_source, source_lines, ui_index
-from trace_coordinator.application.ui_exploration import ui_exploration_status
 from trace_coordinator.config import UIExplorationConfig
 from trace_coordinator.domain.models import Decision, Evidence, ToolResult
 from trace_coordinator.tool.implementations.browser import ActionInput, NavigateInput
 from trace_coordinator.tool.implementations.fixture import FixtureTool
+from trace_coordinator.ui_analysis.evidence import label_in_source, source_lines, ui_index
+from trace_coordinator.ui_analysis.exploration import ui_exploration_status
 
 
 def screen(ref, *, name="Product", fingerprint="home", previous=None):

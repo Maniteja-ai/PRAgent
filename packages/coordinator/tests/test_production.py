@@ -11,7 +11,7 @@ from trace_coordinator.evaluation.coordinator import (
     evaluate_stability,
 )
 from trace_coordinator.evaluation.readiness import ProductionGateConfig, gate_schema, run_gate
-from trace_coordinator.infrastructure.artifacts import save_artifact
+from trace_coordinator.storage.artifacts import save_artifact
 
 ROOT = Path(__file__).resolve().parents[1]
 

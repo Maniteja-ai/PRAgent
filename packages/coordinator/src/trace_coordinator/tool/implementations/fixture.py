@@ -3,7 +3,7 @@
 from pydantic import BaseModel, Field
 
 from trace_coordinator.domain.models import Record, ToolContext, ToolResult
-from trace_coordinator.infrastructure.ledger import digest
+from trace_coordinator.storage.call_ledger import digest
 
 
 class PRInput(Record):
