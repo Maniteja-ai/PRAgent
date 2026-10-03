@@ -42,8 +42,11 @@ trace-coordinator = "trace_coordinator.presentation.cli:main"
 [tool.hatch.build.targets.wheel]
 packages = ["src/trace_coordinator"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"configs/defaults/runtime.json" = "trace_coordinator/defaults/runtime.json"
+
 [tool.hatch.build.targets.sdist]
-include = ["src/trace_coordinator", "pyproject.toml"]
+include = ["src/trace_coordinator", "configs/defaults/runtime.json", "pyproject.toml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

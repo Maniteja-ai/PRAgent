@@ -3,6 +3,7 @@
 import json
 from functools import cache
 from importlib.resources import files
+from pathlib import Path
 from typing import Literal, cast
 
 from trace_coordinator.domain.contracts import JsonObject, as_json_object
@@ -10,8 +11,13 @@ from trace_coordinator.domain.contracts import JsonObject, as_json_object
 
 @cache
 def runtime_defaults() -> JsonObject:
-    resource = files("trace_coordinator.resources").joinpath("runtime-defaults.json")
-    return as_json_object(json.loads(resource.read_text(encoding="utf-8")))
+    packaged = files("trace_coordinator").joinpath("defaults", "runtime.json")
+    try:
+        document = packaged.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        source = Path(__file__).resolve().parents[2] / "configs/defaults/runtime.json"
+        document = source.read_text(encoding="utf-8")
+    return as_json_object(json.loads(document))
 
 
 def default_int(section: str, name: str) -> int:

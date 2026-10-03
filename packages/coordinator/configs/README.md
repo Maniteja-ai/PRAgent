@@ -11,7 +11,7 @@ flowchart TD
     MAIN --> OVERRIDE["Runtime override<br/>only changed operational values"]
     MAIN --> VERIFY["Verification policy<br/>approved scenarios selected by changed paths"]
 
-    DEFAULTS["Packaged runtime defaults<br/>calls + retries + timeouts + guardrails"] --> EFFECTIVE["Validated effective runtime"]
+    DEFAULTS["defaults/runtime.json<br/>calls + retries + timeouts + guardrails"] --> EFFECTIVE["Validated effective runtime"]
     OVERRIDE --> EFFECTIVE
 
     APP --> GRAPH["Graph config<br/>Neo4j snapshots"]
@@ -42,7 +42,7 @@ flowchart TD
 | [`graph/`](graph/) | Baseline and patched Neo4j graph snapshots | You generate a new code graph |
 | [`retrieval/`](retrieval/) | Ingestion run, vector store and optional reranker/selector | You switch knowledge data or retrieval strategy |
 | [`ui/`](ui/) | UI provider, start path, readiness checks and allowed controls | You use another browser adapter or UI |
-| [`runtime-defaults.json`](../src/trace_coordinator/resources/runtime-defaults.json) | Default calls, retries, timeouts and guardrails | The product-wide safe defaults change |
+| [`defaults/runtime.json`](defaults/runtime.json) | Default calls, retries, timeouts and guardrails | The product-wide safe defaults change |
 | [`runtime/`](runtime/) | Small deployment-specific overrides | One run needs different limits, DLP or observability |
 | [`verification/saleor-policy.json`](verification/saleor-policy.json) | Approved scenario catalog and changed-path selection | You add or select a behavior scenario |
 | [`verification/`](verification/) | Approved test data, browser steps and deterministic assertions | Product behavior or test data changes |
@@ -56,7 +56,7 @@ flowchart TD
 ## How runtime settings are resolved
 
 ```text
-runtime-defaults.json
+defaults/runtime.json
         +
 optional runtime/<name>.json overrides
         ↓
@@ -64,7 +64,7 @@ validated RuntimeConfig used by the coordinator
 ```
 
 For example, [`runtime/standard.json`](runtime/standard.json) changes only four values. Every omitted
-value comes from `runtime-defaults.json`. Unknown properties and invalid values are rejected by the
+value comes from `defaults/runtime.json`. Unknown properties and invalid values are rejected by the
 JSON schemas before the run starts.
 
 ## Simple presentation order

@@ -97,7 +97,7 @@ def test_runtime_schema_and_standard_example_match():
 
 def test_packaged_runtime_defaults_are_valid_and_complete():
     schema_document = json.loads((ROOT / "schemas/runtime.schema.json").read_text(encoding="utf-8"))
-    defaults_path = ROOT / "src/trace_coordinator/resources/runtime-defaults.json"
+    defaults_path = ROOT / "configs/defaults/runtime.json"
     document = json.loads(defaults_path.read_text(encoding="utf-8"))
     assert document == runtime_defaults()
     jsonschema.validate(document, schema_document)

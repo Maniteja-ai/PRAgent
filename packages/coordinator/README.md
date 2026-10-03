@@ -41,7 +41,7 @@ description of every configuration group.
 | [graph/saleor.json](configs/graph/saleor.json) | Neo4j graph snapshots |
 | [retrieval/saleor.json](configs/retrieval/saleor.json) | Ingestion run, vector store and ranking stages |
 | [ui/saleor.json](configs/ui/saleor.json) | Playwright startup and allowed UI actions |
-| [runtime-defaults.json](src/trace_coordinator/resources/runtime-defaults.json) | One source for call, retry, timeout and guardrail defaults |
+| [defaults/runtime.json](configs/defaults/runtime.json) | One source for call, retry, timeout and guardrail defaults |
 | [standard.json](configs/runtime/standard.json) | Only the operational values this deployment overrides |
 | [saleor-policy.json](configs/verification/saleor-policy.json) | Approved verification scenarios |
 | [saleor-voucher.json](configs/verification/saleor-voucher.json) | Approved voucher test data, UI controls, assertions and requirement contracts |
@@ -61,8 +61,8 @@ never stored in these files or reports.
 files. `runtime_config_file` contains optional operational overrides; omitting it applies the same
 safe typed defaults. `ui_exploration` controls bounded UI discovery before analysis.
 
-The packaged `runtime-defaults.json` is the single source for call limits, retries, timeouts and
-guardrails. Runtime files contain only deployment-specific overrides. The same values are
+The `configs/defaults/runtime.json` file is the single source for call limits, retries, timeouts
+and guardrails. Runtime files contain only deployment-specific overrides. The same values are
 published in `runtime.schema.json`, so JSON-aware editors show them without copying them into every
 config.
 
