@@ -198,6 +198,19 @@
       "title": "DisabledDlp",
       "type": "object"
     },
+    "DisabledObservability": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "const": "disabled",
+          "default": "disabled",
+          "title": "Provider",
+          "type": "string"
+        }
+      },
+      "title": "DisabledObservability",
+      "type": "object"
+    },
     "ExplorationConfig": {
       "additionalProperties": false,
       "properties": {
@@ -471,6 +484,102 @@
       "title": "HumanReviewPolicy",
       "type": "object"
     },
+    "LangSmithObservability": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "const": "langsmith",
+          "title": "Provider",
+          "type": "string"
+        },
+        "project": {
+          "default": "testsigma-impact-agent-demo",
+          "description": "LangSmith project receiving the coordinator trace.",
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Project",
+          "type": "string"
+        },
+        "api_key_env": {
+          "default": "LANGSMITH_API_KEY",
+          "description": "Environment variable containing the LangSmith API key.",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "title": "Api Key Env",
+          "type": "string"
+        },
+        "endpoint_env": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional environment variable containing a self-hosted or regional API URL.",
+          "title": "Endpoint Env"
+        },
+        "workspace_id_env": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional workspace ID environment variable for multi-workspace API keys.",
+          "title": "Workspace Id Env"
+        },
+        "dashboard_url": {
+          "default": "https://smith.langchain.com",
+          "description": "Safe user-facing dashboard link written to reports; no credential is appended.",
+          "maxLength": 500,
+          "pattern": "^https://[^\\s]+$",
+          "title": "Dashboard Url",
+          "type": "string"
+        },
+        "capture_content": {
+          "const": false,
+          "default": false,
+          "description": "Coordinator traces always hide graph inputs and outputs so code, retrieved text, DOM, review answers and credentials are not uploaded.",
+          "title": "Capture Content",
+          "type": "boolean"
+        },
+        "sampling_rate": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Sampling Rate",
+          "type": "number"
+        },
+        "flush_timeout_seconds": {
+          "default": 2.0,
+          "description": "Best-effort shutdown wait; tracing failures never change workflow status.",
+          "maximum": 10,
+          "minimum": 0,
+          "title": "Flush Timeout Seconds",
+          "type": "number"
+        },
+        "request_timeout_seconds": {
+          "default": 1.0,
+          "description": "Short provider connect/read timeout so telemetry cannot materially delay analysis.",
+          "maximum": 5,
+          "minimum": 0.1,
+          "title": "Request Timeout Seconds",
+          "type": "number"
+        }
+      },
+      "required": [
+        "provider"
+      ],
+      "title": "LangSmithObservability",
+      "type": "object"
+    },
     "LiveProvider": {
       "additionalProperties": false,
       "properties": {
@@ -655,6 +764,25 @@
     },
     "artifact_security": {
       "$ref": "#/$defs/ArtifactSecurityConfig"
+    },
+    "observability": {
+      "description": "Optional fail-open execution tracing. SQLite remains the audit source of truth.",
+      "discriminator": {
+        "mapping": {
+          "disabled": "#/$defs/DisabledObservability",
+          "langsmith": "#/$defs/LangSmithObservability"
+        },
+        "propertyName": "provider"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/DisabledObservability"
+        },
+        {
+          "$ref": "#/$defs/LangSmithObservability"
+        }
+      ],
+      "title": "Observability"
     },
     "model": {
       "discriminator": {

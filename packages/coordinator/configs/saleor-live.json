@@ -41,5 +41,15 @@
     "policy": "non_blocking",
     "allow_follow_up_verification": true
   },
+  "observability": {
+    "provider": "langsmith",
+    "project": "testsigma-impact-agent-demo",
+    "api_key_env": "LANGSMITH_API_KEY",
+    "dashboard_url": "https://smith.langchain.com",
+    "capture_content": false,
+    "sampling_rate": 1.0,
+    "flush_timeout_seconds": 2.0,
+    "request_timeout_seconds": 1.0
+  },
   "state_directory": "../runs"
 }

@@ -47,6 +47,41 @@ Schema, so an editor can provide completion, allowed values, descriptions and va
 Credentials are read from named environment variables through the referenced `.env`; they are
 never stored in these files or reports.
 
+## Optional LangSmith observability
+
+The coordinator can send the LangGraph execution tree, node timing and safe run coordinates to
+LangSmith. SQLite checkpoints, the call ledger, evidence hashes and generated reports remain the
+authoritative audit record. LangSmith is an optional visualization layer and an outage never
+changes the analysis or verification result.
+
+`saleor-live.json` enables the provider with safe defaults:
+
+```json
+"observability": {
+  "provider": "langsmith",
+  "project": "testsigma-impact-agent-demo",
+  "api_key_env": "LANGSMITH_API_KEY",
+  "dashboard_url": "https://smith.langchain.com",
+  "capture_content": false,
+  "sampling_rate": 1.0,
+  "flush_timeout_seconds": 2.0,
+  "request_timeout_seconds": 1.0
+}
+```
+
+Put `LANGSMITH_API_KEY` in the referenced `.env` file and run the normal coordinator command. The
+report contains the project, root trace ID, dashboard link and local observability audit event.
+No global tracing environment switch is required because the callback is attached only to this
+graph invocation. Inputs and outputs are forcibly hidden, so PR code, retrieved documents, DOM,
+questions and review answers are excluded. The schema rejects `capture_content: true`.
+
+If the key is absent, initialization fails or trace delivery is unavailable, the report records
+`UNAVAILABLE` or best-effort delivery and the coordinator continues. Provider requests use no
+automatic retries and a short configurable timeout. Set the provider to
+`{"provider":"disabled"}` to make no LangSmith client at all. `endpoint_env` and
+`workspace_id_env` support regional, self-hosted and multi-workspace setups without putting those
+values directly in the execution JSON.
+
 Use [saleor-live.json](configs/saleor-live.json) only for open-ended UI discovery. Its exploration
 agent shares the same five-call model ceiling as final analysis. The production profile disables
 discovery because reviewed UI mappings already exist and preserves the budget for deterministic
@@ -303,7 +338,7 @@ Current evidence:
 - [100-run coordinator stability](artifacts/coordinator-stability-01/report.md): 100/100, one output;
 - [final evaluation campaign](artifacts/final-evaluation-01/report.md): 17/17 checks passed with stated limits;
 - [production release gate](artifacts/production-readiness-04/report.md): `READY`;
-- current test suite: **258 passed**; Python 3.14/Windows measured **90.11%** combined
+- current test suite: **267 passed**; Python 3.14/Windows measured **90.35%** combined
   statement/branch coverage, while Python 3.12/Linux measured **87.40%** because Playwright
   calls run in a worker thread; CI keeps every module in scope and enforces the portable **87%** floor;
 - replay: the same run ID produced a byte-identical report with no new calls;
@@ -330,6 +365,7 @@ Current evidence:
 | `additional_behavior.py` | Bounded Saleor API behavior oracles |
 | `campaign.py` | Cross-system evaluation gates and honest scope classification |
 | `readiness.py` | Machine-readable production release gate |
+| `observability.py` | Optional content-safe, fail-open LangSmith callback and trace audit |
 | `api.py`, `bootstrap.py`, `cli.py` | Public API, adapter construction and commands |
 
 ## Add another repository or scenario

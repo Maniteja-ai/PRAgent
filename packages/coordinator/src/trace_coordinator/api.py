@@ -19,6 +19,7 @@ from trace_coordinator.errors import RunMismatch
 from trace_coordinator.guardrails import GuardrailEngine
 from trace_coordinator.ledger import CallLedger, canonical, digest
 from trace_coordinator.models import AnalysisRequest, ReviewResponse, ToolContext
+from trace_coordinator.observability import CoordinatorObservability
 from trace_coordinator.runtime import ToolRegistry, ToolRuntime
 from trace_coordinator.verification_stage import VerificationStage
 from trace_coordinator.workflow import WORKFLOW_VERSION, build_workflow
@@ -37,6 +38,7 @@ class Coordinator:
         human_review=None,
         scenarios=(),
         guardrails=None,
+        observability=None,
     ):
         self.directory = Path(state_directory).resolve()
         self.directory.mkdir(parents=True, exist_ok=True)
@@ -47,6 +49,7 @@ class Coordinator:
             VerificationPolicy.model_validate(verification or {}), scenarios, self.directory
         )
         self.guardrails = GuardrailEngine(guardrails)
+        self.observability = observability or CoordinatorObservability()
         for agent, overrides in limits.overrides.items():
             # Foundation has one stable agent; worker-generated names cannot reset quotas.
             approved_tools = {name for scenario in scenarios for name in scenario.required_calls}
@@ -69,6 +72,7 @@ class Coordinator:
                 "human_review": self.human_review.model_dump(mode="json"),
                 "model": self.model.version,
                 "guardrails": self.guardrails.version,
+                "observability": self.observability.fingerprint,
                 "tools": {
                     name: {
                         "version": tool.version,
@@ -132,10 +136,22 @@ class Coordinator:
                         "configurable": {"thread_id": run_id},
                         "recursion_limit": 30 + 4 * self.limits.max_rounds,
                     }
+                    trace = self.observability.start(
+                        run_id=run_id,
+                        request=request,
+                        workflow_version=WORKFLOW_VERSION,
+                        execution_metadata={
+                            "run_kind": "analysis",
+                            "human_review_policy": self.human_review.policy,
+                            "verification_enabled": str(self.verification.policy.enabled).lower(),
+                            "exploration_enabled": str(self.exploration.enabled).lower(),
+                        },
+                    )
+                    config.update(trace.graph_options())
                     snapshot = graph.get_state(config)
                     if snapshot.values and not snapshot.next:
                         if review is not None:
-                            return self._follow_up_verification(
+                            result = self._follow_up_verification(
                                 run_id,
                                 fingerprint,
                                 ReviewResponse.model_validate(review),
@@ -143,11 +159,17 @@ class Coordinator:
                                 saver,
                                 runtime,
                                 context,
+                                request,
                             )
-                        return snapshot.values["report"]
+                            return result
+                        return self.observability.attach(
+                            self.ledger, run_id, snapshot.values["report"], trace
+                        )
                     pending = [i.value for task in snapshot.tasks for i in task.interrupts]
                     if pending and review is None:
-                        return self._waiting(run_id, pending)
+                        return self.observability.attach(
+                            self.ledger, run_id, self._waiting(run_id, pending), trace
+                        )
                     if review is not None and not pending:
                         raise RunMismatch("This run is not waiting for human review")
                     if review is not None:
@@ -158,13 +180,23 @@ class Coordinator:
                         value = self._initial_state(request)
                     result = graph.invoke(value, config)
                     if result.get("__interrupt__"):
-                        return self._waiting(run_id, [item.value for item in result["__interrupt__"]])
-                    return result["report"]
+                        output = self._waiting(run_id, [item.value for item in result["__interrupt__"]])
+                    else:
+                        output = result["report"]
+                    return self.observability.attach(self.ledger, run_id, output, trace)
                 finally:
                     connection.commit()
 
     def _follow_up_verification(
-        self, parent_run_id, parent_fingerprint, review, parent_state, saver, runtime, context
+        self,
+        parent_run_id,
+        parent_fingerprint,
+        review,
+        parent_state,
+        saver,
+        runtime,
+        context,
+        request,
     ):
         parent_report = parent_state["report"]
         review_section = parent_report.get("human_review", {})
@@ -216,6 +248,17 @@ class Coordinator:
             "configurable": {"thread_id": follow_up_run_id},
             "recursion_limit": 30 + 4 * self.limits.max_rounds,
         }
+        trace = self.observability.start(
+            run_id=follow_up_run_id,
+            request=request,
+            workflow_version=WORKFLOW_VERSION,
+            execution_metadata={
+                "run_kind": "follow_up_verification",
+                "parent_run_id": parent_run_id,
+                "human_review_outcome": outcome.lower(),
+            },
+        )
+        config.update(trace.graph_options())
         snapshot = graph.get_state(config)
         if snapshot.values and not snapshot.next:
             report = snapshot.values["report"]
@@ -282,7 +325,7 @@ class Coordinator:
             linked["completeness"] = "PARTIAL"
         linked["tool_usage"] = self.ledger.usage(parent_run_id)
         linked["audit_events"] = self.ledger.events(parent_run_id)
-        return linked
+        return self.observability.attach(self.ledger, follow_up_run_id, linked, trace)
 
     def _waiting(self, run_id, pending):
         return {

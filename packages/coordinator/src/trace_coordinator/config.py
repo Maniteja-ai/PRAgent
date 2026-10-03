@@ -148,6 +148,61 @@ class HumanReviewPolicy(Record):
     )
 
 
+class DisabledObservability(Record):
+    provider: Literal["disabled"] = "disabled"
+
+
+class LangSmithObservability(Record):
+    provider: Literal["langsmith"]
+    project: str = Field(
+        default="testsigma-impact-agent-demo",
+        min_length=1,
+        max_length=200,
+        description="LangSmith project receiving the coordinator trace.",
+    )
+    api_key_env: str = Field(
+        default="LANGSMITH_API_KEY",
+        pattern=r"^[A-Za-z_][A-Za-z0-9_]*$",
+        description="Environment variable containing the LangSmith API key.",
+    )
+    endpoint_env: str | None = Field(
+        default=None,
+        pattern=r"^[A-Za-z_][A-Za-z0-9_]*$",
+        description="Optional environment variable containing a self-hosted or regional API URL.",
+    )
+    workspace_id_env: str | None = Field(
+        default=None,
+        pattern=r"^[A-Za-z_][A-Za-z0-9_]*$",
+        description="Optional workspace ID environment variable for multi-workspace API keys.",
+    )
+    dashboard_url: str = Field(
+        default="https://smith.langchain.com",
+        pattern=r"^https://[^\s]+$",
+        max_length=500,
+        description="Safe user-facing dashboard link written to reports; no credential is appended.",
+    )
+    capture_content: Literal[False] = Field(
+        default=False,
+        description=(
+            "Coordinator traces always hide graph inputs and outputs so code, retrieved text, DOM, "
+            "review answers and credentials are not uploaded."
+        ),
+    )
+    sampling_rate: float = Field(default=1.0, gt=0, le=1)
+    flush_timeout_seconds: float = Field(
+        default=2.0,
+        ge=0,
+        le=10,
+        description="Best-effort shutdown wait; tracing failures never change workflow status.",
+    )
+    request_timeout_seconds: float = Field(
+        default=1.0,
+        ge=0.1,
+        le=5,
+        description="Short provider connect/read timeout so telemetry cannot materially delay analysis.",
+    )
+
+
 class CoordinatorConfig(Record):
     schema_reference: str | None = Field(default=None, alias="$schema", exclude=True)
     schema_version: Literal[1] = 1
@@ -157,6 +212,11 @@ class CoordinatorConfig(Record):
     human_review: HumanReviewPolicy = Field(default_factory=HumanReviewPolicy)
     guardrails: GuardrailPolicy = Field(default_factory=GuardrailPolicy)
     artifact_security: ArtifactSecurityConfig = Field(default_factory=ArtifactSecurityConfig)
+    observability: DisabledObservability | LangSmithObservability = Field(
+        default_factory=DisabledObservability,
+        discriminator="provider",
+        description="Optional fail-open execution tracing. SQLite remains the audit source of truth.",
+    )
     model: FixtureProvider | GeminiProvider | OpenAIProvider = Field(discriminator="provider")
     tools: FixtureProvider | LiveProvider = Field(discriminator="provider")
     env_file: str | None = Field(

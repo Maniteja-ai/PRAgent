@@ -2260,8 +2260,10 @@ dependencies = [
     { name = "httpx" },
     { name = "langgraph" },
     { name = "langgraph-checkpoint-sqlite" },
+    { name = "langsmith" },
     { name = "pydantic" },
     { name = "python-dotenv" },
+    { name = "urllib3" },
 ]
 
 [package.optional-dependencies]
@@ -2304,11 +2306,13 @@ requires-dist = [
     { name = "langchain-openai", marker = "extra == 'openai'", specifier = ">=1,<2" },
     { name = "langgraph", specifier = ">=1,<2" },
     { name = "langgraph-checkpoint-sqlite", specifier = ">=3,<4" },
+    { name = "langsmith", specifier = ">=0.14,<1" },
     { name = "playwright", marker = "extra == 'browser'", specifier = ">=1.55,<2" },
     { name = "pydantic", specifier = ">=2.12,<3" },
     { name = "pyjwt", extras = ["crypto"], marker = "extra == 'webhook'", specifier = ">=2.10,<3" },
     { name = "python-dotenv", specifier = ">=1.1,<2" },
     { name = "trace-impact", extras = ["gemini", "vector"], marker = "extra == 'knowledge'", editable = "../../" },
+    { name = "urllib3", specifier = ">=2,<3" },
     { name = "uvicorn", marker = "extra == 'webhook'", specifier = ">=0.34,<1" },
 ]
 provides-extras = ["gemini", "openai", "browser", "knowledge", "dlp", "webhook"]

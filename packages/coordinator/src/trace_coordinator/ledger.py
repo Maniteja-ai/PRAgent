@@ -179,3 +179,11 @@ class CallLedger:
                     "SELECT kind,detail,created FROM events WHERE run=? ORDER BY id", (run,)
                 )
             ]
+
+    def latest_event(self, run: str, kind: str):
+        with self.connect() as db:
+            row = db.execute(
+                "SELECT kind,detail,created FROM events WHERE run=? AND kind=? ORDER BY id DESC LIMIT 1",
+                (run, kind),
+            ).fetchone()
+            return dict(row) if row else None

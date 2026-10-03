@@ -11,6 +11,20 @@ from trace_coordinator.models import AnalysisRequest, ReviewResponse
 
 def markdown(report):
     lines = ["# PR impact report", "", f"Status: {report['status']}", ""]
+    observability = report.get("observability")
+    if observability:
+        lines.extend(
+            [
+                "## Observability",
+                "",
+                f"Provider: {observability['provider']}; status: {observability['status']}.",
+                f"Project: {observability['project']}",
+                f"Trace ID: {observability.get('trace_id') or 'not available'}",
+                f"Dashboard: {observability['dashboard_url']}",
+                "Content capture: disabled",
+                "",
+            ]
+        )
     review = report.get("human_review", {})
     if review.get("requests"):
         lines.extend(["## Human review", "", f"Outcome: {review['status']}", ""])

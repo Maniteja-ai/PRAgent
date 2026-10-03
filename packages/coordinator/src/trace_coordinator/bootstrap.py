@@ -8,6 +8,7 @@ from trace_coordinator.adapters.fixtures import FixtureModel, FixtureTool
 from trace_coordinator.api import Coordinator
 from trace_coordinator.artifact_security import artifact_security
 from trace_coordinator.config import load_config
+from trace_coordinator.observability import CoordinatorObservability
 
 
 @contextmanager
@@ -99,4 +100,5 @@ def create_coordinator(config_path: Path):
             human_review=config.human_review,
             scenarios=scenarios,
             guardrails=config.guardrails,
+            observability=CoordinatorObservability(config.observability),
         )
