@@ -31,6 +31,9 @@ builds attest successfully, and configured behavior verification completes.
 
 ## JSON configuration
 
+See the one-page [configuration map](configs/README.md) for the complete file flow and a simple
+description of every configuration group.
+
 | File | Purpose |
 | --- | --- |
 | [saleor-verified.json](configs/saleor-verified.json) | Model, application, runtime policy, review and verification selection |
