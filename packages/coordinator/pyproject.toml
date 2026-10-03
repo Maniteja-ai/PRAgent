@@ -19,7 +19,7 @@ dependencies = [
 gemini = ["langchain-google-genai>=4,<5"]
 openai = ["langchain-openai>=1,<2"]
 browser = ["playwright>=1.55,<2"]
-knowledge = ["trace-impact[gemini,vector]==0.4.0"]
+knowledge = ["trace-impact[gemini,vector]==0.5.0"]
 dlp = ["google-cloud-dlp>=3,<4"]
 webhook = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "PyJWT[crypto]>=2.10,<3"]
 
