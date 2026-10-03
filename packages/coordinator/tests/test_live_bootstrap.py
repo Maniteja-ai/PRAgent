@@ -85,7 +85,7 @@ def test_live_composition_routes_entry_captures_and_cleans_up(
         app["change_source"] = {"provider": "github"}
     (tmp_path / "app.json").write_text(json.dumps(app))
     config = json.loads((ROOT / "configs/saleor-live.json").read_text())
-    config["tools"]["application_file"] = "app.json"
+    config["tool_provider"]["application_config_file"] = "app.json"
     config["env_file"] = "local.env"
     config["state_directory"] = "state"
     if verification_enabled:

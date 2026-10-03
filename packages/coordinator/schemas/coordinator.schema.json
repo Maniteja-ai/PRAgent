@@ -211,60 +211,6 @@
       "title": "DisabledObservability",
       "type": "object"
     },
-    "ExplorationConfig": {
-      "additionalProperties": false,
-      "properties": {
-        "enabled": {
-          "default": false,
-          "title": "Enabled",
-          "type": "boolean"
-        },
-        "environment": {
-          "default": "patched",
-          "enum": [
-            "baseline",
-            "patched"
-          ],
-          "title": "Environment",
-          "type": "string"
-        },
-        "goal": {
-          "default": "Explore the UI affected by the change using observed controls.",
-          "maxLength": 2000,
-          "minLength": 1,
-          "title": "Goal",
-          "type": "string"
-        },
-        "target_controls": {
-          "default": [],
-          "description": "Stop discovery when any exact accessible control name is observed. Observation is not a behavior check.",
-          "items": {
-            "type": "string"
-          },
-          "maxItems": 20,
-          "title": "Target Controls",
-          "type": "array"
-        },
-        "max_steps": {
-          "default": 4,
-          "description": "Maximum proposed exploration actions. Model/tool attempt limits still apply; one model attempt is reserved for reporting.",
-          "maximum": 10,
-          "minimum": 1,
-          "title": "Max Steps",
-          "type": "integer"
-        },
-        "max_state_visits": {
-          "default": 2,
-          "description": "Stop when the latest meaningful screen fingerprint has been captured this many times.",
-          "maximum": 5,
-          "minimum": 1,
-          "title": "Max State Visits",
-          "type": "integer"
-        }
-      },
-      "title": "ExplorationConfig",
-      "type": "object"
-    },
     "FixtureProvider": {
       "additionalProperties": false,
       "properties": {
@@ -580,7 +526,7 @@
       "title": "LangSmithObservability",
       "type": "object"
     },
-    "LiveProvider": {
+    "LiveToolProvider": {
       "additionalProperties": false,
       "properties": {
         "provider": {
@@ -588,17 +534,18 @@
           "title": "Provider",
           "type": "string"
         },
-        "application_file": {
+        "application_config_file": {
+          "description": "Application configuration file relative to this coordinator configuration.",
           "minLength": 1,
-          "title": "Application File",
+          "title": "Application Config File",
           "type": "string"
         }
       },
       "required": [
         "provider",
-        "application_file"
+        "application_config_file"
       ],
-      "title": "LiveProvider",
+      "title": "LiveToolProvider",
       "type": "object"
     },
     "OpenAIProvider": {
@@ -695,6 +642,60 @@
       "title": "ScenarioBinding",
       "type": "object"
     },
+    "UIExplorationConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "environment": {
+          "default": "patched",
+          "enum": [
+            "baseline",
+            "patched"
+          ],
+          "title": "Environment",
+          "type": "string"
+        },
+        "goal": {
+          "default": "Explore the UI affected by the change using observed controls.",
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Goal",
+          "type": "string"
+        },
+        "target_controls": {
+          "default": [],
+          "description": "Stop discovery when any exact accessible control name is observed. Observation is not a behavior check.",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Target Controls",
+          "type": "array"
+        },
+        "max_steps": {
+          "default": 4,
+          "description": "Maximum proposed UI exploration actions. Model/tool attempt limits still apply; one model attempt is reserved for reporting.",
+          "maximum": 10,
+          "minimum": 1,
+          "title": "Max Steps",
+          "type": "integer"
+        },
+        "max_state_visits": {
+          "default": 2,
+          "description": "Stop when the latest meaningful screen fingerprint has been captured this many times.",
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Max State Visits",
+          "type": "integer"
+        }
+      },
+      "title": "UIExplorationConfig",
+      "type": "object"
+    },
     "VerificationPolicy": {
       "additionalProperties": false,
       "properties": {
@@ -750,8 +751,8 @@
     "limits": {
       "$ref": "#/$defs/CallLimits"
     },
-    "exploration": {
-      "$ref": "#/$defs/ExplorationConfig"
+    "ui_exploration": {
+      "$ref": "#/$defs/UIExplorationConfig"
     },
     "verification": {
       "$ref": "#/$defs/VerificationPolicy"
@@ -806,11 +807,11 @@
       ],
       "title": "Model"
     },
-    "tools": {
+    "tool_provider": {
       "discriminator": {
         "mapping": {
           "fixture": "#/$defs/FixtureProvider",
-          "live": "#/$defs/LiveProvider"
+          "live": "#/$defs/LiveToolProvider"
         },
         "propertyName": "provider"
       },
@@ -819,10 +820,10 @@
           "$ref": "#/$defs/FixtureProvider"
         },
         {
-          "$ref": "#/$defs/LiveProvider"
+          "$ref": "#/$defs/LiveToolProvider"
         }
       ],
-      "title": "Tools"
+      "title": "Tool Provider"
     },
     "env_file": {
       "anyOf": [
@@ -846,7 +847,7 @@
   },
   "required": [
     "model",
-    "tools"
+    "tool_provider"
   ],
   "title": "PR impact coordinator",
   "type": "object",

@@ -6,7 +6,7 @@ from typing import Literal
 
 from pydantic import TypeAdapter, ValidationError
 
-from trace_coordinator.application.exploration import screens
+from trace_coordinator.application.ui_exploration import screens
 from trace_coordinator.domain.contracts import (
     EvidencePayload,
     ObservedPathPayload,

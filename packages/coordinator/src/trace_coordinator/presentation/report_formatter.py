@@ -62,13 +62,13 @@ def markdown(report: AnalysisReportPayload) -> str:
         lines.append("")
     elif behavior and report.get("verification_plan", {}).get("reason"):
         lines.extend(["Verification not run: " + report["verification_plan"]["reason"], ""])
-    exploration = report.get("exploration", {})
-    if exploration.get("status") not in {None, "DISABLED"}:
+    ui_exploration = report.get("ui_exploration", {})
+    if ui_exploration.get("status") not in {None, "DISABLED"}:
         lines.extend(
             [
-                "## Browser exploration",
+                "## UI exploration",
                 "",
-                f"Outcome: {exploration['status']}; environment: {exploration['environment']}; action proposals: {exploration['steps']}.",
+                f"Outcome: {ui_exploration['status']}; environment: {ui_exploration['environment']}; action proposals: {ui_exploration['steps']}.",
                 "",
             ]
         )

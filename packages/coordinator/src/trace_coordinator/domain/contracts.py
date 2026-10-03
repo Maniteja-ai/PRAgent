@@ -218,7 +218,7 @@ class ToolDescriptionPayload(TypedDict):
     arguments: JsonObject
 
 
-class ExplorationContextPayload(TypedDict):
+class UIExplorationContextPayload(TypedDict):
     enabled: bool
     environment: Literal["baseline", "patched"]
     goal: str
@@ -241,7 +241,7 @@ class ModelContextPayload(TypedDict, total=False):
     validation_errors: list[str]
     previous_findings: list[FindingPayload]
     phase: str
-    exploration: ExplorationContextPayload
+    ui_exploration: UIExplorationContextPayload
     approved_verification: JsonObject
     latest_snapshot_id: str
 
@@ -346,7 +346,7 @@ class GuardrailAuditPayload(TypedDict):
     counts: dict[str, int]
 
 
-class ExplorationReportPayload(TypedDict):
+class UIExplorationReportPayload(TypedDict):
     status: str
     environment: Literal["baseline", "patched"]
     goal: str | None
@@ -409,7 +409,7 @@ class AnalysisReportPayload(TypedDict, total=False):
     behavior_verification: VerificationResultPayload
     runtime_attestation: RuntimeAttestationPayload
     model_guardrails: ModelGuardrailsPayload
-    exploration: ExplorationReportPayload
+    ui_exploration: UIExplorationReportPayload
     ui_knowledge: UIKnowledgePayload
     follow_up: JsonObject
     observability: JsonObject

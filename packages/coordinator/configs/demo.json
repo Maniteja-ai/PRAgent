@@ -12,6 +12,6 @@
     "retry_delay_seconds": 1
   },
   "model": {"provider": "fixture", "file": "../examples/voucher-fixture.json"},
-  "tools": {"provider": "fixture", "file": "../examples/voucher-fixture.json"},
+  "tool_provider": {"provider": "fixture", "file": "../examples/voucher-fixture.json"},
   "state_directory": "../runs"
 }

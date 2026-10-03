@@ -207,7 +207,7 @@ def test_cli_generates_schema_and_reports(tmp_path, monkeypatch, capsys):
     assert json.loads(output_schema.read_text(encoding="utf-8"))["title"] == "PR impact coordinator"
     config = json.loads((ROOT / "configs/demo.json").read_text(encoding="utf-8"))
     config["state_directory"] = str(tmp_path / "state")
-    for part in ("tools", "model"):
+    for part in ("tool_provider", "model"):
         config[part]["file"] = str(ROOT / "examples/voucher-fixture.json")
     selected = tmp_path / "config.json"
     selected.write_text(json.dumps(config), encoding="utf-8")

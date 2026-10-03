@@ -3,9 +3,9 @@ import json
 import pytest
 
 from trace_coordinator import AnalysisRequest, CallLimits, Coordinator
-from trace_coordinator.application.exploration import exploration_status
 from trace_coordinator.application.ui_evidence import label_in_source, source_lines, ui_index
-from trace_coordinator.config import ExplorationConfig
+from trace_coordinator.application.ui_exploration import ui_exploration_status
+from trace_coordinator.config import UIExplorationConfig
 from trace_coordinator.domain.models import Decision, Evidence, ToolResult
 from trace_coordinator.infrastructure.adapters.browser import ActionInput, NavigateInput
 from trace_coordinator.infrastructure.adapters.fixtures import FixtureTool
@@ -44,7 +44,7 @@ def screen(ref, *, name="Product", fingerprint="home", previous=None):
         ({}, {}, "NO_OBSERVATION"),
         ({"evidence": {"s": screen("s", name="Promo code")}}, {}, "TARGET_OBSERVED"),
         ({"evidence": {"s": screen("s"), "t": screen("t")}}, {}, "REPEATED_STATE"),
-        ({"exploration_steps": 4}, {}, "STEP_LIMIT"),
+        ({"ui_exploration_steps": 4}, {}, "STEP_LIMIT"),
         ({"rounds": 9}, {}, "REPORT_BUDGET_RESERVED"),
         (
             {"usage": [{"agent": "coordinator", "tool": "model.decide", "attempts": 4}]},
@@ -59,12 +59,12 @@ def screen(ref, *, name="Product", fingerprint="home", previous=None):
         ({"evidence": {"s": screen("s")}}, {}, "ACTIVE"),
     ],
 )
-def test_exploration_bounds(state, options, expected):
+def test_ui_exploration_bounds(state, options, expected):
     initial = {"evidence": {"s": screen("s")}}
     if expected == "NO_OBSERVATION":
         initial = {}
-    policy = ExplorationConfig(enabled=True, target_controls=("Promo code",)).model_copy(update=options)
-    assert exploration_status({**initial, **state}, policy, CallLimits(), "coordinator") == expected
+    policy = UIExplorationConfig(enabled=True, target_controls=("Promo code",)).model_copy(update=options)
+    assert ui_exploration_status({**initial, **state}, policy, CallLimits(), "coordinator") == expected
 
 
 @pytest.mark.parametrize("reach_target", [False, True])
@@ -100,7 +100,7 @@ def test_workflow_discovers_controls_and_reserves_report_attempt(tmp_path, reach
 
         def decide(self, payload):
             decisions.append(payload["phase"])
-            if payload["phase"] == "exploration":
+            if payload["phase"] == "ui_exploration":
                 assert len(payload["evidence"]) == 1
                 assert payload["latest_snapshot_id"] in payload["evidence"]
                 assert all(t["name"].startswith("browser.") for t in payload["tools"])
@@ -140,13 +140,13 @@ def test_workflow_discovers_controls_and_reserves_report_attempt(tmp_path, reach
         CallLimits(),
         tools,
         Model(),
-        exploration=ExplorationConfig(enabled=True, target_controls=("Promo code",)),
+        ui_exploration=UIExplorationConfig(enabled=True, target_controls=("Promo code",)),
     )
     result = coordinator.run(AnalysisRequest(project_id="p", repository="owner/repo", pull_request=1), "run")
     assert result["status"] == "COMPLETED"
     assert decisions[-1] == "analysis"
     assert len(decisions) == (2 if reach_target else 5)
-    assert result["exploration"]["status"] == ("TARGET_OBSERVED" if reach_target else "STEP_LIMIT")
+    assert result["ui_exploration"]["status"] == ("TARGET_OBSERVED" if reach_target else "STEP_LIMIT")
     assert all(r["attempts"] <= 5 for r in result["tool_usage"])
     assert result["ui_knowledge"]["discovered_paths"]
     assert (
@@ -208,14 +208,18 @@ def test_no_invented_flow_across_restart_or_environments():
     assert not result["code_ui_candidates"]
 
 
-def test_exploration_report_explains_paths_and_unconfirmed_candidates():
+def test_ui_exploration_report_explains_paths_and_unconfirmed_candidates():
     from trace_coordinator.presentation.report_formatter import markdown
 
     result = markdown(
         {
             "status": "COMPLETED",
             "tool_usage": [],
-            "exploration": {"status": "TARGET_OBSERVED", "environment": "patched", "steps": 2},
+            "ui_exploration": {
+                "status": "TARGET_OBSERVED",
+                "environment": "patched",
+                "steps": 2,
+            },
             "ui_knowledge": {
                 "discovered_paths": [
                     {

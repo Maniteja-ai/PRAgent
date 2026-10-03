@@ -71,7 +71,7 @@
       "type": "string"
     },
     "report_sha256": {
-      "description": "Pins the reviewed exploration report.",
+      "description": "Pins the reviewed UI exploration report.",
       "pattern": "^[a-f0-9]{64}$",
       "title": "Report Sha256",
       "type": "string"

@@ -6,7 +6,7 @@ from typing import Literal, TypeAlias
 
 from pydantic import TypeAdapter, ValidationError
 
-from trace_coordinator.config import CallLimits, ExplorationConfig
+from trace_coordinator.config import CallLimits, UIExplorationConfig
 from trace_coordinator.domain.contracts import EvidencePayload, ScreenPayload
 from trace_coordinator.domain.state import AnalysisState
 
@@ -39,9 +39,9 @@ def screens(
     return found
 
 
-def exploration_status(
+def ui_exploration_status(
     state: AnalysisState,
-    policy: ExplorationConfig,
+    policy: UIExplorationConfig,
     limits: CallLimits,
     agent: str,
 ) -> ExplorationStatus:
@@ -60,7 +60,7 @@ def exploration_status(
         and sum(s.get("state_fingerprint") == fingerprint for _, s in observed) >= policy.max_state_visits
     ):
         return "REPEATED_STATE"
-    if state.get("exploration_steps", 0) >= policy.max_steps:
+    if state.get("ui_exploration_steps", 0) >= policy.max_steps:
         return "STEP_LIMIT"
     usage = state.get("usage", [])
     used_model = sum(r["attempts"] for r in usage if r["agent"] == agent and r["tool"] == "model.decide")

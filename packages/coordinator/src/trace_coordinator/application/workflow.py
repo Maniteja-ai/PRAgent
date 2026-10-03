@@ -9,20 +9,20 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Checkpointer, interrupt
 from pydantic import ValidationError
 
-from trace_coordinator.application.exploration import exploration_status, screens
 from trace_coordinator.application.runtime import ToolRuntime
 from trace_coordinator.application.ui_evidence import ui_index
+from trace_coordinator.application.ui_exploration import screens, ui_exploration_status
 from trace_coordinator.application.verification_stage import VerificationStage, skipped
-from trace_coordinator.config import ExplorationConfig, HumanReviewPolicy
+from trace_coordinator.config import HumanReviewPolicy, UIExplorationConfig
 from trace_coordinator.domain.contracts import (
     AnalysisReportPayload,
     DecisionPayload,
-    ExplorationContextPayload,
     FindingPayload,
     JsonObject,
     ModelContextPayload,
     ReviewRequestPayload,
     RuntimeAttestationPayload,
+    UIExplorationContextPayload,
 )
 from trace_coordinator.domain.errors import LimitReached, ToolFailure, UncertainExecution
 from trace_coordinator.domain.models import ChangeSet, Decision, Evidence, ReviewResponse, ToolContext
@@ -36,7 +36,7 @@ def build_workflow(
     runtime: ToolRuntime,
     context: ToolContext,
     checkpointer: Checkpointer,
-    exploration: ExplorationConfig,
+    ui_exploration: UIExplorationConfig,
     verification: VerificationStage,
     human_review_policy: HumanReviewPolicy,
 ) -> CompiledStateGraph[AnalysisState, None, AnalysisState, AnalysisState]:
@@ -138,15 +138,15 @@ def build_workflow(
         if state["rounds"] >= limits.max_rounds:
             return stopped(state, LimitReached("Reasoning round limit reached"))
         next_round = state["rounds"] + 1
-        exploration_context: ExplorationContextPayload = {
-            "enabled": exploration.enabled,
-            "environment": exploration.environment,
-            "goal": exploration.goal,
-            "target_controls": list(exploration.target_controls),
-            "max_steps": exploration.max_steps,
-            "max_state_visits": exploration.max_state_visits,
-            "status": state.get("exploration_status", "DISABLED"),
-            "steps": state.get("exploration_steps", 0),
+        ui_exploration_context: UIExplorationContextPayload = {
+            "enabled": ui_exploration.enabled,
+            "environment": ui_exploration.environment,
+            "goal": ui_exploration.goal,
+            "target_controls": list(ui_exploration.target_controls),
+            "max_steps": ui_exploration.max_steps,
+            "max_state_visits": ui_exploration.max_state_visits,
+            "status": state.get("ui_exploration_status", "DISABLED"),
+            "steps": state.get("ui_exploration_steps", 0),
         }
         payload: ModelContextPayload = {
             "request": state["request"],
@@ -164,9 +164,9 @@ def build_workflow(
             "validation_errors": state.get("validation_errors", []),
             "previous_findings": state.get("decision", {}).get("findings", []),
             "phase": state.get("phase", "analysis"),
-            "exploration": exploration_context,
+            "ui_exploration": ui_exploration_context,
         }
-        if verification.policy.enabled and state.get("phase") != "exploration":
+        if verification.policy.enabled and state.get("phase") != "ui_exploration":
             payload["tools"] = [
                 t
                 for t in payload["tools"]
@@ -184,10 +184,10 @@ def build_workflow(
                     for s in verification.scenarios.values()
                 ],
             }
-        if state.get("phase") == "exploration":
+        if state.get("phase") == "ui_exploration":
             # The explorer needs the current screen, not stale controls from every
             # earlier capture. Full evidence remains checkpointed for analysis.
-            current_id, _ = screens(state["evidence"], exploration.environment)[-1]
+            current_id, _ = screens(state["evidence"], ui_exploration.environment)[-1]
             payload["evidence"] = {current_id: state["evidence"][current_id]}
             payload["latest_snapshot_id"] = current_id
             payload["tools"] = [t for t in payload["tools"] if t["name"].startswith("browser.")]
@@ -232,14 +232,21 @@ def build_workflow(
             if verification.policy.enabled and (
                 tool_name.startswith("fixture.")
                 or tool_name == "browser.check"
-                or (state.get("phase") != "exploration" and tool_name in {"browser.act", "browser.navigate"})
+                or (
+                    state.get("phase") != "ui_exploration"
+                    and tool_name in {"browser.act", "browser.navigate"}
+                )
             ):
                 raise ToolFailure("Verification actions are reserved for the approved scenario stage")
-            if exploration.enabled and state.get("phase") == "analysis" and tool_name.startswith("browser."):
+            if (
+                ui_exploration.enabled
+                and state.get("phase") == "analysis"
+                and tool_name.startswith("browser.")
+            ):
                 raise ToolFailure("Browser exploration has ended; report its recorded scope and gaps")
-            if state.get("phase") == "exploration" and (
+            if state.get("phase") == "ui_exploration" and (
                 tool_name not in {"browser.navigate", "browser.observe", "browser.act"}
-                or decision.arguments.get("environment") != exploration.environment
+                or decision.arguments.get("environment") != ui_exploration.environment
             ):
                 raise ToolFailure("Exploration requires a browser tool in its configured environment")
             result = runtime.call_tool(
@@ -249,15 +256,15 @@ def build_workflow(
                 "evidence": merge_evidence(state["evidence"], result.evidence),
                 "gaps": [*state["gaps"], *result.gaps],
                 "usage": runtime.ledger.usage(context.run_id),
-                "exploration_steps": state.get("exploration_steps", 0)
-                + (state.get("phase") == "exploration"),
+                "ui_exploration_steps": state.get("ui_exploration_steps", 0)
+                + (state.get("phase") == "ui_exploration"),
             }
         except ToolFailure as exc:
             return {
                 "gaps": [*state["gaps"], str(exc)],
                 "usage": runtime.ledger.usage(context.run_id),
-                "exploration_steps": state.get("exploration_steps", 0)
-                + (state.get("phase") == "exploration"),
+                "ui_exploration_steps": state.get("ui_exploration_steps", 0)
+                + (state.get("phase") == "ui_exploration"),
             }
         except (LimitReached, UncertainExecution) as exc:
             return stopped(state, exc)
@@ -404,10 +411,10 @@ def build_workflow(
                 ),
             )
         gaps = list(dict.fromkeys(state.get("gaps", [])))
-        if exploration.enabled:
+        if ui_exploration.enabled:
             gaps.append(
-                "Browser exploration: "
-                + state.get("exploration_status", "NOT_EXPLORED")
+                "UI exploration: "
+                + state.get("ui_exploration_status", "NOT_EXPLORED")
                 + "; observed controls do not establish a passing behavioral test."
             )
         behavior = state.get("verification_result", skipped("Analysis did not reach verification"))
@@ -524,11 +531,11 @@ def build_workflow(
                 "events": guardrail_events,
                 "policy_fingerprint": runtime.guardrails.version.split(":", 1)[1],
             },
-            "exploration": {
-                "status": state.get("exploration_status", "DISABLED"),
-                "environment": exploration.environment,
-                "goal": exploration.goal if exploration.enabled else None,
-                "steps": state.get("exploration_steps", 0),
+            "ui_exploration": {
+                "status": state.get("ui_exploration_status", "DISABLED"),
+                "environment": ui_exploration.environment,
+                "goal": ui_exploration.goal if ui_exploration.enabled else None,
+                "steps": state.get("ui_exploration_steps", 0),
             },
             "ui_knowledge": ui_index(state.get("evidence", {})),
         }
@@ -641,23 +648,26 @@ def build_workflow(
     def continue_to(target: str) -> Callable[[AnalysisState], str]:
         return lambda state: "finalize" if state.get("stop_reason") else target
 
-    def prepare_exploration(state: AnalysisState) -> AnalysisState:
-        status = exploration_status(state, exploration, limits, context.agent_id)
-        if "browser.navigate" not in runtime.registry.tools and exploration.enabled:
+    def prepare_ui_exploration(state: AnalysisState) -> AnalysisState:
+        status = ui_exploration_status(state, ui_exploration, limits, context.agent_id)
+        if "browser.navigate" not in runtime.registry.tools and ui_exploration.enabled:
             status = "NO_BROWSER"
-        return {"exploration_status": status, "phase": "exploration" if status == "ACTIVE" else "analysis"}
+        return {
+            "ui_exploration_status": status,
+            "phase": "ui_exploration" if status == "ACTIVE" else "analysis",
+        }
 
-    def finish_exploration(state: AnalysisState) -> AnalysisState:
+    def finish_ui_exploration(state: AnalysisState) -> AnalysisState:
         return {
             "phase": "analysis",
-            "exploration_status": "MODEL_STOPPED",
+            "ui_exploration_status": "MODEL_STOPPED",
             "usage": runtime.ledger.usage(context.run_id),
         }
 
     def after_action(state: AnalysisState) -> str:
         if state.get("stop_reason"):
             return "finalize"
-        return "prepare_exploration" if state.get("phase") == "exploration" else "reason"
+        return "prepare_ui_exploration" if state.get("phase") == "ui_exploration" else "reason"
 
     def after_review(state: AnalysisState) -> str:
         if human_review_policy.policy == "non_blocking":
@@ -667,8 +677,8 @@ def build_workflow(
     def route_decision(state: AnalysisState) -> str:
         if state.get("stop_reason"):
             return "finalize"
-        if state.get("phase") == "exploration" and state["decision"]["action"] == "finish":
-            return "finish_exploration"
+        if state.get("phase") == "ui_exploration" and state["decision"]["action"] == "finish":
+            return "finish_ui_exploration"
         return {"tool": "execute_tool", "review": "human_review", "finish": "validate_findings"}[
             state["decision"]["action"]
         ]
@@ -679,8 +689,8 @@ def build_workflow(
         ("attest_deployments", attest_deployments),
         ("retrieve", retrieve),
         ("observe_entries", observe_entries),
-        ("prepare_exploration", prepare_exploration),
-        ("finish_exploration", finish_exploration),
+        ("prepare_ui_exploration", prepare_ui_exploration),
+        ("finish_ui_exploration", finish_ui_exploration),
         ("reason", reason),
         ("execute_tool", execute_tool),
         ("validate_findings", validate_findings),
@@ -695,9 +705,9 @@ def build_workflow(
     builder.add_conditional_edges("fetch_changes", continue_to("attest_deployments"))
     builder.add_conditional_edges("attest_deployments", continue_to("retrieve"))
     builder.add_conditional_edges("retrieve", continue_to("observe_entries"))
-    builder.add_conditional_edges("observe_entries", continue_to("prepare_exploration"))
-    builder.add_edge("prepare_exploration", "reason")
-    builder.add_edge("finish_exploration", "reason")
+    builder.add_conditional_edges("observe_entries", continue_to("prepare_ui_exploration"))
+    builder.add_edge("prepare_ui_exploration", "reason")
+    builder.add_edge("finish_ui_exploration", "reason")
     builder.add_conditional_edges("reason", route_decision)
     builder.add_conditional_edges("execute_tool", after_action)
     builder.add_conditional_edges("human_review", after_review)

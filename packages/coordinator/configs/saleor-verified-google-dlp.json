@@ -44,7 +44,7 @@
     "unsupported_action": "block",
     "max_bytes": 1000000
   },
-  "exploration": {
+  "ui_exploration": {
     "enabled": false,
     "environment": "patched",
     "goal": "Discover a product-to-cart-to-checkout journey and observe the voucher controls. Prefer a product without variant choices when possible. Do not submit an order.",
@@ -61,7 +61,10 @@
     "max_input_chars": 120000,
     "retry_invalid_response": true
   },
-  "tools": {"provider": "live", "application_file": "saleor-application.json"},
+  "tool_provider": {
+    "provider": "live",
+    "application_config_file": "saleor-application.json"
+  },
   "state_directory": "../runs-google-dlp",
   "human_review": {
     "policy": "non_blocking",

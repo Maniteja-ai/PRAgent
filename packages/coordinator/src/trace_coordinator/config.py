@@ -76,12 +76,15 @@ class OpenAIProvider(ModelProvider):
     provider: Literal["openai"]
 
 
-class LiveProvider(Record):
+class LiveToolProvider(Record):
     provider: Literal["live"]
-    application_file: str = Field(min_length=1)
+    application_config_file: str = Field(
+        min_length=1,
+        description="Application configuration file relative to this coordinator configuration.",
+    )
 
 
-class ExplorationConfig(Record):
+class UIExplorationConfig(Record):
     enabled: bool = False
     environment: Literal["baseline", "patched"] = "patched"
     goal: str = Field(
@@ -98,7 +101,7 @@ class ExplorationConfig(Record):
         default=4,
         ge=1,
         le=10,
-        description="Maximum proposed exploration actions. Model/tool attempt limits still apply; one model attempt is reserved for reporting.",
+        description="Maximum proposed UI exploration actions. Model/tool attempt limits still apply; one model attempt is reserved for reporting.",
     )
     max_state_visits: int = Field(
         default=2,
@@ -211,7 +214,7 @@ class CoordinatorConfig(Record):
     schema_reference: str | None = Field(default=None, alias="$schema", exclude=True)
     schema_version: Literal[1] = 1
     limits: CallLimits = Field(default_factory=CallLimits)
-    exploration: ExplorationConfig = Field(default_factory=ExplorationConfig)
+    ui_exploration: UIExplorationConfig = Field(default_factory=UIExplorationConfig)
     verification: VerificationPolicy = Field(default_factory=VerificationPolicy)
     human_review: HumanReviewPolicy = Field(default_factory=HumanReviewPolicy)
     guardrails: GuardrailPolicy = Field(default_factory=GuardrailPolicy)
@@ -222,7 +225,7 @@ class CoordinatorConfig(Record):
         description="Optional fail-open execution tracing. SQLite remains the audit source of truth.",
     )
     model: FixtureProvider | GeminiProvider | OpenAIProvider = Field(discriminator="provider")
-    tools: FixtureProvider | LiveProvider = Field(discriminator="provider")
+    tool_provider: FixtureProvider | LiveToolProvider = Field(discriminator="provider")
     env_file: str | None = Field(
         default=None, description="Optional dotenv path relative to this config; never copied to reports."
     )

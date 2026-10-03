@@ -44,7 +44,9 @@ class MappingConfig(Record):
     provider: Literal["typescript_jsx"] = "typescript_jsx"
     application_file: str
     report_file: str
-    report_sha256: str = Field(pattern=r"^[a-f0-9]{64}$", description="Pins the reviewed exploration report.")
+    report_sha256: str = Field(
+        pattern=r"^[a-f0-9]{64}$", description="Pins the reviewed UI exploration report."
+    )
     code_config_file: str
     env_file: str
     output_directory: str

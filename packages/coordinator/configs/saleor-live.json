@@ -20,7 +20,7 @@
     "output_sensitive_action": "block",
     "max_findings_per_call": 100
   },
-  "exploration": {
+  "ui_exploration": {
     "enabled": true,
     "environment": "patched",
     "goal": "Discover a product-to-cart-to-checkout journey and observe the voucher controls. Prefer a product without variant choices when possible. Do not submit an order.",
@@ -36,7 +36,10 @@
     "max_output_tokens": 4000,
     "max_input_chars": 120000
   },
-  "tools": {"provider": "live", "application_file": "saleor-application.json"},
+  "tool_provider": {
+    "provider": "live",
+    "application_config_file": "saleor-application.json"
+  },
   "human_review": {
     "policy": "non_blocking",
     "allow_follow_up_verification": true

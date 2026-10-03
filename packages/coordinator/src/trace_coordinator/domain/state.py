@@ -33,8 +33,8 @@ class AnalysisState(TypedDict, total=False):
     validation_repairs: int
     validation_errors: list[str]
     phase: str
-    exploration_steps: int
-    exploration_status: str
+    ui_exploration_steps: int
+    ui_exploration_status: str
     verification_plan: VerificationPlanPayload
     verification_result: VerificationResultPayload
     verification_approved: bool

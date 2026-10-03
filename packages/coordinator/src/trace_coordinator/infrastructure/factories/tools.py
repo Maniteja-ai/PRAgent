@@ -4,7 +4,7 @@ import json
 from contextlib import ExitStack
 
 from trace_coordinator.application.interfaces import Tool
-from trace_coordinator.config import FixtureProvider, LiveProvider
+from trace_coordinator.config import FixtureProvider, LiveToolProvider
 from trace_coordinator.domain.contracts import as_json_object
 from trace_coordinator.domain.project import ApplicationConfig
 from trace_coordinator.infrastructure.adapters.fixtures import FixtureTool
@@ -16,7 +16,7 @@ class ToolFactory:
         self.resources = resources
         self.context = context
 
-    def create(self, config: FixtureProvider | LiveProvider) -> list[Tool]:
+    def create(self, config: FixtureProvider | LiveToolProvider) -> list[Tool]:
         if config.provider == "fixture":
             return self._fixture_tools(config)
         return self._live_tools(self.context.require_application())

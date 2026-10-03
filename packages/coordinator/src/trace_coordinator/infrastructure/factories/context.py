@@ -21,8 +21,8 @@ class BootstrapContext:
     def create(cls, config_path: Path, config: CoordinatorConfig) -> BootstrapContext:
         resolved = config_path.resolve()
         application = (
-            load_application(resolved.parent / config.tools.application_file)
-            if config.tools.provider == "live"
+            load_application(resolved.parent / config.tool_provider.application_config_file)
+            if config.tool_provider.provider == "live"
             else None
         )
         return cls(

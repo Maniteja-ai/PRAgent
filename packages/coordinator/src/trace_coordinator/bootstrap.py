@@ -27,7 +27,7 @@ def create_coordinator(config_path: Path) -> Iterator[Coordinator]:
     with ExitStack() as resources:
         context = BootstrapContext.create(path, config)
         resources.enter_context(artifact_security(context.state_directory, config.artifact_security))
-        tools = ToolFactory(resources, context).create(config.tools)
+        tools = ToolFactory(resources, context).create(config.tool_provider)
         model = ModelFactory(resources, context).create(config.model)
         scenarios = ScenarioFactory(context).create(config.verification)
         yield Coordinator(
@@ -35,7 +35,7 @@ def create_coordinator(config_path: Path) -> Iterator[Coordinator]:
             config.limits,
             tools,
             model,
-            exploration=config.exploration,
+            ui_exploration=config.ui_exploration,
             verification=config.verification,
             human_review=config.human_review,
             scenarios=scenarios,

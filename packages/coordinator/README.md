@@ -47,6 +47,10 @@ Schema, so an editor can provide completion, allowed values, descriptions and va
 Credentials are read from named environment variables through the referenced `.env`; they are
 never stored in these files or reports.
 
+`ui_exploration` configures bounded browser discovery before analysis. `tool_provider` chooses
+fixture or live tool adapters; a live provider reads repository, retrieval and browser settings
+from `application_config_file`.
+
 ## Optional LangSmith observability
 
 The coordinator can send the LangGraph execution tree, node timing and safe run coordinates to
@@ -82,10 +86,10 @@ automatic retries and a short configurable timeout. Set the provider to
 `workspace_id_env` support regional, self-hosted and multi-workspace setups without putting those
 values directly in the execution JSON.
 
-Use [saleor-live.json](configs/saleor-live.json) only for open-ended UI discovery. Its exploration
-agent shares the same five-call model ceiling as final analysis. The production profile disables
-discovery because reviewed UI mappings already exist and preserves the budget for deterministic
-verification.
+Use [saleor-live.json](configs/saleor-live.json) only for open-ended UI discovery. Its UI
+exploration stage shares the same five-call model ceiling as final analysis. The production profile
+disables UI exploration because reviewed UI mappings already exist and preserves the budget for
+deterministic verification.
 
 ## Run it
 

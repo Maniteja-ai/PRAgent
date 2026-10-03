@@ -67,7 +67,7 @@ def _context(case: LiveLLMCase, evidence: tuple[Evidence, ...]) -> JsonObject:
             "validation_errors": [],
             "previous_findings": [],
             "phase": "analysis",
-            "exploration": {"enabled": False, "status": "DISABLED", "steps": 0},
+            "ui_exploration": {"enabled": False, "status": "DISABLED", "steps": 0},
         }
     )
 

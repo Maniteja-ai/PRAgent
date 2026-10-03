@@ -18,8 +18,8 @@ from trace_coordinator.application.verification_stage import ApprovedScenario, V
 from trace_coordinator.application.workflow import WORKFLOW_VERSION, build_workflow
 from trace_coordinator.config import (
     CallLimits,
-    ExplorationConfig,
     HumanReviewPolicy,
+    UIExplorationConfig,
     VerificationPolicy,
 )
 from trace_coordinator.domain.contracts import AnalysisReportPayload, JsonObject, as_json_object
@@ -39,7 +39,7 @@ class Coordinator:
         tools: Sequence[Tool],
         model: DecisionModel,
         *,
-        exploration: ExplorationConfig | None = None,
+        ui_exploration: UIExplorationConfig | None = None,
         verification: VerificationPolicy | None = None,
         human_review: HumanReviewPolicy | None = None,
         scenarios: Sequence[ApprovedScenario] = (),
@@ -49,7 +49,7 @@ class Coordinator:
         self.directory = Path(state_directory).resolve()
         self.directory.mkdir(parents=True, exist_ok=True)
         self.limits, self.registry, self.model = limits, ToolRegistry(list(tools)), model
-        self.exploration = ExplorationConfig.model_validate(exploration or {})
+        self.ui_exploration = UIExplorationConfig.model_validate(ui_exploration or {})
         self.human_review = HumanReviewPolicy.model_validate(human_review or {})
         self.verification = VerificationStage(
             VerificationPolicy.model_validate(verification or {}), scenarios, self.directory
@@ -73,7 +73,7 @@ class Coordinator:
                 "workflow": WORKFLOW_VERSION,
                 "request": request.model_dump(mode="json"),
                 "limits": self.limits.model_dump(mode="json"),
-                "exploration": self.exploration.model_dump(mode="json"),
+                "ui_exploration": self.ui_exploration.model_dump(mode="json"),
                 "verification": self.verification.fingerprint,
                 "human_review": self.human_review.model_dump(mode="json"),
                 "model": self.model.version,
@@ -139,7 +139,7 @@ class Coordinator:
                         runtime,
                         context,
                         saver,
-                        self.exploration,
+                        self.ui_exploration,
                         self.verification,
                         self.human_review,
                     )
@@ -155,7 +155,7 @@ class Coordinator:
                             "run_kind": "analysis",
                             "human_review_policy": self.human_review.policy,
                             "verification_enabled": str(self.verification.policy.enabled).lower(),
-                            "exploration_enabled": str(self.exploration.enabled).lower(),
+                            "ui_exploration_enabled": str(self.ui_exploration.enabled).lower(),
                         },
                     )
                     config.update(trace.graph_options())
@@ -256,7 +256,7 @@ class Coordinator:
             runtime,
             context,
             saver,
-            self.exploration,
+            self.ui_exploration,
             self.verification,
             self.human_review,
         )
