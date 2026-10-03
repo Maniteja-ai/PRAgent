@@ -11,7 +11,7 @@ from trace_coordinator.domain.models import AnalysisRequest, Evidence, ToolResul
 from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel, FixtureTool
 
 ROOT = Path(__file__).resolve().parents[1]
-FIXTURE = json.loads((ROOT / "examples/voucher-fixture.json").read_text())
+FIXTURE = json.loads((ROOT / "tests/fixtures/coordinator/voucher-analysis.json").read_text())
 
 
 @pytest.mark.parametrize("browser_failure", [False, True])
@@ -121,7 +121,8 @@ def test_live_composition_routes_entry_captures_and_cleans_up(
 
         assert os.environ["TRACE_TEST_BOOTSTRAP"] == "loaded"
         report = coordinator.run(
-            AnalysisRequest.model_validate_json((ROOT / "examples/request.json").read_text()), "integration"
+            AnalysisRequest.model_validate_json((ROOT / "tests/fixtures/requests/demo.json").read_text()),
+            "integration",
         )
     assert report["status"] == "COMPLETED"
     assert calls == [("browser.navigate", "baseline"), ("browser.navigate", "patched")]

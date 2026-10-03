@@ -1,0 +1,10 @@
+{
+  "$schema": "../../../schemas/coordinator.schema.json",
+  "schema_version": 1,
+  "tool_fixture_file": "../coordinator/voucher-analysis.json",
+  "model": {
+    "provider": "fixture",
+    "file": "../coordinator/voucher-analysis.json"
+  },
+  "state_directory": "../../../runs"
+}

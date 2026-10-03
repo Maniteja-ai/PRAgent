@@ -25,7 +25,7 @@ This deterministic path needs no credentials, browser, Neo4j, vector store, or m
 ```powershell
 cd packages/coordinator
 uv sync --locked
-uv run --no-sync trace-coordinator run configs/demo.json examples/request.json `
+uv run --no-sync trace-coordinator run tests/fixtures/configs/demo.json tests/fixtures/requests/demo.json `
   --run-id reviewer-demo --output artifacts/reviewer-demo
 Get-Content artifacts/reviewer-demo/report.md
 ```

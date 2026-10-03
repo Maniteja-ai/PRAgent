@@ -61,7 +61,7 @@ def test_runtime_file_resolves_calls_retries_and_timeouts():
 
 
 def test_omitting_runtime_file_applies_safe_defaults():
-    config = load_config(ROOT / "configs/demo.json")
+    config = load_config(ROOT / "tests/fixtures/configs/demo.json")
     assert config.limits.per_agent_tool == 5
     assert config.limits.total_calls == 30
     assert config.limits.max_rounds == 10
@@ -72,6 +72,20 @@ def test_omitting_runtime_file_applies_safe_defaults():
     assert config.limits.max_run_seconds == 900
     assert config.guardrails.enabled is True
     assert config.observability.provider == "disabled"
+
+
+def test_production_config_directory_contains_no_fixture_providers():
+    for path in (ROOT / "configs").glob("*.json"):
+        document = json.loads(path.read_text(encoding="utf-8"))
+        assert "tool_fixture_file" not in document
+        assert document.get("model", {}).get("provider") != "fixture"
+
+
+def test_offline_fixture_profiles_are_isolated_and_loadable():
+    fixture_root = ROOT / "tests/fixtures/configs"
+    for name in ("demo.json", "limit-demo.json"):
+        config = load_config(fixture_root / name)
+        assert config.tool_provider.provider == "fixture"
 
 
 def test_runtime_schema_and_standard_example_match():

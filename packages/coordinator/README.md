@@ -44,11 +44,12 @@ description of every configuration group.
 | [runtime-defaults.json](src/trace_coordinator/resources/runtime-defaults.json) | One source for call, retry, timeout and guardrail defaults |
 | [standard.json](configs/runtime/standard.json) | Only the operational values this deployment overrides |
 | [saleor-policy.json](configs/verification/saleor-policy.json) | Approved verification scenarios |
-| [saleor-voucher.json](configs/verification/saleor-voucher.json) | Voucher fixtures, UI controls, assertions and requirement contracts |
+| [saleor-voucher.json](configs/verification/saleor-voucher.json) | Approved voucher test data, UI controls, assertions and requirement contracts |
 | [real-pr-v2](evaluation/real-pr-v2/README.md) | Frozen real-PR ground truth, review process and metric definitions |
 | [saleor.json](configs/webhook/saleor.json) | Signed webhook intake, durable queue and optional PR comment |
 | [google-dlp.example.json](configs/security/google-dlp.example.json) | Fail-closed Google DLP policy fragment for stored artifacts |
-| [saleor-request.json](examples/saleor-request.json) | Project, PR label and analysis question |
+| [saleor.json](examples/requests/saleor.json) | Live Saleor project, PR label and analysis question |
+| [tests/fixtures](tests/fixtures/README.md) | Clearly isolated synthetic replay data and offline demo configuration |
 | [production-gate.json](configs/release/production-gate.json) | Required live outcomes, test count, coverage and evaluation gates |
 
 All models reject unknown fields. `$schema` links each editable JSON file to a generated JSON
@@ -115,7 +116,7 @@ uv run --no-sync playwright install chromium
 
 uv run --no-sync trace-coordinator run `
   configs/saleor-verified.json `
-  examples/saleor-request.json `
+  examples/requests/saleor.json `
   --run-id my-saleor-analysis `
   --output artifacts/my-saleor-analysis
 ```

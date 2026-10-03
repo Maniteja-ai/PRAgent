@@ -35,7 +35,7 @@ jobs:
           uv venv /tmp/coordinator-core --python 3.12
           uv pip install --python /tmp/coordinator-core/bin/python dist/*.whl
           /tmp/coordinator-core/bin/python -c "import importlib.resources, importlib.util, trace_coordinator; assert importlib.util.find_spec('trace_impact') is None; assert importlib.resources.files('trace_coordinator').joinpath('py.typed').is_file()"
-          /tmp/coordinator-core/bin/trace-coordinator run configs/demo.json examples/request.json --run-id isolated-core --output artifacts/isolated-core
+          /tmp/coordinator-core/bin/trace-coordinator run tests/fixtures/configs/demo.json tests/fixtures/requests/demo.json --run-id isolated-core --output artifacts/isolated-core
       - uses: actions/upload-artifact@v4
         if: always()
         with:

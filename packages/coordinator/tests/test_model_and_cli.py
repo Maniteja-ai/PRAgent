@@ -205,11 +205,11 @@ def test_cli_generates_schema_and_reports(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(sys, "argv", ["trace-coordinator", "schema", str(output_schema)])
     main()
     assert json.loads(output_schema.read_text(encoding="utf-8"))["title"] == "PR impact coordinator"
-    config = json.loads((ROOT / "configs/demo.json").read_text(encoding="utf-8"))
+    config = json.loads((ROOT / "tests/fixtures/configs/demo.json").read_text(encoding="utf-8"))
     config["state_directory"] = str(tmp_path / "state")
     config.pop("runtime_config_file", None)
-    config["tool_fixture_file"] = str(ROOT / "examples/voucher-fixture.json")
-    config["model"]["file"] = str(ROOT / "examples/voucher-fixture.json")
+    config["tool_fixture_file"] = str(ROOT / "tests/fixtures/coordinator/voucher-analysis.json")
+    config["model"]["file"] = str(ROOT / "tests/fixtures/coordinator/voucher-analysis.json")
     selected = tmp_path / "config.json"
     selected.write_text(json.dumps(config), encoding="utf-8")
     monkeypatch.setattr(
@@ -219,7 +219,7 @@ def test_cli_generates_schema_and_reports(tmp_path, monkeypatch, capsys):
             "trace-coordinator",
             "run",
             str(selected),
-            str(ROOT / "examples/request.json"),
+            str(ROOT / "tests/fixtures/requests/demo.json"),
             "--run-id",
             "cli-test",
             "--output",

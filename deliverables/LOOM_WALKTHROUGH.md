@@ -41,7 +41,7 @@ Then show the command:
 
 ```powershell
 cd packages/coordinator
-uv run --no-sync trace-coordinator run configs/saleor-verified.json examples/saleor-request.json --run-id loom-demo --output artifacts/loom-demo
+uv run --no-sync trace-coordinator run configs/saleor-verified.json examples/requests/saleor.json --run-id loom-demo --output artifacts/loom-demo
 ```
 
 Use the already completed `submission-pr-1199-02` report if a new live run would take too long. Explain that both deployments attest their source revisions and share a backend. The baseline displays voucher controls but does not apply the eligible code; the patched build applies the 10% voucher and removes it successfully.

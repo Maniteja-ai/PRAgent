@@ -18,7 +18,7 @@ flowchart TD
     APP --> RETRIEVAL["Retrieval config<br/>Qdrant + ranking stages"]
     APP --> UI["UI config<br/>Playwright permissions and readiness"]
 
-    VERIFY --> SCENARIOS["Scenario configs<br/>fixtures + actions + assertions"]
+    VERIFY --> SCENARIOS["Scenario configs<br/>approved test data + actions + assertions"]
 
     EFFECTIVE --> AGENT["LangGraph coordinator run"]
     GRAPH --> AGENT
@@ -45,12 +45,13 @@ flowchart TD
 | [`runtime-defaults.json`](../src/trace_coordinator/resources/runtime-defaults.json) | Default calls, retries, timeouts and guardrails | The product-wide safe defaults change |
 | [`runtime/`](runtime/) | Small deployment-specific overrides | One run needs different limits, DLP or observability |
 | [`verification/saleor-policy.json`](verification/saleor-policy.json) | Approved scenario catalog and changed-path selection | You add or select a behavior scenario |
-| [`verification/`](verification/) | Deterministic fixtures, browser steps and assertions | Product behavior or test data changes |
+| [`verification/`](verification/) | Approved test data, browser steps and deterministic assertions | Product behavior or test data changes |
 | [`webhook/saleor.json`](webhook/saleor.json) | Webhook security, allowed events, queue and PR-comment publishing | GitHub integration settings change |
 | [`mapping/saleor.json`](mapping/saleor.json) | Reviewed UI evidence mapped to code components | You publish new UI-to-code graph evidence |
 | [`evaluation/final-campaign.json`](evaluation/final-campaign.json) | Evaluation inputs and quality thresholds | Datasets, reports or acceptance thresholds change |
 | [`release/production-gate.json`](release/production-gate.json) | Final required behavior, tests and coverage | Release acceptance criteria change |
 | [`security/google-dlp.example.json`](security/google-dlp.example.json) | Example external Google DLP policy | Organization-level artifact scanning is enabled |
+| [`../tests/fixtures/`](../tests/fixtures/README.md) | Synthetic offline tools, model decisions, requests and demo configs | Tests or the credential-free demo are executed |
 
 ## How runtime settings are resolved
 
