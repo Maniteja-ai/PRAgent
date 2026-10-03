@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from trace_coordinator.config import CoordinatorFile, GeminiProvider
 from trace_coordinator.domain.contracts import AnalysisReportPayload
 from trace_coordinator.domain.models import ReportNarrative
-from trace_coordinator.presentation.response_formatter import (
+from trace_coordinator.response_formatter import (
     FallbackResponseFormatter,
     LlmResponseFormatter,
     TemplateResponseFormatter,

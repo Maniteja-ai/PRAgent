@@ -37,7 +37,7 @@ dev = [
 ]
 
 [project.scripts]
-trace-coordinator = "trace_coordinator.presentation.cli:main"
+trace-coordinator = "trace_coordinator.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/trace_coordinator"]

@@ -17,7 +17,7 @@ from pydantic import Field, TypeAdapter, field_validator
 
 from trace_coordinator.domain.contracts import AnalysisReportPayload, JsonObject, as_json_object
 from trace_coordinator.domain.models import AnalysisRequest, Record
-from trace_coordinator.presentation.response_formatter.interface import ResponseFormatter
+from trace_coordinator.response_formatter.interface import ResponseFormatter
 
 
 class WebhookJobPayload(TypedDict):

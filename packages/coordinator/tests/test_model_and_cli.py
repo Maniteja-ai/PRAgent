@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from trace_coordinator.cli import main
 from trace_coordinator.config import GeminiProvider, OpenAIProvider
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
 from trace_coordinator.infrastructure.adapters.langchain_model import (
@@ -12,7 +13,6 @@ from trace_coordinator.infrastructure.adapters.langchain_model import (
     ModelDecision,
     classify_failure,
 )
-from trace_coordinator.presentation.cli import main
 
 ROOT = Path(__file__).resolve().parents[1]
 

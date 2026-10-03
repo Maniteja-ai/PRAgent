@@ -17,7 +17,7 @@ from trace_coordinator.infrastructure.github_webhook import (
     WebhookService,
     run_next_job,
 )
-from trace_coordinator.presentation.response_formatter import TemplateResponseFormatter
+from trace_coordinator.response_formatter import TemplateResponseFormatter
 
 
 def config(tmp_path):

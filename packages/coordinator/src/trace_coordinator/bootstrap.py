@@ -14,7 +14,7 @@ from trace_coordinator.infrastructure.factories import (
     ToolFactory,
 )
 from trace_coordinator.infrastructure.observability import CoordinatorObservability
-from trace_coordinator.presentation.response_formatter import ResponseFormatter
+from trace_coordinator.response_formatter import ResponseFormatter
 from trace_coordinator.security.artifact_security import artifact_security
 
 

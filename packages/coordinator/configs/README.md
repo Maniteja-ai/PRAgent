@@ -67,7 +67,7 @@ For example, [`runtime/standard.json`](runtime/standard.json) changes only four 
 value comes from `defaults/runtime.json`. Unknown properties and invalid values are rejected by the
 JSON schemas before the run starts.
 
-## Simple presentation order
+## Simple configuration order
 
 1. The coordinator file selects the application, model and optional policies.
 2. The application file identifies the repository and two deployed versions.

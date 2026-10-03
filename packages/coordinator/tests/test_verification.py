@@ -367,7 +367,7 @@ def test_json_schema_is_current():
 
 def test_verification_cli(inputs, tmp_path, monkeypatch, capsys):
     from trace_coordinator.application import verification
-    from trace_coordinator.presentation.cli import main
+    from trace_coordinator.cli import main
 
     result, _ = execute(inputs, tmp_path)
     monkeypatch.setattr(verification, "run_verification", lambda *_: result)

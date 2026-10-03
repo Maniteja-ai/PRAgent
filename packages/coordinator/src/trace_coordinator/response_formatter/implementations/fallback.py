@@ -3,7 +3,7 @@
 import logging
 
 from trace_coordinator.domain.contracts import AnalysisReportPayload
-from trace_coordinator.presentation.response_formatter.interface import ResponseFormatter
+from trace_coordinator.response_formatter.interface import ResponseFormatter
 
 LOGGER = logging.getLogger(__name__)
 

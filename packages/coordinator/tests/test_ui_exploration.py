@@ -209,7 +209,7 @@ def test_no_invented_flow_across_restart_or_environments():
 
 
 def test_ui_exploration_report_explains_paths_and_unconfirmed_candidates():
-    from trace_coordinator.presentation.response_formatter import TemplateResponseFormatter
+    from trace_coordinator.response_formatter import TemplateResponseFormatter
 
     result = TemplateResponseFormatter().format(
         {

@@ -1,4 +1,4 @@
-"""JSON-safe contracts used between the graph, persistence, and presentation layers.
+"""JSON-safe contracts used between the graph, persistence, and output boundaries.
 
 Domain objects use Pydantic models.  These TypedDicts describe their serialized
 form because LangGraph checkpoints and SQLite records must contain plain JSON.

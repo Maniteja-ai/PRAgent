@@ -181,7 +181,7 @@ def test_full_graph_integrates_results_using_same_run_and_ledger(setup, tmp_path
     )
     assert not (tmp_path / "standalone-unused").exists()
     assert build().run(request, "run") == result and calls == ["factory"]
-    from trace_coordinator.presentation.response_formatter import TemplateResponseFormatter
+    from trace_coordinator.response_formatter import TemplateResponseFormatter
 
     rendered = TemplateResponseFormatter().format(result)
     assert (
@@ -236,7 +236,7 @@ def test_non_blocking_approval_and_linked_late_verification_preserve_run_contrac
     assert question["kind"] == "verification_approval"
     assert question["scenario_id"] == "voucher"
     assert "Approve scenario voucher" in question["question"]
-    from trace_coordinator.presentation.response_formatter import TemplateResponseFormatter
+    from trace_coordinator.response_formatter import TemplateResponseFormatter
 
     assert question["question"] in TemplateResponseFormatter().format(original)
     assert not calls

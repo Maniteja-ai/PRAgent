@@ -469,7 +469,7 @@ def test_publication_receipt_only_after_verified_readback(batch, monkeypatch, fa
 
 
 def test_map_ui_cli_preparation_and_publish(monkeypatch, capsys, tmp_path):
-    from trace_coordinator.presentation.cli import main
+    from trace_coordinator.cli import main
 
     monkeypatch.setattr(
         knowledge, "prepare_ui_snapshot", lambda _: (None, None, None, {"status": "PREPARED"})

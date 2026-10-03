@@ -8,7 +8,7 @@ from trace_coordinator.config import (
     OpenAIProvider,
     ResponseFormatterConfig,
 )
-from trace_coordinator.presentation.response_formatter import (
+from trace_coordinator.response_formatter import (
     FallbackResponseFormatter,
     LlmResponseFormatter,
     ResponseFormatter,
