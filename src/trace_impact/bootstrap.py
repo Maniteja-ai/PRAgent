@@ -128,6 +128,7 @@ def default_components(settings: Settings) -> Components:
                 request_timeout=settings.request_timeout,
                 max_retries=settings.model_retries,
                 http_client=client,
+                check_embedding_ctx_length=False,
             )
             return LangChainEmbeddingProvider(
                 model,
