@@ -107,6 +107,26 @@ def test_provider_wire_still_has_strict_local_validation(model_stubs, monkeypatc
     assert not caught.value.retryable
 
 
+def test_finish_discards_harmless_provider_question_echo(model_stubs, monkeypatch):
+    adapter = LangChainModel(GeminiProvider(provider="gemini", model="test", api_key_env="TEST_MODEL_KEY"))
+    monkeypatch.setattr(
+        adapter.structured,
+        "invoke",
+        lambda *args: ModelDecision(
+            action="finish",
+            tool="",
+            arguments_json="{}",
+            question="Which UI flows could this PR affect?",
+            findings=[],
+        ),
+    )
+
+    decision = adapter.decide({})
+
+    assert decision.action == "finish"
+    assert decision.question is None
+
+
 def test_wire_does_not_emit_unsupported_schema_keywords():
     def check(value):
         if isinstance(value, dict):

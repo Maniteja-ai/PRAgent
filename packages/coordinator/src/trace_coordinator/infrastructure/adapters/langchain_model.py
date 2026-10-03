@@ -153,14 +153,20 @@ class LangChainModel:
             wire = ModelDecision.model_validate(response)
             if len(wire.arguments_json) > 16000:
                 raise ValueError("Tool arguments exceed the response budget")
-            return Decision.model_validate(
-                {
-                    **wire.model_dump(exclude={"arguments_json"}),
-                    "tool": wire.tool or None,
-                    "question": wire.question or None,
-                    "arguments": json.loads(wire.arguments_json),
-                }
-            )
+            arguments = json.loads(wire.arguments_json)
+            candidate = {
+                **wire.model_dump(exclude={"arguments_json"}),
+                "tool": wire.tool or None,
+                "question": wire.question or None,
+                "arguments": arguments,
+            }
+            # Some providers echo the user's input question in the required
+            # wire field even for a finish decision. It has no executable
+            # meaning, so discard only this harmless schema artifact. Hidden
+            # tool names or arguments remain invalid and fail closed below.
+            if wire.action == "finish" and not wire.tool and not arguments:
+                candidate["question"] = None
+            return Decision.model_validate(candidate)
         except Exception as exc:
             raise ToolFailure(
                 "Invalid structured model response",
