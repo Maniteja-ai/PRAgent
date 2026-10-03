@@ -1,0 +1,63 @@
+{
+  "$schema": "../../../schemas/ingestion/v2/processing.schema.json",
+  "schema_version": 1,
+  "documents": {
+    "chunker": "section",
+    "max_chunk_chars": 8000
+  },
+  "requirements": {
+    "enabled": true,
+    "extractor": {
+      "provider": "gemini",
+      "model": "gemini-3.5-flash-lite",
+      "thinking_level": "low",
+      "max_output_tokens": 6000,
+      "requests_per_minute": 5
+    },
+    "max_chunks": 1000
+  },
+  "embeddings": {
+    "enabled": true,
+    "provider": {
+      "provider": "gemini",
+      "model": "gemini-embedding-2",
+      "dimensions": 768,
+      "requests_per_minute": 10
+    },
+    "batch_size": 16
+  },
+  "code": {
+    "analyzer": {
+      "provider": "typescript",
+      "options": {
+        "tsconfig": "tsconfig.json",
+        "source_prefixes": [
+          "src/"
+        ],
+        "max_files": 2000,
+        "max_bytes": 30000000,
+        "timeout_seconds": 90
+      }
+    }
+  },
+  "ui": {
+    "explorer": {
+      "provider": "browser",
+      "options": {}
+    },
+    "max_pages": 50,
+    "max_actions_per_page": 20
+  },
+  "mappings": {
+    "proposer": {
+      "provider": "semantic",
+      "options": {}
+    },
+    "validator": {
+      "provider": "evidence",
+      "options": {}
+    },
+    "minimum_confidence": 0.8,
+    "require_human_review_below": 0.95
+  }
+}

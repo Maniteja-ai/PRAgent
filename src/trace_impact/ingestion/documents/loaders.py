@@ -27,10 +27,12 @@ class LocalFileLoader:
 class WebLoader:
     version = "public-https-v1"
 
-    def __init__(self, client: httpx.Client | None = None):
+    def __init__(self, client: httpx.Client | None = None, *, timeout_seconds: float = 30):
         self._owns_client = client is None
         self.client = client or httpx.Client(
-            timeout=30, follow_redirects=False, headers={"User-Agent": "TraceImpact/0.3 ingestion"}
+            timeout=timeout_seconds,
+            follow_redirects=False,
+            headers={"User-Agent": "TraceImpact/0.3 ingestion"},
         )
 
     def close(self):

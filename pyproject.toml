@@ -4,13 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "trace-impact"
-version = "0.4.0"
+version = "0.5.0"
 description = "Evidence-backed requirements ingestion for UI and code impact analysis"
 requires-python = ">=3.11,<3.15"
 dependencies = [
-  "beautifulsoup4>=4.13,<5", "httpx>=0.28,<1", "markdownify>=1.2,<2",
-  "markdown-it-py>=4,<5", "neo4j>=6,<7", "pydantic>=2.12,<3",
-  "python-dotenv>=1.1,<2", "filelock>=3.20,<4", "PyYAML>=6,<7",
+  "anyio>=4.9,<4.12", "beautifulsoup4>=4.13,<5", "httpcore==1.0.9",
+  "httpx>=0.28,<1", "markdownify>=1.2,<2",
+  "markdown-it-py>=4,<4.1", "neo4j>=6,<7", "pydantic>=2.12,<2.13",
+  "python-dotenv>=1.1,<2", "filelock>=3.20,<4", "PyYAML>=6,<7", "socksio>=1,<2",
 ]
 
 [project.optional-dependencies]
@@ -29,10 +30,31 @@ reranking = [
 [dependency-groups]
 dev = [
     "jsonschema>=4,<5",
+    "mypy>=1.18,<2",
     "pytest>=8,<10",
     "pytest-cov>=7.1.0",
     "ruff>=0.12,<1",
 ]
+
+[tool.mypy]
+python_version = "3.11"
+plugins = ["pydantic.mypy"]
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+check_untyped_defs = true
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = [
+  "trace_impact.ingestion.configuration.*",
+  "trace_impact.ingestion.evaluation.*",
+  "trace_impact.ingestion.mappings.*",
+  "trace_impact.ingestion.orchestration.*",
+]
+disallow_untyped_defs = true
+disallow_any_generics = true
+no_implicit_optional = true
 
 [project.scripts]
 trace-impact = "trace_impact.cli:main"
@@ -40,6 +62,19 @@ trace-eval = "trace_impact.evals.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/trace_impact"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src/trace_impact",
+  "/tests",
+  "/configs",
+  "/schemas",
+  "/examples",
+  "/docs",
+  "/README.md",
+  "/pyproject.toml",
+  "/uv.lock",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

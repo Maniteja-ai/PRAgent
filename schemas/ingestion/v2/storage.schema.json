@@ -1,0 +1,118 @@
+{
+  "$defs": {
+    "ArtifactStorage": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "default": "local",
+          "title": "Provider",
+          "type": "string"
+        },
+        "run_directory": {
+          "default": "../../../runs",
+          "title": "Run Directory",
+          "type": "string"
+        }
+      },
+      "title": "ArtifactStorage",
+      "type": "object"
+    },
+    "CandidateStorage": {
+      "additionalProperties": false,
+      "properties": {
+        "directory": {
+          "default": "../../../artifacts/mapping-candidates",
+          "title": "Directory",
+          "type": "string"
+        }
+      },
+      "title": "CandidateStorage",
+      "type": "object"
+    },
+    "GraphStorage": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "default": "neo4j",
+          "title": "Provider",
+          "type": "string"
+        },
+        "publish_documents": {
+          "default": true,
+          "title": "Publish Documents",
+          "type": "boolean"
+        },
+        "publish_requirements": {
+          "default": true,
+          "title": "Publish Requirements",
+          "type": "boolean"
+        },
+        "publish_code": {
+          "default": true,
+          "title": "Publish Code",
+          "type": "boolean"
+        },
+        "publish_confirmed_mappings": {
+          "default": true,
+          "title": "Publish Confirmed Mappings",
+          "type": "boolean"
+        }
+      },
+      "title": "GraphStorage",
+      "type": "object"
+    },
+    "VectorStorage": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "default": "qdrant",
+          "title": "Provider",
+          "type": "string"
+        },
+        "publish_chunks": {
+          "default": true,
+          "title": "Publish Chunks",
+          "type": "boolean"
+        }
+      },
+      "title": "VectorStorage",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "artifacts": {
+      "$ref": "#/$defs/ArtifactStorage"
+    },
+    "graph": {
+      "$ref": "#/$defs/GraphStorage"
+    },
+    "vector": {
+      "$ref": "#/$defs/VectorStorage"
+    },
+    "candidates": {
+      "$ref": "#/$defs/CandidateStorage"
+    }
+  },
+  "title": "StorageConfig",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

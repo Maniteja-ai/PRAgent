@@ -1,20 +1,29 @@
 """Public library pipeline: configuration selects interfaces through explicit registries."""
 
 import logging
+from collections.abc import Callable
 from pathlib import Path
 
-from trace_impact.ingestion.config import load_project
+from trace_impact.ingestion.config import Project, load_project
 from trace_impact.ingestion.documents.processor import ConfiguredDocumentProcessor
 from trace_impact.ingestion.models import Corpus
 from trace_impact.ingestion.requirements.policies import GroundingPolicy
 from trace_impact.ingestion.service import CollectionService, ExtractionService, GraphPublicationService
 from trace_impact.shared.events import JsonEventSink
 from trace_impact.shared.registry import Components
+from trace_impact.shared.settings import Settings
 
 
 class IngestionPipeline:
-    def __init__(self, components: Components):
+    def __init__(
+        self,
+        components: Components,
+        settings: Settings | None = None,
+        component_builder: Callable[[Settings], Components] | None = None,
+    ):
         self.components = components
+        self.settings = settings or Settings()
+        self.component_builder = component_builder
         self.events = JsonEventSink(logging.getLogger("trace_impact.events"))
 
     def __enter__(self):
@@ -27,7 +36,7 @@ class IngestionPipeline:
         project = load_project(config)
         return self.validate_project(project)
 
-    def validate_project(self, project):
+    def validate_project(self, project: Project) -> Project:
         for source in project.sources:
             self.components.loaders.require(source.loader_name)
             self.components.parsers.require(source.parser_name)
@@ -47,6 +56,11 @@ class IngestionPipeline:
 
     def collect(self, config: Path, output: Path = Path("runs")):
         project = self.validate(config)
+        return self.collect_project(project, config, output)
+
+    def collect_project(self, project: Project, config: Path, output: Path = Path("runs")):
+        """Collect a validated project whose local paths are owned by ``config``."""
+        project = self.validate_project(project)
         artifacts = self.components.artifacts.resolve(project.storage.artifacts)
         processor = ConfiguredDocumentProcessor(self.components, artifacts)
         return CollectionService(processor, artifacts, self.events).collect(config, output, project)
@@ -103,9 +117,34 @@ class IngestionPipeline:
         from trace_impact.ingestion.code.config import load_code_config
 
         selected = load_code_config(config)
+        return self.analyze_code_config(selected)
+
+    def analyze_code_config(self, selected):
         self.components.code_analyzers.require(selected.analyzer)
         self.components.code_analyzers.validate_options(selected.analyzer.provider, selected.analyzer.options)
         return self.components.code_analyzers.resolve(selected.analyzer).analyze(selected)
+
+    def run_ingestion(self, config: Path):
+        """Execute the composed ingestion configuration and return its audit manifest."""
+        from trace_impact.ingestion.configuration import load_ingestion_configuration
+        from trace_impact.ingestion.orchestration import IngestionRunner
+
+        selected = load_ingestion_configuration(config)
+        runtime_settings = self.settings.model_copy(
+            update={
+                "request_timeout": selected.runtime.timeouts.model_seconds,
+                "model_retries": selected.runtime.retries.attempts,
+            }
+        )
+        if runtime_settings == self.settings:
+            return IngestionRunner(self, selected).execute()
+        if self.component_builder is None:
+            raise ValueError("Runtime overrides require a component_builder")
+        configured = IngestionPipeline(
+            self.component_builder(runtime_settings), runtime_settings, self.component_builder
+        )
+        with configured:
+            return IngestionRunner(configured, selected).execute()
 
     def _code_graph(self, graph_id):
         from trace_impact.ingestion.storage.neo4j_code_store import Neo4jCodeStore

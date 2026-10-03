@@ -28,6 +28,10 @@ class Neo4jCodeStore:
     def publish(self, snapshot):
         if snapshot.id != self.graph_id:
             raise ValueError("Snapshot does not belong to selected graph")
+        if any(edge.status != "CONFIRMED" for edge in snapshot.edges):
+            raise ValueError(
+                "Neo4j accepts confirmed relationships only; store candidates in the candidate store"
+            )
         payload = snapshot.model_dump(mode="json")
         digest = hashlib.sha256(
             json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()

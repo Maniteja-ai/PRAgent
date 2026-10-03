@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../schemas/ingestion/v2/ingestion.schema.json",
+  "schema_version": 2,
+  "project": {
+    "id": "saleor-storefront",
+    "name": "Saleor storefront baseline"
+  },
+  "config": {
+    "inputs": "inputs.json",
+    "processing": "processing.json",
+    "storage": "storage.json",
+    "runtime": "runtime.json",
+    "evaluation": "evaluation.json"
+  }
+}

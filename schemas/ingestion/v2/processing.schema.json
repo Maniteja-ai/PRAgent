@@ -1,0 +1,304 @@
+{
+  "$defs": {
+    "CodeProcessing": {
+      "additionalProperties": false,
+      "properties": {
+        "analyzer": {
+          "$ref": "#/$defs/StageConfig"
+        }
+      },
+      "title": "CodeProcessing",
+      "type": "object"
+    },
+    "DocumentProcessing": {
+      "additionalProperties": false,
+      "properties": {
+        "chunker": {
+          "default": "section",
+          "title": "Chunker",
+          "type": "string"
+        },
+        "max_chunk_chars": {
+          "default": 8000,
+          "maximum": 32000,
+          "minimum": 1000,
+          "title": "Max Chunk Chars",
+          "type": "integer"
+        }
+      },
+      "title": "DocumentProcessing",
+      "type": "object"
+    },
+    "EmbeddingConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "model": {
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "dimensions": {
+          "exclusiveMinimum": 0,
+          "maximum": 65536,
+          "title": "Dimensions",
+          "type": "integer"
+        },
+        "requests_per_minute": {
+          "default": 10,
+          "maximum": 10000,
+          "minimum": 0,
+          "title": "Requests Per Minute",
+          "type": "integer"
+        },
+        "options": {
+          "additionalProperties": true,
+          "description": "Options declared by the selected provider implementation.",
+          "title": "Options",
+          "type": "object"
+        }
+      },
+      "required": [
+        "provider",
+        "model",
+        "dimensions"
+      ],
+      "title": "EmbeddingConfig",
+      "type": "object"
+    },
+    "EmbeddingProcessing": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/EmbeddingConfig"
+            }
+          ],
+          "default": "openai",
+          "title": "Provider"
+        },
+        "batch_size": {
+          "default": 16,
+          "maximum": 1024,
+          "minimum": 1,
+          "title": "Batch Size",
+          "type": "integer"
+        }
+      },
+      "title": "EmbeddingProcessing",
+      "type": "object"
+    },
+    "ExtractionConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "model": {
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "max_output_tokens": {
+          "default": 6000,
+          "maximum": 32000,
+          "minimum": 256,
+          "title": "Max Output Tokens",
+          "type": "integer"
+        },
+        "thinking_level": {
+          "anyOf": [
+            {
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Thinking Level"
+        },
+        "requests_per_minute": {
+          "default": 10,
+          "maximum": 10000,
+          "minimum": 0,
+          "title": "Requests Per Minute",
+          "type": "integer"
+        },
+        "options": {
+          "additionalProperties": true,
+          "description": "Options declared by the selected provider implementation.",
+          "title": "Options",
+          "type": "object"
+        }
+      },
+      "required": [
+        "provider",
+        "model"
+      ],
+      "title": "ExtractionConfig",
+      "type": "object"
+    },
+    "MappingProcessing": {
+      "additionalProperties": false,
+      "properties": {
+        "proposer": {
+          "$ref": "#/$defs/StageConfig"
+        },
+        "validator": {
+          "$ref": "#/$defs/StageConfig"
+        },
+        "minimum_confidence": {
+          "default": 0.8,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Minimum Confidence",
+          "type": "number"
+        },
+        "require_human_review_below": {
+          "default": 0.95,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Require Human Review Below",
+          "type": "number"
+        }
+      },
+      "title": "MappingProcessing",
+      "type": "object"
+    },
+    "RequirementProcessing": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "extractor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/ExtractionConfig"
+            }
+          ],
+          "default": "langchain",
+          "title": "Extractor"
+        },
+        "max_chunks": {
+          "default": 100,
+          "maximum": 100000,
+          "minimum": 1,
+          "title": "Max Chunks",
+          "type": "integer"
+        }
+      },
+      "title": "RequirementProcessing",
+      "type": "object"
+    },
+    "StageConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "options": {
+          "additionalProperties": true,
+          "title": "Options",
+          "type": "object"
+        }
+      },
+      "required": [
+        "provider"
+      ],
+      "title": "StageConfig",
+      "type": "object"
+    },
+    "UiProcessing": {
+      "additionalProperties": false,
+      "properties": {
+        "explorer": {
+          "$ref": "#/$defs/StageConfig"
+        },
+        "max_pages": {
+          "default": 50,
+          "maximum": 10000,
+          "minimum": 1,
+          "title": "Max Pages",
+          "type": "integer"
+        },
+        "max_actions_per_page": {
+          "default": 20,
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Max Actions Per Page",
+          "type": "integer"
+        }
+      },
+      "title": "UiProcessing",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "documents": {
+      "$ref": "#/$defs/DocumentProcessing"
+    },
+    "requirements": {
+      "$ref": "#/$defs/RequirementProcessing"
+    },
+    "embeddings": {
+      "$ref": "#/$defs/EmbeddingProcessing"
+    },
+    "code": {
+      "$ref": "#/$defs/CodeProcessing"
+    },
+    "ui": {
+      "$ref": "#/$defs/UiProcessing"
+    },
+    "mappings": {
+      "$ref": "#/$defs/MappingProcessing"
+    }
+  },
+  "title": "ProcessingConfig",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

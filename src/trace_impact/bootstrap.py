@@ -33,8 +33,11 @@ def default_components(settings: Settings) -> Components:
             TypeScriptOptions,
         ),
     )
-    components.loaders.register_factory("web", WebLoader)
-    components.loaders.register_factory("github_file", GitHubFileLoader)
+    components.loaders.register_factory("web", lambda: WebLoader(timeout_seconds=settings.request_timeout))
+    components.loaders.register_factory(
+        "github_file",
+        lambda: GitHubFileLoader(WebLoader(timeout_seconds=settings.request_timeout)),
+    )
     components.loaders.register_factory("local_file", LocalFileLoader)
     components.parsers.register_factory("html", HtmlParser)
     components.parsers.register_factory("markdown", MarkdownParser)

@@ -17,6 +17,12 @@ def main():
     parser = argparse.ArgumentParser(prog="trace-impact")
     parser.add_argument("--env-file", type=Path, default=Path(".env"))
     commands = parser.add_subparsers(dest="command", required=True)
+    run = commands.add_parser("run-ingestion", help="Run the composed ingestion configuration")
+    run.add_argument("config", type=Path)
+    validate_ingestion = commands.add_parser(
+        "validate-ingestion", help="Validate all files referenced by ingestion.json"
+    )
+    validate_ingestion.add_argument("config", type=Path)
     validate = commands.add_parser("validate-project")
     validate.add_argument("config", type=Path)
     gather = commands.add_parser("collect")
@@ -102,7 +108,26 @@ def main():
 
 
 def dispatch(args, app: IngestionPipeline):
-    if args.command == "validate-project":
+    if args.command == "validate-ingestion":
+        from trace_impact.ingestion.configuration import load_ingestion_configuration
+        from trace_impact.ingestion.configuration.legacy_adapter import to_document_project
+
+        config = load_ingestion_configuration(args.config)
+        app.validate_project(to_document_project(config))
+        print(
+            json.dumps(
+                {
+                    "project_id": config.entry.project.id,
+                    "configuration_files": {
+                        name: str(path) for name, path in config.paths.model_dump().items()
+                    },
+                },
+                indent=2,
+            )
+        )
+    elif args.command == "run-ingestion":
+        print(app.run_ingestion(args.config).model_dump_json(indent=2))
+    elif args.command == "validate-project":
         project = app.validate(args.config)
         print(
             json.dumps(

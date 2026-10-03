@@ -1,8 +1,40 @@
 # Run and extend ingestion
 
-## Where to configure inputs and stages
+## Simple configuration map
 
-Start with **`configs/ingestion/saleor/project.json`**. This is the user input configuration.
+Start with **`configs/ingestion/saleor/ingestion.json`**. It contains only the project name and
+references to five focused files:
+
+| File | One responsibility |
+| --- | --- |
+| `inputs.json` | Documents, repository revision, application URL and UI seeds |
+| `processing.json` | Parser/chunker, requirement model, embeddings, code analyzer and mapping policy |
+| `storage.json` | Artifact directory, Qdrant, Neo4j and the separate candidate-mapping directory |
+| `runtime.json` | Checkpoints, retries, timeouts, limits and failure behavior |
+| `evaluation.json` | Stage evidence recording, golden dataset and enabled metrics |
+
+Every file has a JSON Schema for PyCharm completion and rejects unknown fields. Paths belong to
+the file in which they appear and are resolved relative to that file. Credentials remain in
+environment variables. Validate the whole configuration without contacting providers:
+
+```powershell
+uv run trace-impact validate-ingestion configs/ingestion/saleor/ingestion.json
+```
+
+Run the configured stages with:
+
+```powershell
+uv run trace-impact run-ingestion configs/ingestion/saleor/ingestion.json
+```
+
+The command writes `ingestion-manifest.json` to the collected run and records stage timing,
+result hashes and failures in the configured evaluation directory. Evaluation scoring remains
+offline and uses the configured golden dataset. UI ingestion is currently disabled in the Saleor
+input file; the manifest records that as a coverage gap instead of claiming a mapping exists.
+
+## Legacy single-file configuration
+
+Older commands can still start with **`configs/ingestion/saleor/project.json`**.
 In PyCharm, expand `configs` > `ingestion` > `saleor` > `project.json`.
 
 ### Pick names from editor suggestions

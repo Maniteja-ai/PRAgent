@@ -212,7 +212,9 @@ class ExtractionService:
         self.artifacts.write(run_dir / "extraction.json", run)
 
 
-class GraphPublicationService:
+class IngestionPublisher:
+    """Publish validated ingestion results to the configured knowledge stores."""
+
     def __init__(self, artifacts: ArtifactRepository, graph: GraphRepository, events: EventSink):
         self.artifacts, self.graph, self.events = artifacts, graph, events
 
@@ -227,3 +229,7 @@ class GraphPublicationService:
             counts = self.graph.counts(corpus.project.project_id)
             self.events.emit("graph.published", run_id=corpus.run_id, project_id=corpus.project.project_id)
             return counts
+
+
+# Compatibility for callers created before the clearer publication name.
+GraphPublicationService = IngestionPublisher
