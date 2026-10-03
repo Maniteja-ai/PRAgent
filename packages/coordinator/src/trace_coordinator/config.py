@@ -7,35 +7,49 @@ from pydantic import Field, StrictInt, model_validator
 
 from trace_coordinator.domain.contracts import JsonObject, as_json_object
 from trace_coordinator.domain.models import Record
+from trace_coordinator.runtime_defaults import (
+    default_bool,
+    default_float,
+    default_int,
+    default_limit_overrides,
+)
 from trace_coordinator.security.artifact_security import ArtifactSecurityConfig
 from trace_coordinator.security.guardrails import GuardrailPolicy
 
 
 class CallLimits(Record):
     per_agent_tool: int = Field(
-        default=5,
+        default=default_int("calls", "per_tool"),
         ge=1,
         le=5,
         description="Maximum executed attempts per run, stable agent identity and canonical tool. Includes failures and retries; resume never resets it.",
     )
     overrides: dict[str, dict[str, Annotated[StrictInt, Field(ge=1, le=5)]]] = Field(
-        default_factory=dict,
+        default_factory=default_limit_overrides,
         description="Optional lower limits: agent ID -> canonical tool ID -> limit (1 to default).",
     )
     total_calls: int = Field(
-        default=30, ge=1, le=1000, description="Combined tool and model attempts per run."
+        default=default_int("calls", "total"),
+        ge=1,
+        le=1000,
+        description="Combined tool and model attempts per run.",
     )
-    max_rounds: int = Field(default=10, ge=1, le=100)
-    max_review_requests: int = Field(default=2, ge=0, le=10)
+    max_rounds: int = Field(default=default_int("calls", "reasoning_rounds"), ge=1, le=100)
+    max_review_requests: int = Field(default=default_int("calls", "review_requests"), ge=0, le=10)
     max_validation_repairs: int = Field(
-        default=1,
+        default=default_int("calls", "citation_repairs"),
         ge=0,
         le=2,
         description="Bounded citation correction turns; each consumes model.decide and round budgets.",
     )
-    max_run_seconds: int = Field(default=900, ge=1, le=86400)
-    retry_attempts: int = Field(default=2, ge=1, le=5, description="Total attempts, including the first.")
-    retry_delay_seconds: float = Field(default=1, ge=0, le=30)
+    max_run_seconds: int = Field(default=default_int("timeouts", "run_seconds"), ge=1, le=86400)
+    retry_attempts: int = Field(
+        default=default_int("retries", "attempts"),
+        ge=1,
+        le=5,
+        description="Total attempts, including the first.",
+    )
+    retry_delay_seconds: float = Field(default=default_float("retries", "delay_seconds"), ge=0, le=30)
 
     @model_validator(mode="after")
     def lower_overrides(self) -> Self:
@@ -59,11 +73,11 @@ class FixtureProvider(Record):
 class ModelProvider(Record):
     model: str = Field(min_length=1)
     api_key_env: str = Field(default="COORDINATOR_LLM_API_KEY", pattern=r"^[A-Za-z_][A-Za-z0-9_]*$")
-    timeout_seconds: float = Field(default=45, gt=0, le=120)
+    timeout_seconds: float = Field(default=default_float("timeouts", "model_seconds"), gt=0, le=120)
     max_output_tokens: int = Field(default=3000, ge=256, le=16000)
     max_input_chars: int = Field(default=120000, ge=1000, le=500000)
     retry_invalid_response: bool = Field(
-        default=False,
+        default=default_bool("retries", "invalid_model_response"),
         description="Allow the shared dispatcher to retry invalid structured output within retry_attempts and the same model.decide budget. No invalid decision is executed.",
     )
 
@@ -213,23 +227,25 @@ class LangSmithObservability(Record):
 
 
 class CallPolicy(Record):
-    per_tool: int = Field(default=5, ge=1, le=5)
-    total: int = Field(default=30, ge=1, le=1000)
-    reasoning_rounds: int = Field(default=10, ge=1, le=100)
-    review_requests: int = Field(default=2, ge=0, le=10)
-    citation_repairs: int = Field(default=1, ge=0, le=2)
-    overrides: dict[str, dict[str, Annotated[StrictInt, Field(ge=1, le=5)]]] = Field(default_factory=dict)
+    per_tool: int = Field(default=default_int("calls", "per_tool"), ge=1, le=5)
+    total: int = Field(default=default_int("calls", "total"), ge=1, le=1000)
+    reasoning_rounds: int = Field(default=default_int("calls", "reasoning_rounds"), ge=1, le=100)
+    review_requests: int = Field(default=default_int("calls", "review_requests"), ge=0, le=10)
+    citation_repairs: int = Field(default=default_int("calls", "citation_repairs"), ge=0, le=2)
+    overrides: dict[str, dict[str, Annotated[StrictInt, Field(ge=1, le=5)]]] = Field(
+        default_factory=default_limit_overrides
+    )
 
 
 class RetryPolicy(Record):
-    attempts: int = Field(default=2, ge=1, le=5)
-    delay_seconds: float = Field(default=1, ge=0, le=30)
-    invalid_model_response: bool = False
+    attempts: int = Field(default=default_int("retries", "attempts"), ge=1, le=5)
+    delay_seconds: float = Field(default=default_float("retries", "delay_seconds"), ge=0, le=30)
+    invalid_model_response: bool = default_bool("retries", "invalid_model_response")
 
 
 class TimeoutPolicy(Record):
-    run_seconds: int = Field(default=900, ge=1, le=86400)
-    model_seconds: float = Field(default=45, gt=0, le=120)
+    run_seconds: int = Field(default=default_int("timeouts", "run_seconds"), ge=1, le=86400)
+    model_seconds: float = Field(default=default_float("timeouts", "model_seconds"), gt=0, le=120)
 
 
 class RuntimeConfig(Record):

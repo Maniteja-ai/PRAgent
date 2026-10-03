@@ -38,6 +38,7 @@ builds attest successfully, and configured behavior verification completes.
 | [graph/saleor.json](configs/graph/saleor.json) | Neo4j graph snapshots |
 | [retrieval/saleor.json](configs/retrieval/saleor.json) | Ingestion run, vector store and ranking stages |
 | [ui/saleor.json](configs/ui/saleor.json) | Playwright startup and allowed UI actions |
+| [runtime-defaults.json](src/trace_coordinator/resources/runtime-defaults.json) | One source for call, retry, timeout and guardrail defaults |
 | [standard.json](configs/runtime/standard.json) | Only the operational values this deployment overrides |
 | [saleor-policy.json](configs/verification/saleor-policy.json) | Approved verification scenarios |
 | [saleor-voucher.json](configs/verification/saleor-voucher.json) | Voucher fixtures, UI controls, assertions and requirement contracts |
@@ -56,11 +57,10 @@ never stored in these files or reports.
 files. `runtime_config_file` contains optional operational overrides; omitting it applies the same
 safe typed defaults. `ui_exploration` controls bounded UI discovery before analysis.
 
-The built-in runtime defaults are 5 calls per tool, 30 calls total, 10 reasoning rounds, 2 review
-requests, 1 citation repair, 2 attempts with a 1-second delay, a 15-minute run timeout and a
-45-second model timeout. PII and prompt-injection guardrails are enabled. Invalid model output is
-not retried unless explicitly enabled. These defaults are also published in
-`runtime.schema.json`, so JSON-aware editors show them without copying them into every config.
+The packaged `runtime-defaults.json` is the single source for call limits, retries, timeouts and
+guardrails. Runtime files contain only deployment-specific overrides. The same values are
+published in `runtime.schema.json`, so JSON-aware editors show them without copying them into every
+config.
 
 ## Optional LangSmith observability
 

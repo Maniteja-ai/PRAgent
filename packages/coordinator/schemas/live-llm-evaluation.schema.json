@@ -67,7 +67,7 @@
           "type": "string"
         },
         "timeout_seconds": {
-          "default": 45,
+          "default": 45.0,
           "exclusiveMinimum": 0,
           "maximum": 120,
           "title": "Timeout Seconds",
@@ -273,7 +273,7 @@
           "type": "string"
         },
         "timeout_seconds": {
-          "default": 45,
+          "default": 45.0,
           "exclusiveMinimum": 0,
           "maximum": 120,
           "title": "Timeout Seconds",

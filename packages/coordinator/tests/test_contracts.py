@@ -15,6 +15,7 @@ from trace_coordinator.config import (
     schema,
 )
 from trace_coordinator.domain.models import Decision
+from trace_coordinator.runtime_defaults import runtime_defaults
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -78,6 +79,17 @@ def test_runtime_schema_and_standard_example_match():
     example = json.loads((ROOT / "configs/runtime/standard.json").read_text(encoding="utf-8"))
     jsonschema.validate(example, schema_document)
     RuntimeConfig.model_validate(example)
+
+
+def test_packaged_runtime_defaults_are_valid_and_complete():
+    schema_document = json.loads((ROOT / "schemas/runtime.schema.json").read_text(encoding="utf-8"))
+    defaults_path = ROOT / "src/trace_coordinator/resources/runtime-defaults.json"
+    document = json.loads(defaults_path.read_text(encoding="utf-8"))
+    assert document == runtime_defaults()
+    jsonschema.validate(document, schema_document)
+    resolved = RuntimeConfig.model_validate(document)
+    assert resolved.call_limits() == CallLimits()
+    assert resolved.guardrails.enabled is True
 
 
 def test_verification_policy_schema_and_example_match():

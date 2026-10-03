@@ -5,7 +5,7 @@ import json
 import re
 from collections import Counter
 from collections.abc import Mapping
-from typing import Literal
+from typing import Literal, cast
 
 from pydantic import Field
 
@@ -17,15 +17,30 @@ from trace_coordinator.domain.contracts import (
 )
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
 from trace_coordinator.domain.models import Decision, Record
+from trace_coordinator.runtime_defaults import (
+    default_bool,
+    default_guardrail_action,
+    default_int,
+)
 
 
 class GuardrailPolicy(Record):
-    enabled: bool = True
-    request_sensitive_action: Literal["block", "allow"] = "block"
-    evidence_sensitive_action: Literal["redact", "block"] = "redact"
-    prompt_injection_action: Literal["quarantine", "block"] = "quarantine"
-    output_sensitive_action: Literal["block"] = "block"
-    max_findings_per_call: int = Field(default=100, ge=1, le=1000)
+    enabled: bool = default_bool("guardrails", "enabled")
+    request_sensitive_action: Literal["block", "allow"] = cast(
+        Literal["block", "allow"], default_guardrail_action("request_sensitive_action")
+    )
+    evidence_sensitive_action: Literal["redact", "block"] = cast(
+        Literal["redact", "block"], default_guardrail_action("evidence_sensitive_action")
+    )
+    prompt_injection_action: Literal["quarantine", "block"] = cast(
+        Literal["quarantine", "block"], default_guardrail_action("prompt_injection_action")
+    )
+    output_sensitive_action: Literal["block"] = cast(
+        Literal["block"], default_guardrail_action("output_sensitive_action")
+    )
+    max_findings_per_call: int = Field(
+        default=default_int("guardrails", "max_findings_per_call"), ge=1, le=1000
+    )
 
 
 _PATTERNS = {

@@ -412,7 +412,7 @@
           "type": "integer"
         },
         "delay_seconds": {
-          "default": 1,
+          "default": 1.0,
           "maximum": 30,
           "minimum": 0,
           "title": "Delay Seconds",
@@ -438,7 +438,7 @@
           "type": "integer"
         },
         "model_seconds": {
-          "default": 45,
+          "default": 45.0,
           "exclusiveMinimum": 0,
           "maximum": 120,
           "title": "Model Seconds",

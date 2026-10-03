@@ -70,7 +70,7 @@
           "type": "integer"
         },
         "retry_delay_seconds": {
-          "default": 1,
+          "default": 1.0,
           "maximum": 30,
           "minimum": 0,
           "title": "Retry Delay Seconds",
