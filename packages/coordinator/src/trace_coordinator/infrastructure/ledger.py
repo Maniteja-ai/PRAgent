@@ -8,18 +8,21 @@ import hashlib
 import json
 import sqlite3
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
+from typing import cast
 
 from trace_coordinator.config import CallLimits
+from trace_coordinator.domain.contracts import AuditEventPayload, CallAttemptPayload, CallUsagePayload
 from trace_coordinator.domain.errors import LimitReached, RunMismatch, UncertainExecution
 
 
-def canonical(value) -> str:
+def canonical(value: object) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
 
 
-def digest(value) -> str:
+def digest(value: object) -> str:
     return hashlib.sha256(canonical(value).encode()).hexdigest()
 
 
@@ -44,7 +47,7 @@ class CallLedger:
             """)
 
     @contextmanager
-    def connect(self):
+    def connect(self) -> Iterator[sqlite3.Connection]:
         db = sqlite3.connect(self.path, timeout=30)
         db.row_factory = sqlite3.Row
         try:
@@ -53,7 +56,7 @@ class CallLedger:
         finally:
             db.close()
 
-    def register(self, run: str, fingerprint: str):
+    def register(self, run: str, fingerprint: str) -> None:
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             row = db.execute("SELECT fingerprint FROM runs WHERE id=?", (run,)).fetchone()
@@ -61,14 +64,14 @@ class CallLedger:
                 raise RunMismatch("Run inputs, configuration or implementation changed; use a new run ID")
             db.execute("INSERT OR IGNORE INTO runs VALUES (?,?,?)", (run, fingerprint, time.time()))
 
-    def event(self, run: str, kind: str, detail: str):
+    def event(self, run: str, kind: str, detail: str) -> None:
         with self.connect() as db:
             db.execute(
                 "INSERT INTO events(run,kind,detail,created) VALUES (?,?,?,?)",
                 (run, kind, detail, time.time()),
             )
 
-    def event_once(self, run: str, kind: str, detail: str):
+    def event_once(self, run: str, kind: str, detail: str) -> None:
         with self.connect() as db:
             exists = db.execute(
                 "SELECT 1 FROM events WHERE run=? AND kind=? AND detail=? LIMIT 1",
@@ -80,7 +83,16 @@ class CallLedger:
                     (run, kind, detail, time.time()),
                 )
 
-    def reserve(self, run, operation, attempt, agent, tool, arguments, limits: CallLimits):
+    def reserve(
+        self,
+        run: str,
+        operation: str,
+        attempt: int,
+        agent: str,
+        tool: str,
+        arguments: object,
+        limits: CallLimits,
+    ) -> CallAttemptPayload | None:
         hashed = digest(arguments)
         denial = None
         with self.connect() as db:
@@ -99,7 +111,7 @@ class CallLedger:
                     raise UncertainExecution(
                         f"Unfinished {tool} attempt requires reconciliation; not repeated"
                     )
-                return dict(prior)
+                return cast(CallAttemptPayload, dict(prior))
             count = db.execute(
                 "SELECT COUNT(*) FROM calls WHERE run=? AND agent=? AND tool=?", (run, agent, tool)
             ).fetchone()[0]
@@ -126,7 +138,7 @@ class CallLedger:
         return None
 
     @staticmethod
-    def _active_elapsed(db, run, started, now):
+    def _active_elapsed(db: sqlite3.Connection, run: str, started: float, now: float) -> float:
         paused = db.execute(
             "SELECT created FROM events WHERE run=? AND kind='REVIEW_WINDOW_OPENED' ORDER BY id LIMIT 1",
             (run,),
@@ -139,16 +151,24 @@ class CallLedger:
             (run,),
         ).fetchone()
         pause_ended = resumed[0] if resumed else now
-        return now - started - max(0, pause_ended - paused[0])
+        return float(now - started - max(0, pause_ended - paused[0]))
 
-    def active_elapsed(self, run):
+    def active_elapsed(self, run: str) -> float:
         with self.connect() as db:
             owner = db.execute("SELECT started FROM runs WHERE id=?", (run,)).fetchone()
             if not owner:
                 raise RunMismatch("Run has not been registered")
             return self._active_elapsed(db, run, owner[0], time.time())
 
-    def finish(self, run, operation, attempt, status, result, retryable=False):
+    def finish(
+        self,
+        run: str,
+        operation: str,
+        attempt: int,
+        status: str,
+        result: object,
+        retryable: bool = False,
+    ) -> None:
         with self.connect() as db:
             cursor = db.execute(
                 "UPDATE calls SET status=?,result=?,retryable=?,ended=? "
@@ -158,10 +178,10 @@ class CallLedger:
             if cursor.rowcount != 1:
                 raise RunMismatch("Attempt is not pending")
 
-    def usage(self, run):
+    def usage(self, run: str) -> list[CallUsagePayload]:
         with self.connect() as db:
             return [
-                dict(row)
+                cast(CallUsagePayload, dict(row))
                 for row in db.execute(
                     "SELECT agent,tool,COUNT(*) AS attempts, "
                     "SUM(status='SUCCEEDED') AS succeeded,SUM(status='FAILED') AS failed, "
@@ -171,19 +191,19 @@ class CallLedger:
                 )
             ]
 
-    def events(self, run):
+    def events(self, run: str) -> list[AuditEventPayload]:
         with self.connect() as db:
             return [
-                dict(row)
+                cast(AuditEventPayload, dict(row))
                 for row in db.execute(
                     "SELECT kind,detail,created FROM events WHERE run=? ORDER BY id", (run,)
                 )
             ]
 
-    def latest_event(self, run: str, kind: str):
+    def latest_event(self, run: str, kind: str) -> AuditEventPayload | None:
         with self.connect() as db:
             row = db.execute(
                 "SELECT kind,detail,created FROM events WHERE run=? AND kind=? ORDER BY id DESC LIMIT 1",
                 (run, kind),
             ).fetchone()
-            return dict(row) if row else None
+            return cast(AuditEventPayload, dict(row)) if row else None

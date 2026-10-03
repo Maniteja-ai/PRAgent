@@ -1,7 +1,7 @@
 """Strict JSON options, descriptive schemas, and configuration-relative paths."""
 
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Self
 
 from pydantic import Field, StrictInt, model_validator
 
@@ -37,7 +37,7 @@ class CallLimits(Record):
     retry_delay_seconds: float = Field(default=1, ge=0, le=30)
 
     @model_validator(mode="after")
-    def lower_overrides(self):
+    def lower_overrides(self) -> Self:
         if any(
             not 1 <= value <= self.per_agent_tool
             for values in self.overrides.values()
@@ -55,8 +55,7 @@ class FixtureProvider(Record):
     file: str = Field(min_length=1, description="Replay fixture, relative to this configuration file.")
 
 
-class GeminiProvider(Record):
-    provider: Literal["gemini"]
+class ModelProvider(Record):
     model: str = Field(min_length=1)
     api_key_env: str = Field(default="COORDINATOR_LLM_API_KEY", pattern=r"^[A-Za-z_][A-Za-z0-9_]*$")
     timeout_seconds: float = Field(default=45, gt=0, le=120)
@@ -68,7 +67,11 @@ class GeminiProvider(Record):
     )
 
 
-class OpenAIProvider(GeminiProvider):
+class GeminiProvider(ModelProvider):
+    provider: Literal["gemini"]
+
+
+class OpenAIProvider(ModelProvider):
     provider: Literal["openai"]
 
 
@@ -124,7 +127,7 @@ class VerificationPolicy(Record):
     scenarios: tuple[ScenarioBinding, ...] = Field(default=(), max_length=10)
 
     @model_validator(mode="after")
-    def valid_catalog(self):
+    def valid_catalog(self) -> Self:
         ids = [item.id for item in self.scenarios]
         if len(ids) != len(set(ids)) or (self.enabled and not ids):
             raise ValueError("Enabled verification requires a catalog with unique scenario IDs")
@@ -230,7 +233,7 @@ def load_config(path: Path) -> CoordinatorConfig:
     return config
 
 
-def schema() -> dict:
+def schema() -> dict[str, object]:
     return {
         **CoordinatorConfig.model_json_schema(),
         "$schema": "https://json-schema.org/draft/2020-12/schema",

@@ -8,7 +8,8 @@ from dataclasses import dataclass
 from typing import Any
 
 from trace_coordinator.config import DisabledObservability, LangSmithObservability
-from trace_coordinator.infrastructure.ledger import canonical
+from trace_coordinator.domain.models import AnalysisRequest
+from trace_coordinator.infrastructure.ledger import CallLedger, canonical
 
 
 @dataclass
@@ -64,7 +65,7 @@ class CoordinatorObservability:
         self,
         *,
         run_id: str,
-        request,
+        request: AnalysisRequest,
         workflow_version: str,
         execution_metadata: dict[str, str] | None = None,
     ) -> TraceSession:
@@ -151,7 +152,12 @@ class CoordinatorObservability:
             )
 
     @staticmethod
-    def attach(ledger, run_id: str, result: dict[str, Any], session: TraceSession):
+    def attach(
+        ledger: CallLedger,
+        run_id: str,
+        result: dict[str, object],
+        session: TraceSession,
+    ) -> dict[str, object]:
         previous = ledger.latest_event(run_id, "OBSERVABILITY")
         annotation = session.finish()
         if annotation is None:

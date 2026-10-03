@@ -2,15 +2,18 @@
 
 import re
 import sqlite3
+from collections.abc import Sequence
 from contextlib import closing
 from pathlib import Path
+from typing import cast
 
 from filelock import FileLock
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.types import Command
 
+from trace_coordinator.application.interfaces import DecisionModel, Tool
 from trace_coordinator.application.runtime import ToolRegistry, ToolRuntime
-from trace_coordinator.application.verification_stage import VerificationStage
+from trace_coordinator.application.verification_stage import ApprovedScenario, VerificationStage
 from trace_coordinator.application.workflow import WORKFLOW_VERSION, build_workflow
 from trace_coordinator.config import (
     CallLimits,
@@ -20,9 +23,10 @@ from trace_coordinator.config import (
 )
 from trace_coordinator.domain.errors import RunMismatch
 from trace_coordinator.domain.models import AnalysisRequest, ReviewResponse, ToolContext
+from trace_coordinator.domain.state import AnalysisState
 from trace_coordinator.infrastructure.ledger import CallLedger, canonical, digest
 from trace_coordinator.infrastructure.observability import CoordinatorObservability
-from trace_coordinator.security.guardrails import GuardrailEngine
+from trace_coordinator.security.guardrails import GuardrailEngine, GuardrailPolicy
 
 
 class Coordinator:
@@ -30,19 +34,19 @@ class Coordinator:
         self,
         state_directory: Path,
         limits: CallLimits,
-        tools,
-        model,
+        tools: Sequence[Tool],
+        model: DecisionModel,
         *,
-        exploration=None,
-        verification=None,
-        human_review=None,
-        scenarios=(),
-        guardrails=None,
-        observability=None,
-    ):
+        exploration: ExplorationConfig | None = None,
+        verification: VerificationPolicy | None = None,
+        human_review: HumanReviewPolicy | None = None,
+        scenarios: Sequence[ApprovedScenario] = (),
+        guardrails: GuardrailPolicy | None = None,
+        observability: CoordinatorObservability | None = None,
+    ) -> None:
         self.directory = Path(state_directory).resolve()
         self.directory.mkdir(parents=True, exist_ok=True)
-        self.limits, self.registry, self.model = limits, ToolRegistry(tools), model
+        self.limits, self.registry, self.model = limits, ToolRegistry(list(tools)), model
         self.exploration = ExplorationConfig.model_validate(exploration or {})
         self.human_review = HumanReviewPolicy.model_validate(human_review or {})
         self.verification = VerificationStage(
@@ -61,7 +65,7 @@ class Coordinator:
                 raise ValueError("Override refers to an unknown agent or canonical tool")
         self.ledger = CallLedger(self.directory / "calls.sqlite")
 
-    def _fingerprint(self, request):
+    def _fingerprint(self, request: AnalysisRequest) -> str:
         return digest(
             {
                 "workflow": WORKFLOW_VERSION,
@@ -85,19 +89,24 @@ class Coordinator:
         )
 
     @staticmethod
-    def _initial_state(request):
-        return {
-            "request": request.model_dump(mode="json"),
-            "evidence": {},
-            "gaps": [],
-            "rounds": 0,
-            "review_count": 0,
-            "reviews": [],
-            "review_requests": [],
-            "findings": [],
-        }
+    def _initial_state(request: AnalysisRequest) -> AnalysisState:
+        return cast(
+            AnalysisState,
+            {
+                "request": request.model_dump(mode="json"),
+                "evidence": {},
+                "gaps": [],
+                "rounds": 0,
+                "review_count": 0,
+                "reviews": [],
+                "review_requests": [],
+                "findings": [],
+            },
+        )
 
-    def run(self, request: AnalysisRequest, run_id: str, *, review: ReviewResponse | None = None):
+    def run(
+        self, request: AnalysisRequest, run_id: str, *, review: ReviewResponse | None = None
+    ) -> dict[str, object]:
         request = AnalysisRequest.model_validate(request)
         self.guardrails.validate_user_text(request.question, field="request")
         if review is not None:
@@ -161,7 +170,7 @@ class Coordinator:
                                 context,
                                 request,
                             )
-                            return result
+                            return cast(dict[str, object], result)
                         return self.observability.attach(
                             self.ledger, run_id, snapshot.values["report"], trace
                         )
@@ -173,7 +182,9 @@ class Coordinator:
                     if review is not None and not pending:
                         raise RunMismatch("This run is not waiting for human review")
                     if review is not None:
-                        value = Command(resume=ReviewResponse.model_validate(review).model_dump(mode="json"))
+                        value: object = Command(
+                            resume=ReviewResponse.model_validate(review).model_dump(mode="json")
+                        )
                     elif snapshot.values:
                         value = None
                     else:

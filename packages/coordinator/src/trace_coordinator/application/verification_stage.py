@@ -5,8 +5,9 @@ from fnmatch import fnmatchcase
 from typing import Protocol
 
 from trace_coordinator.application.mapping import verified_bytes
+from trace_coordinator.domain.contracts import JsonObject
 from trace_coordinator.domain.errors import ToolFailure
-from trace_coordinator.domain.models import Evidence
+from trace_coordinator.domain.models import Evidence, ToolContext
 from trace_coordinator.infrastructure.artifacts import save_artifact
 from trace_coordinator.infrastructure.ledger import canonical, digest
 
@@ -18,7 +19,7 @@ class ApprovedScenario(Protocol):
     changed_paths: tuple[str, ...]
     required_calls: dict[str, int]
 
-    def execute(self, runtime, context) -> dict: ...
+    def execute(self, runtime: object, context: ToolContext) -> JsonObject: ...
 
 
 def skipped(reason, *, status="NOT_RUN"):

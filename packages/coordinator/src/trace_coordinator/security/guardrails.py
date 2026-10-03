@@ -4,6 +4,7 @@ import hashlib
 import json
 import re
 from collections import Counter
+from collections.abc import Mapping
 from typing import Literal
 
 from pydantic import Field
@@ -41,7 +42,7 @@ _INJECTION = re.compile(
 )
 
 
-def _luhn(value):
+def _luhn(value: str) -> bool:
     digits = [int(character) for character in re.sub(r"\D", "", value)]
     if not 13 <= len(digits) <= 19:
         return False
@@ -56,8 +57,8 @@ def _luhn(value):
     return total % 10 == 0
 
 
-def findings(text):
-    detected = Counter()
+def findings(text: str) -> dict[str, int]:
+    detected: Counter[str] = Counter()
     for name, pattern in _PATTERNS.items():
         detected[name] += len(pattern.findall(text))
     detected["payment_card"] += sum(1 for match in _CARD_CANDIDATE.findall(text) if _luhn(match))
@@ -65,13 +66,13 @@ def findings(text):
     return {name: count for name, count in sorted(detected.items()) if count}
 
 
-def _redact_sensitive(text, counts):
+def _redact_sensitive(text: str, counts: Counter[str]) -> str:
     for name, pattern in _PATTERNS.items():
         text, count = pattern.subn(f"[REDACTED_{name.upper()}]", text)
         if count:
             counts[name] += count
 
-    def card(match):
+    def card(match: re.Match[str]) -> str:
         if _luhn(match.group(0)):
             counts["payment_card"] += 1
             return "[REDACTED_PAYMENT_CARD]"
@@ -81,14 +82,14 @@ def _redact_sensitive(text, counts):
 
 
 class GuardrailEngine:
-    def __init__(self, policy=None):
+    def __init__(self, policy: GuardrailPolicy | Mapping[str, object] | None = None) -> None:
         self.policy = GuardrailPolicy.model_validate(policy or {})
         canonical = json.dumps(
             self.policy.model_dump(mode="json"), sort_keys=True, separators=(",", ":")
         ).encode()
         self.version = "guardrails-v1:" + hashlib.sha256(canonical).hexdigest()
 
-    def validate_user_text(self, text, *, field):
+    def validate_user_text(self, text: str, *, field: str) -> None:
         if not self.policy.enabled:
             return
         detected = findings(text)
@@ -101,15 +102,22 @@ class GuardrailEngine:
             categories = ", ".join(blocked)
             raise ToolFailure(f"Guardrail blocked {field}: {categories}", code=FailureCode.GUARDRAIL_BLOCKED)
 
-    def prepare_model_input(self, payload):
+    def prepare_model_input(self, payload: dict[str, object]) -> tuple[dict[str, object], dict[str, object]]:
         if not self.policy.enabled:
             return payload, {"status": "DISABLED", "counts": {}}
-        self.validate_user_text(payload.get("request", {}).get("question", ""), field="request")
-        for answer in payload.get("human_answers", []):
-            self.validate_user_text(answer, field="human review")
-        counts = Counter()
+        request = payload.get("request")
+        if isinstance(request, Mapping):
+            question = request.get("question")
+            if isinstance(question, str):
+                self.validate_user_text(question, field="request")
+        answers = payload.get("human_answers")
+        if isinstance(answers, (list, tuple)):
+            for answer in answers:
+                if isinstance(answer, str):
+                    self.validate_user_text(answer, field="human review")
+        counts: Counter[str] = Counter()
 
-        def clean(value):
+        def clean(value: object) -> object:
             if isinstance(value, str):
                 if _INJECTION.search(value):
                     counts["prompt_injection"] += len(_INJECTION.findall(value))
@@ -140,13 +148,15 @@ class GuardrailEngine:
         safe["evidence"] = clean(payload.get("evidence", {}))
         if sum(counts.values()) > self.policy.max_findings_per_call:
             raise ToolFailure("Guardrail finding limit exceeded", code=FailureCode.GUARDRAIL_BLOCKED)
-        audit = {
+        audit: dict[str, object] = {
             "status": "SANITIZED" if counts else "PASSED",
             "counts": dict(sorted(counts.items())),
         }
         return safe, audit
 
-    def validate_model_output(self, decision):
+    def validate_model_output(
+        self, decision: Decision | Mapping[str, object]
+    ) -> tuple[Decision, dict[str, object]]:
         parsed = Decision.model_validate(decision)
         if not self.policy.enabled:
             return parsed, {"status": "DISABLED", "counts": {}}

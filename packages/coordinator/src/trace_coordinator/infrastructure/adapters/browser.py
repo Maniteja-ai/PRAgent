@@ -3,13 +3,15 @@
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
+from trace_coordinator.domain.contracts import as_json_value
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
 from trace_coordinator.domain.models import Evidence, Record, ToolResult
+from trace_coordinator.domain.project import ApplicationConfig
 from trace_coordinator.infrastructure.artifacts import save_artifact
 from trace_coordinator.infrastructure.ledger import canonical, digest
 
@@ -52,14 +54,18 @@ class ActionInput(ObserveInput):
 
 
 class BrowserSession:
-    def __init__(self, application, artifact_root: Path):
+    def __init__(self, application: ApplicationConfig, artifact_root: Path) -> None:
         self.app, self.root = application, artifact_root
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="trace-browser")
-        self.playwright = self.browser = None
-        self.run_id = None
-        self.contexts, self.pages, self.snapshots, self.elements = {}, {}, {}, {}
-        self.transitions = []
-        self.known_routes = {}
+        self.playwright: Any | None = None
+        self.browser: Any | None = None
+        self.run_id: str | None = None
+        self.contexts: dict[str, Any] = {}
+        self.pages: dict[str, Any] = {}
+        self.snapshots: dict[str, str] = {}
+        self.elements: dict[str, dict[str, tuple[Any, dict[str, Any]]]] = {}
+        self.transitions: list[dict[str, Any]] = []
+        self.known_routes: dict[str, set[str]] = {}
 
     def execute(self, name, arguments, context):
         # LangGraph nodes can run on different threads; sync Playwright cannot.
@@ -96,7 +102,10 @@ class BrowserSession:
             self.browser = self.playwright.chromium.launch(headless=self.app.browser.headless)
         if environment not in self.pages:
             deployment = getattr(self.app, environment)
-            browser_context = self.browser.new_context(
+            browser = self.browser
+            if browser is None:
+                raise ToolFailure("Browser failed to initialize")
+            browser_context = browser.new_context(
                 viewport={"width": 1280, "height": 900}, accept_downloads=False, service_workers="block"
             )
             page = browser_context.new_page()
@@ -218,7 +227,8 @@ class BrowserSession:
         self.elements.pop(environment, None)
 
     def _capture(self, page, environment, context, previous, action):
-        elements, live_handles = [], {}
+        elements: list[dict[str, Any]] = []
+        live_handles: dict[str, tuple[Any, dict[str, Any]]] = {}
         for handle in page.query_selector_all(SELECTOR):
             if len(elements) >= self.app.browser.max_elements:
                 break
@@ -287,10 +297,10 @@ class BrowserSession:
                     summary=canonical(observation),
                     source=safe_url(page.url),
                     metadata={
-                        "dom": dom_ref,
-                        "screenshot": screenshot_ref,
-                        "observation": data_ref,
-                        "transition": transition_ref,
+                        "dom": as_json_value(dom_ref),
+                        "screenshot": as_json_value(screenshot_ref),
+                        "observation": as_json_value(data_ref),
+                        "transition": as_json_value(transition_ref),
                         "environment": environment,
                         "transition_record": transition,
                     },
@@ -307,11 +317,12 @@ class BrowserTool:
 
     def __init__(self, name, session):
         self.name, self.session = name, session
-        self.input_model = {
+        input_models: dict[str, type[BaseModel]] = {
             "browser.navigate": NavigateInput,
             "browser.observe": ObserveInput,
             "browser.act": ActionInput,
-        }[name]
+        }
+        self.input_model = input_models[name]
         self.description = {
             "browser.navigate": "Navigate to a configured environment and capture DOM, screenshot and observed element IDs.",
             "browser.observe": "Capture the current environment again; no navigation or interaction.",

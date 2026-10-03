@@ -29,7 +29,13 @@ class RunMismatch(ValueError):
 
 
 class ToolFailure(RuntimeError):
-    def __init__(self, message="Tool failed", *, retryable=False, code=FailureCode.UNSPECIFIED):
+    def __init__(
+        self,
+        message: str = "Tool failed",
+        *,
+        retryable: bool = False,
+        code: FailureCode | str = FailureCode.UNSPECIFIED,
+    ) -> None:
         super().__init__(message)
         self.retryable = retryable
         self.code = FailureCode(code)

@@ -12,8 +12,10 @@ class Tool(Protocol):
     name: str
     description: str
     version: str
-    input_model: type[BaseModel]
     allowed_agents: frozenset[str]
+
+    @property
+    def input_model(self) -> type[BaseModel]: ...
 
     def execute(self, arguments: BaseModel, context: ToolContext) -> ToolResult: ...
 
@@ -21,4 +23,4 @@ class Tool(Protocol):
 class DecisionModel(Protocol):
     version: str
 
-    def decide(self, context: Mapping) -> Decision: ...
+    def decide(self, context: Mapping[str, object]) -> Decision: ...

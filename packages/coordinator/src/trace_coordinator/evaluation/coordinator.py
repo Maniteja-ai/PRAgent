@@ -4,12 +4,13 @@ import hashlib
 import json
 import time
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal, cast
 
 from pydantic import Field
 
 from trace_coordinator.application.coordinator import Coordinator
 from trace_coordinator.config import CallLimits, HumanReviewPolicy
+from trace_coordinator.domain.contracts import JsonObject
 from trace_coordinator.domain.models import AnalysisRequest, Record
 from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel, FixtureTool
 
@@ -32,8 +33,8 @@ class GoldenExpected(Record):
 class GoldenCase(Record):
     id: str = Field(pattern=r"^[a-z][a-z0-9_-]{0,79}$")
     request: AnalysisRequest
-    tools: dict[str, dict]
-    decisions: tuple[dict, ...] = Field(min_length=1, max_length=20)
+    tools: dict[str, JsonObject]
+    decisions: tuple[JsonObject, ...] = Field(min_length=1, max_length=20)
     human_review: HumanReviewPolicy = Field(default_factory=HumanReviewPolicy)
     expected: GoldenExpected
 
@@ -72,13 +73,16 @@ def evaluate_dataset(path, output_directory):
     for case in dataset.cases:
         case_root = output / "state" / case.id
         tools = [FixtureTool(name, value) for name, value in case.tools.items()]
-        report = Coordinator(
-            case_root,
-            dataset.limits,
-            tools,
-            FixtureModel(case.decisions),
-            human_review=case.human_review,
-        ).run(case.request, "evaluation")
+        report = cast(
+            dict[str, Any],
+            Coordinator(
+                case_root,
+                dataset.limits,
+                tools,
+                FixtureModel(case.decisions),
+                human_review=case.human_review,
+            ).run(case.request, "evaluation"),
+        )
         report_bytes = (json.dumps(report, indent=2) + "\n").encode()
         report_path = output / "cases" / case.id / "report.json"
         report_path.parent.mkdir(parents=True, exist_ok=True)

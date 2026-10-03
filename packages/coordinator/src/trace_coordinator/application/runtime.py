@@ -2,6 +2,10 @@
 
 import json
 import time
+from collections.abc import Callable, Mapping
+from typing import TypeVar
+
+from pydantic import BaseModel, JsonValue
 
 from trace_coordinator.application.interfaces import DecisionModel, Tool
 from trace_coordinator.config import CallLimits
@@ -10,16 +14,18 @@ from trace_coordinator.domain.models import Decision, ToolContext, ToolResult
 from trace_coordinator.infrastructure.ledger import CallLedger
 from trace_coordinator.security.guardrails import GuardrailEngine
 
+_ResultT = TypeVar("_ResultT", bound=BaseModel)
+
 
 class ToolRegistry:
     def __init__(self, tools: list[Tool]):
-        self.tools = {}
+        self.tools: dict[str, Tool] = {}
         for tool in tools:
             if tool.name in self.tools or tool.name == "model.decide":
                 raise ValueError("Duplicate or reserved canonical tool name")
             self.tools[tool.name] = tool
 
-    def descriptions(self, agent):
+    def descriptions(self, agent: str) -> list[dict[str, JsonValue]]:
         return [
             {"name": t.name, "description": t.description, "arguments": t.input_model.model_json_schema()}
             for t in self.tools.values()
@@ -33,20 +39,32 @@ class ToolRuntime:
         ledger: CallLedger,
         limits: CallLimits,
         registry: ToolRegistry,
-        model: DecisionModel,
-        guardrails=None,
-    ):
+        model: DecisionModel | None,
+        guardrails: GuardrailEngine | None = None,
+    ) -> None:
         self.ledger, self.limits, self.registry, self.model = ledger, limits, registry, model
         self.guardrails = guardrails or GuardrailEngine()
 
-    def _execute(self, context, operation, name, payload, callback, result_type):
+    def _execute(
+        self,
+        context: ToolContext,
+        operation: str,
+        name: str,
+        payload: Mapping[str, object],
+        callback: Callable[[], _ResultT],
+        result_type: type[_ResultT],
+    ) -> _ResultT:
         for attempt in range(1, self.limits.retry_attempts + 1):
             prior = self.ledger.reserve(
                 context.run_id, operation, attempt, context.agent_id, name, payload, self.limits
             )
             if prior:
                 if prior["status"] == "SUCCEEDED":
+                    if prior["result"] is None:
+                        raise ToolFailure("Successful call has no persisted result")
                     return result_type.model_validate_json(prior["result"])
+                if prior["result"] is None:
+                    raise ToolFailure("Failed call has no persisted result")
                 failure = ToolFailure(
                     json.loads(prior["result"])["error"], retryable=bool(prior["retryable"])
                 )
@@ -74,7 +92,13 @@ class ToolRuntime:
             time.sleep(self.limits.retry_delay_seconds)
         raise AssertionError("Attempt count must be positive")
 
-    def call_tool(self, context: ToolContext, operation: str, name: str, arguments: dict) -> ToolResult:
+    def call_tool(
+        self,
+        context: ToolContext,
+        operation: str,
+        name: str,
+        arguments: Mapping[str, object],
+    ) -> ToolResult:
         tool = self.registry.tools.get(name)
         if tool is None or context.agent_id not in tool.allowed_agents:
             raise ToolFailure("Unknown or unauthorized tool")
@@ -83,7 +107,7 @@ class ToolRuntime:
         except ValueError as exc:
             raise ToolFailure("Invalid tool arguments") from exc
 
-        def execute():
+        def execute() -> ToolResult:
             result = ToolResult.model_validate(tool.execute(parsed, context))
             if any(e.project_id != context.project_id for e in result.evidence):
                 raise ToolFailure("Out-of-scope tool evidence")
@@ -93,7 +117,10 @@ class ToolRuntime:
 
         return self._execute(context, operation, name, parsed.model_dump(mode="json"), execute, ToolResult)
 
-    def decide(self, context: ToolContext, operation: str, payload: dict) -> Decision:
+    def decide(self, context: ToolContext, operation: str, payload: dict[str, object]) -> Decision:
+        if self.model is None:
+            raise ToolFailure("Decision model is unavailable in this tool-only runtime")
+        model = self.model
         safe_payload, input_audit = self.guardrails.prepare_model_input(payload)
         self.ledger.event_once(
             context.run_id,
@@ -105,8 +132,8 @@ class ToolRuntime:
             ),
         )
 
-        def decide():
-            decision, output_audit = self.guardrails.validate_model_output(self.model.decide(safe_payload))
+        def decide() -> Decision:
+            decision, output_audit = self.guardrails.validate_model_output(model.decide(safe_payload))
             self.ledger.event_once(
                 context.run_id,
                 "MODEL_GUARDRAIL",

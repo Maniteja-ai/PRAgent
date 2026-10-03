@@ -55,11 +55,6 @@
     "GeminiProvider": {
       "additionalProperties": false,
       "properties": {
-        "provider": {
-          "const": "gemini",
-          "title": "Provider",
-          "type": "string"
-        },
         "model": {
           "minLength": 1,
           "title": "Model",
@@ -97,11 +92,16 @@
           "description": "Allow the shared dispatcher to retry invalid structured output within retry_attempts and the same model.decide budget. No invalid decision is executed.",
           "title": "Retry Invalid Response",
           "type": "boolean"
+        },
+        "provider": {
+          "const": "gemini",
+          "title": "Provider",
+          "type": "string"
         }
       },
       "required": [
-        "provider",
-        "model"
+        "model",
+        "provider"
       ],
       "title": "GeminiProvider",
       "type": "object"
@@ -261,11 +261,6 @@
     "OpenAIProvider": {
       "additionalProperties": false,
       "properties": {
-        "provider": {
-          "const": "openai",
-          "title": "Provider",
-          "type": "string"
-        },
         "model": {
           "minLength": 1,
           "title": "Model",
@@ -303,11 +298,16 @@
           "description": "Allow the shared dispatcher to retry invalid structured output within retry_attempts and the same model.decide budget. No invalid decision is executed.",
           "title": "Retry Invalid Response",
           "type": "boolean"
+        },
+        "provider": {
+          "const": "openai",
+          "title": "Provider",
+          "type": "string"
         }
       },
       "required": [
-        "provider",
-        "model"
+        "model",
+        "provider"
       ],
       "title": "OpenAIProvider",
       "type": "object"

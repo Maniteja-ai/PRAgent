@@ -9,7 +9,7 @@ import sqlite3
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import httpx
 from pydantic import Field, field_validator
@@ -183,9 +183,10 @@ class WebhookStore:
 class WebhookService:
     def __init__(self, config, *, secret=None, store=None):
         self.config = config
-        self.secret = secret or os.environ.get(config.webhook_secret_env)
-        if not self.secret:
+        resolved_secret = secret or os.environ.get(config.webhook_secret_env)
+        if not resolved_secret:
             raise ValueError(f"Missing webhook secret: {config.webhook_secret_env}")
+        self.secret: str = resolved_secret
         self.store = store or WebhookStore(config.database_file)
 
     def accept(self, headers, body):
@@ -322,7 +323,7 @@ class GitHubCommentPublisher:
         return {"status": operation.upper(), "comment_id": result.json()["id"]}
 
 
-def create_webhook_app(config_path):
+def create_webhook_app(config_path: Path) -> Any:
     try:
         from fastapi import FastAPI, HTTPException, Request
         from fastapi.responses import JSONResponse
@@ -333,7 +334,7 @@ def create_webhook_app(config_path):
     app = FastAPI(title="Trace Impact GitHub webhook")
 
     @app.post("/github/webhook")
-    async def receive(request: Request):
+    async def receive(request: Request) -> Any:
         body = await request.body()
         try:
             result = service.accept(dict(request.headers), body)

@@ -1,6 +1,7 @@
 """Build observed paths and reviewable code/UI candidates without publishing graph edges."""
 
 import re
+from typing import Any
 
 from trace_coordinator.application.exploration import screens
 
@@ -35,7 +36,9 @@ def source_lines(patch, environment):
 
 
 def ui_index(evidence, max_candidates=50):
-    states, flows, candidates = [], [], []
+    states: list[dict[str, Any]] = []
+    flows: list[dict[str, Any]] = []
+    candidates: list[dict[str, Any]] = []
     diffs = [e for e in evidence.values() if e["kind"] == "diff" and "changes" in e.get("metadata", {})]
     for environment in ("baseline", "patched"):
         observed = screens(evidence, environment)
@@ -84,7 +87,7 @@ def ui_index(evidence, max_candidates=50):
         if transitions:
             # A restart can create disconnected paths. Group by predecessor links,
             # rather than inventing a transition between independent sessions.
-            paths = []
+            paths: list[list[dict[str, Any]]] = []
             for transition in transitions:
                 prior = next((p for p in paths if p[-1]["to"] == transition["from"]), None)
                 if prior is None:

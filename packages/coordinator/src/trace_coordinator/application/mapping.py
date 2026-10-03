@@ -6,8 +6,9 @@ An inspector can be replaced without changing evidence validation or publication
 
 import hashlib
 import json
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol
 from urllib.parse import urlsplit
 
 from pydantic import Field
@@ -41,19 +42,29 @@ class MappingConfig(Record):
 
 
 class SourceInspector(Protocol):
-    def inspect(self, candidate: dict, element: dict) -> dict:
+    def inspect(self, candidate: Mapping[str, object], element: Mapping[str, object]) -> dict[str, object]:
         """Return owner identity and static JSX provenance, or raise ValueError."""
         ...
 
 
-def verified_bytes(reference):
-    data = Path(reference["path"]).read_bytes()
-    if len(data) != reference["bytes"] or hashlib.sha256(data).hexdigest() != reference["sha256"]:
+def verified_bytes(reference: object) -> bytes:
+    if not isinstance(reference, Mapping):
+        raise ValueError("Evidence artifact reference must be an object")
+    path, size, sha256 = reference.get("path"), reference.get("bytes"), reference.get("sha256")
+    if not isinstance(path, str) or not isinstance(size, int) or not isinstance(sha256, str):
+        raise ValueError("Evidence artifact reference has invalid field types")
+    data = Path(path).read_bytes()
+    if len(data) != size or hashlib.sha256(data).hexdigest() != sha256:
         raise ValueError("Evidence artifact hash/size mismatch")
     return data
 
 
-def validate_mappings(report, config, application, inspector: SourceInspector):
+def validate_mappings(
+    report: Any,
+    config: MappingConfig,
+    application: Any,
+    inspector: SourceInspector,
+) -> list[dict[str, Any]]:
     """Fail the whole batch closed; no partial confirmation after a rejected link."""
     from trace_coordinator.domain.models import Evidence
 

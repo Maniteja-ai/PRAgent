@@ -2,7 +2,7 @@
 
 import json
 import os
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ValidationError
 
@@ -121,6 +121,7 @@ class LangChainModel:
             "timeout": config.timeout_seconds,
             "max_output_tokens": config.max_output_tokens,
         }
+        self.client: Any
         if config.provider == "gemini":
             from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -178,6 +179,7 @@ class LangChainModel:
         # Provider-specific clients are optional and need not expose close().
         for name in ("root_client", "client"):
             client = getattr(self.client, name, None)
-            if callable(getattr(client, "close", None)):
-                client.close()
+            close = getattr(client, "close", None)
+            if callable(close):
+                close()
                 break

@@ -1,7 +1,7 @@
 """Application inputs are separate from execution policy and model selection."""
 
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Self
 from urllib.parse import urlsplit
 
 from pydantic import Field, field_validator, model_validator
@@ -19,7 +19,7 @@ class RuntimeAttestation(Record):
 
     @field_validator("path")
     @classmethod
-    def safe_path(cls, value):
+    def safe_path(cls, value: str) -> str:
         if (
             not value.startswith("/")
             or value.startswith("//")
@@ -39,7 +39,7 @@ class Deployment(Record):
 
     @field_validator("url")
     @classmethod
-    def public_url(cls, value):
+    def public_url(cls, value: str) -> str:
         parsed = urlsplit(value)
         if (
             parsed.scheme not in {"http", "https"}
@@ -56,7 +56,7 @@ class Deployment(Record):
 
     @field_validator("entry_path")
     @classmethod
-    def relative_path(cls, value):
+    def relative_path(cls, value: str) -> str:
         if not value.startswith("/") or value.startswith("//") or "\\" in value:
             raise ValueError("Use an absolute path within the application origin")
         return value
@@ -130,7 +130,7 @@ class ApplicationConfig(Record):
     browser: BrowserOptions = Field(default_factory=BrowserOptions)
 
     @model_validator(mode="after")
-    def separate_environments(self):
+    def separate_environments(self) -> Self:
         if self.baseline.url == self.patched.url:
             raise ValueError("Baseline and patched environments must have separate origins")
         if self.production_mode and any(

@@ -338,35 +338,30 @@ Current evidence:
 - [100-run coordinator stability](artifacts/coordinator-stability-01/report.md): 100/100, one output;
 - [final evaluation campaign](artifacts/final-evaluation-01/report.md): 17/17 checks passed with stated limits;
 - [production release gate](artifacts/production-readiness-04/report.md): `READY`;
-- current test suite: **267 passed**; Python 3.14/Windows measured **90.35%** combined
+- current test suite: **268 passed**; Python 3.14/Windows measured **90.24%** combined
   statement/branch coverage, while Python 3.12/Linux measured **87.40%** because Playwright
   calls run in a worker thread; CI keeps every module in scope and enforces the portable **87%** floor;
 - replay: the same run ID produced a byte-identical report with no new calls;
-- Ruff lint and formatting checks passed.
+- Ruff lint/format, Mypy package checks and strict core-contract checks passed.
 
 ## Package structure
 
 | Module | Responsibility |
 | --- | --- |
-| `application.py`, `config.py` | Strict application/execution models and schemas |
-| `workflow.py`, `state.py` | LangGraph nodes, routing and report construction |
-| `runtime.py`, `ledger.py` | Guarded dispatch, quotas, receipts and recovery |
-| `adapters/local_git.py`, `adapters/git_changes.py` | Immutable local change evidence |
-| `adapters/attestation.py` | Deployed revision/backend verification |
-| `adapters/knowledge.py` | Neo4j and vector retrieval bridge |
-| `adapters/browser.py` | Restricted Playwright observations and actions |
-| `mapping.py` | Validate and publish code/UI/flow graph mappings |
-| `verification.py`, `verification_stage.py` | Requirements, approval, selection and deterministic checks |
-| `adapters/voucher_verification.py` | Saleor fixture and browser implementation |
-| `evaluation.py` | Reviewed coordinator golden evaluation |
-| `real_pr_evaluation.py` | Real-PR relevance, citation and faithfulness scoring |
-| `artifact_security.py` | Pluggable artifact DLP enforcement and audit |
-| `github_webhook.py` | Signed webhook intake, durable jobs, GitHub App auth and PR comments |
-| `additional_behavior.py` | Bounded Saleor API behavior oracles |
-| `campaign.py` | Cross-system evaluation gates and honest scope classification |
-| `readiness.py` | Machine-readable production release gate |
-| `observability.py` | Optional content-safe, fail-open LangSmith callback and trace audit |
-| `api.py`, `bootstrap.py`, `cli.py` | Public API, adapter construction and commands |
+| `domain/` | Pydantic domain models plus typed checkpoint, report and persistence contracts |
+| `application/` | LangGraph workflow, guarded dispatch, verification and mapping use cases |
+| `infrastructure/adapters/` | Git, GitHub, knowledge, browser, model and Saleor provider boundaries |
+| `infrastructure/ledger.py` | Transactional quotas, receipts and recovery |
+| `infrastructure/github_webhook.py` | Signed webhook intake, durable jobs and PR comments |
+| `security/` | Model guardrails and pluggable artifact DLP enforcement |
+| `evaluation/` | Golden, real-PR, live-model, campaign and release-gate evaluation |
+| `presentation/` | CLI commands and deterministic Markdown rendering |
+| `config.py`, `bootstrap.py` | Strict configuration schemas and dependency construction |
+
+Plain JSON is limited to provider, webhook, checkpoint and artifact boundaries. Those values are
+validated immediately into Pydantic models or named `TypedDict` contracts before application code
+uses them. CI type-checks every source module and applies Mypy strict mode to domain contracts,
+configuration, dispatch interfaces, the runtime and the call ledger.
 
 ## Add another repository or scenario
 

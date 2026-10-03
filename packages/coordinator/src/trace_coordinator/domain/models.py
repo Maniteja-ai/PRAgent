@@ -1,6 +1,6 @@
 """Coordinator-owned boundary records; no dependency on the knowledge library."""
 
-from typing import Literal
+from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
@@ -48,7 +48,7 @@ class Decision(Record):
     findings: tuple[Finding, ...] = Field(default=(), max_length=30)
 
     @model_validator(mode="after")
-    def coherent_action(self):
+    def coherent_action(self) -> Self:
         if self.action == "tool":
             if not self.tool or self.question or self.findings:
                 raise ValueError("Tool decisions require a tool and cannot contain findings or review")

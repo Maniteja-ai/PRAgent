@@ -12,6 +12,7 @@ from urllib.parse import urlencode
 
 import httpx
 
+from trace_coordinator.domain.contracts import as_json_value
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import Evidence, Record, ToolResult
 from trace_coordinator.infrastructure.adapters.browser import DESCRIBE, BrowserSession, BrowserTool
@@ -228,7 +229,11 @@ class SaleorFixtures:
                     kind="fixture",
                     source=self.config.graphql_url,
                     summary=canonical(public),
-                    metadata={"artifact": saved, "operation": name, "captured_at": time.time()},
+                    metadata={
+                        "artifact": as_json_value(saved),
+                        "operation": name,
+                        "captured_at": time.time(),
+                    },
                 ),
             )
         )
@@ -343,7 +348,7 @@ class VoucherProbe:
             kind="verification",
             summary=canonical(public),
             source=captured.evidence[0].source,
-            metadata={"artifact": saved},
+            metadata={"artifact": as_json_value(saved)},
         )
         return ToolResult(evidence=(*captured.evidence, assertion))
 

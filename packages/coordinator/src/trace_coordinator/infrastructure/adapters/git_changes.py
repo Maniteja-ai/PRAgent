@@ -5,6 +5,7 @@ import os
 import subprocess
 from dataclasses import dataclass
 
+from trace_coordinator.domain.contracts import as_json_value
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import ChangeSet, Evidence, FileChange, ToolResult
 from trace_coordinator.infrastructure.artifacts import save_artifact
@@ -79,7 +80,7 @@ def evidence(
                 summary=title + "\n" + comparison.patch.decode("utf-8"),
                 metadata={
                     "changes": changes.model_dump(mode="json"),
-                    "artifact": saved,
+                    "artifact": as_json_value(saved),
                     "provider": provider,
                 },
             ),

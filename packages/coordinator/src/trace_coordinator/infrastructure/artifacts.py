@@ -5,8 +5,10 @@ import os
 import tempfile
 from pathlib import Path
 
+from trace_coordinator.domain.contracts import ArtifactPayload
 
-def save_artifact(root: Path, run_id: str, data: bytes, suffix: str) -> dict:
+
+def save_artifact(root: Path, run_id: str, data: bytes, suffix: str) -> ArtifactPayload:
     from trace_coordinator.security.artifact_security import enforce_artifact_policy
 
     enforce_artifact_policy(root, data, suffix)

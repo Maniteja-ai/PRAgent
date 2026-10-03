@@ -133,7 +133,9 @@ def evaluate_real_prs(dataset_path, predictions_path):
     if set(by_id) != {case.id for case in dataset.cases}:
         raise ValueError("Predictions must contain every dataset case exactly once")
 
-    dimensions = {name: [] for name in ("ui_elements", "flows", "requirements")}
+    dimensions: dict[str, list[dict[str, float]]] = {
+        name: [] for name in ("ui_elements", "flows", "requirements")
+    }
     case_results = []
     supported_claims = predicted_claims = expected_claims_found = expected_claims = 0
     valid_citations = total_citations = 0

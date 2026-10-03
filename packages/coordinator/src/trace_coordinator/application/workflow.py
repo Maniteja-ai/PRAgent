@@ -189,30 +189,26 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
     def execute_tool(state):
         decision = Decision.model_validate(state["decision"])
         try:
-            if decision.tool == "github.diff":
+            tool_name = decision.tool
+            if tool_name is None:
+                raise ToolFailure("Tool decision is missing its canonical tool name")
+            if tool_name == "github.diff":
                 raise ToolFailure("The pinned PR cannot be replaced during reasoning")
             if verification.policy.enabled and (
-                decision.tool.startswith("fixture.")
-                or decision.tool == "browser.check"
-                or (
-                    state.get("phase") != "exploration"
-                    and decision.tool in {"browser.act", "browser.navigate"}
-                )
+                tool_name.startswith("fixture.")
+                or tool_name == "browser.check"
+                or (state.get("phase") != "exploration" and tool_name in {"browser.act", "browser.navigate"})
             ):
                 raise ToolFailure("Verification actions are reserved for the approved scenario stage")
-            if (
-                exploration.enabled
-                and state.get("phase") == "analysis"
-                and decision.tool.startswith("browser.")
-            ):
+            if exploration.enabled and state.get("phase") == "analysis" and tool_name.startswith("browser."):
                 raise ToolFailure("Browser exploration has ended; report its recorded scope and gaps")
             if state.get("phase") == "exploration" and (
-                decision.tool not in {"browser.navigate", "browser.observe", "browser.act"}
+                tool_name not in {"browser.navigate", "browser.observe", "browser.act"}
                 or decision.arguments.get("environment") != exploration.environment
             ):
                 raise ToolFailure("Exploration requires a browser tool in its configured environment")
             result = runtime.call_tool(
-                scoped_context(state), f"tool:{state['rounds']}", decision.tool, decision.arguments
+                scoped_context(state), f"tool:{state['rounds']}", tool_name, decision.arguments
             )
             return {
                 "evidence": merge_evidence(state["evidence"], result.evidence),
@@ -234,7 +230,7 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
     def validate_findings(state):
         decision = Decision.model_validate(state["decision"])
         findings, gaps, errors = [], list(state["gaps"]), []
-        aliases = {}
+        aliases: dict[str, set[str]] = {}
         for evidence_id, item in state["evidence"].items():
             if item["kind"] != "graph":
                 continue

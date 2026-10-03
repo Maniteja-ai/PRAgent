@@ -168,7 +168,9 @@
         },
         "tools": {
           "additionalProperties": {
-            "additionalProperties": true,
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
             "type": "object"
           },
           "title": "Tools",
@@ -176,7 +178,9 @@
         },
         "decisions": {
           "items": {
-            "additionalProperties": true,
+            "additionalProperties": {
+              "$ref": "#/$defs/JsonValue"
+            },
             "type": "object"
           },
           "maxItems": 20,
@@ -316,7 +320,8 @@
       },
       "title": "HumanReviewPolicy",
       "type": "object"
-    }
+    },
+    "JsonValue": {}
   },
   "additionalProperties": false,
   "properties": {

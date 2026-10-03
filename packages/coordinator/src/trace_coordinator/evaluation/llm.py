@@ -4,7 +4,7 @@ import hashlib
 import time
 from pathlib import Path
 from statistics import median
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field
 
@@ -80,15 +80,16 @@ def evaluate_live_llm(path, output_directory, *, model=None):
         load_dotenv(source.parent / config.env_file, override=False)
     engine = GuardrailEngine(config.guardrails)
     owned = model is None
-    selected_model = model or LangChainModel(config.model)
+    selected_model: Any = model or LangChainModel(config.model)
     provider_calls = structured = grounded_findings = total_findings = 0
-    results, latencies = [], []
+    results: list[dict[str, Any]] = []
+    latencies: list[float] = []
     try:
         for case in config.cases:
             called = False
             decision = None
             error = None
-            input_audit = {"status": "BLOCKED", "counts": {}}
+            input_audit: dict[str, object] = {"status": "BLOCKED", "counts": {}}
             started = time.perf_counter()
             try:
                 engine.validate_user_text(case.question, field="evaluation request")
@@ -108,11 +109,12 @@ def evaluate_live_llm(path, output_directory, *, model=None):
             cited = {
                 citation for item in (decision.findings if decision else ()) for citation in item.evidence_ids
             }
+            decision_findings = decision.findings if decision is not None else ()
             case_grounded = bool(decision is not None) and all(
                 set(item.evidence_ids) <= evidence_ids
                 and any(ref.startswith("diff") for ref in item.evidence_ids)
                 and any(not ref.startswith("diff") for ref in item.evidence_ids)
-                for item in decision.findings
+                for item in decision_findings
             )
             finding_count = len(decision.findings) if decision else 0
             total_findings += finding_count

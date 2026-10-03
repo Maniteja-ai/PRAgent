@@ -5,6 +5,7 @@ import json
 import subprocess
 from pathlib import Path
 
+from trace_coordinator.domain.contracts import as_json_value
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import Evidence, ToolResult
 from trace_coordinator.infrastructure.adapters.fixtures import QueryInput
@@ -330,7 +331,10 @@ class KnowledgeTool:
                     kind="graph",
                     source="neo4j:" + ",".join(source["graph_id"] for source in sources),
                     summary=canonical(summary),
-                    metadata={"artifact": saved, "graph_sources": sources},
+                    metadata={
+                        "artifact": as_json_value(saved),
+                        "graph_sources": as_json_value(sources),
+                    },
                 ),
             ),
             gaps=tuple(gaps),
@@ -358,7 +362,7 @@ class KnowledgeTool:
                     "chunk_id": passage.id,
                     "source_id": passage.source_id,
                     "run_id": passage.scope.run_id,
-                    "artifact": saved,
+                    "artifact": as_json_value(saved),
                     "retrieval_score": passage.retrieval_score,
                 },
             )

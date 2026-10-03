@@ -7,6 +7,7 @@ from pathlib import Path
 import httpx
 
 from trace_coordinator.domain.errors import ToolFailure
+from trace_coordinator.domain.project import ApplicationConfig
 from trace_coordinator.infrastructure.adapters.fixtures import PRInput
 from trace_coordinator.infrastructure.adapters.git_changes import compare, evidence
 from trace_coordinator.infrastructure.ledger import digest
@@ -18,7 +19,12 @@ class GitHubDiffTool:
     input_model = PRInput
     allowed_agents = frozenset({"coordinator"})
 
-    def __init__(self, application, artifact_root: Path, client=None):
+    def __init__(
+        self,
+        application: ApplicationConfig,
+        artifact_root: Path,
+        client: httpx.Client | None = None,
+    ) -> None:
         self.app, self.artifact_root = application, artifact_root
         self.version = "github-git-v2:" + digest(application.model_dump(mode="json"))
         token = os.environ.get(application.github_token_env) if application.github_token_env else None

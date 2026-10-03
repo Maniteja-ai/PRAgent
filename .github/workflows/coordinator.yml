@@ -23,6 +23,15 @@ jobs:
       - run: npm ci --prefix ../../src/trace_impact/ingestion/code/typescript --ignore-scripts
       - run: uv run --no-sync ruff check src tests
       - run: uv run --no-sync ruff format --check src tests
+      - run: uv run --no-sync mypy src/trace_coordinator
+      - name: Strict type check core contracts and dispatch
+        run: >-
+          uv run --no-sync mypy --strict
+          src/trace_coordinator/domain
+          src/trace_coordinator/config.py
+          src/trace_coordinator/application/interfaces.py
+          src/trace_coordinator/application/runtime.py
+          src/trace_coordinator/infrastructure/ledger.py
       # Playwright calls execute in a worker thread. Python 3.12/Linux records
       # 87.4% while the same suite records 90.1% on Python 3.14/Windows.
       - run: uv run --no-sync pytest -q --cov=trace_coordinator --cov-branch --cov-fail-under=87 --cov-report=xml:artifacts/coverage.xml --junitxml=artifacts/tests.xml
@@ -31,7 +40,7 @@ jobs:
         run: |
           uv venv /tmp/coordinator-core --python 3.12
           uv pip install --python /tmp/coordinator-core/bin/python dist/*.whl
-          /tmp/coordinator-core/bin/python -c "import importlib.util; import trace_coordinator; assert importlib.util.find_spec('trace_impact') is None"
+          /tmp/coordinator-core/bin/python -c "import importlib.resources, importlib.util, trace_coordinator; assert importlib.util.find_spec('trace_impact') is None; assert importlib.resources.files('trace_coordinator').joinpath('py.typed').is_file()"
           /tmp/coordinator-core/bin/trace-coordinator run configs/demo.json examples/request.json --run-id isolated-core --output artifacts/isolated-core
       - uses: actions/upload-artifact@v4
         if: always()
