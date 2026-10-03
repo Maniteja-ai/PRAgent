@@ -4,13 +4,16 @@ import argparse
 import json
 from pathlib import Path
 
+from pydantic import TypeAdapter
+
 from trace_coordinator.bootstrap import create_coordinator
 from trace_coordinator.config import schema
+from trace_coordinator.domain.contracts import AnalysisReportPayload, VerificationResultPayload
 from trace_coordinator.domain.models import AnalysisRequest, ReviewResponse
 from trace_coordinator.presentation.report_formatter import markdown
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     generate = commands.add_parser("schema")
@@ -185,9 +188,10 @@ def main():
         from trace_coordinator.application.verification import run_verification, verification_markdown
 
         result = run_verification(args.config, args.run_id)
+        verification_result = TypeAdapter(VerificationResultPayload).validate_python(result)
         args.output.mkdir(parents=True, exist_ok=True)
         (args.output / "report.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-        (args.output / "report.md").write_text(verification_markdown(result), encoding="utf-8")
+        (args.output / "report.md").write_text(verification_markdown(verification_result), encoding="utf-8")
         print(json.dumps({"status": result["status"], "run_id": args.run_id, "checks": result["checks"]}))
         return
     if args.command == "map-ui":
@@ -216,11 +220,15 @@ def main():
         else None
     )
     with create_coordinator(args.config) as coordinator:
-        result = coordinator.run(request, args.run_id, review=review)
+        analysis_report = TypeAdapter(AnalysisReportPayload).validate_python(
+            coordinator.run(request, args.run_id, review=review)
+        )
     args.output.mkdir(parents=True, exist_ok=True)
-    (args.output / "report.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-    (args.output / "report.md").write_text(markdown(result), encoding="utf-8")
-    print(json.dumps({"status": result["status"], "run_id": args.run_id, "output": str(args.output)}))
+    (args.output / "report.json").write_text(json.dumps(analysis_report, indent=2) + "\n", encoding="utf-8")
+    (args.output / "report.md").write_text(markdown(analysis_report), encoding="utf-8")
+    print(
+        json.dumps({"status": analysis_report["status"], "run_id": args.run_id, "output": str(args.output)})
+    )
 
 
 if __name__ == "__main__":

@@ -1,19 +1,29 @@
 """Single-operation Playwright tools. All browser work stays on one owning thread."""
 
+from __future__ import annotations
+
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Literal, TypedDict, cast
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, TypeAdapter
 
-from trace_coordinator.domain.contracts import as_json_value
+from trace_coordinator.domain.contracts import (
+    ObservedElementPayload,
+    ScreenPayload,
+    UITransitionPayload,
+    as_json_value,
+)
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
-from trace_coordinator.domain.models import Evidence, Record, ToolResult
+from trace_coordinator.domain.models import Evidence, Record, ToolContext, ToolResult
 from trace_coordinator.domain.project import ApplicationConfig
 from trace_coordinator.infrastructure.artifacts import save_artifact
 from trace_coordinator.infrastructure.ledger import canonical, digest
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Browser, BrowserContext, ElementHandle, Page, Playwright, Route
 
 SELECTOR = 'a,button,input:not([type="hidden"]),select,textarea,[role="button"]'
 DESCRIBE = """el => ({tag:el.tagName.toLowerCase(), type:el.getAttribute('type')||'',
@@ -21,14 +31,26 @@ DESCRIBE = """el => ({tag:el.tagName.toLowerCase(), type:el.getAttribute('type')
       el.getAttribute('placeholder') || el.innerText || el.getAttribute('title') || '',
     href:el.getAttribute('href')||'', disabled:!!el.disabled,
     checked:!!el.checked, filled:!!el.value, test_id:el.getAttribute('data-testid')||''})"""
+_ELEMENT_ADAPTER = TypeAdapter(ObservedElementPayload)
 
 
-def safe_url(url):
+Environment = Literal["baseline", "patched"]
+
+
+class BrowserActionPayload(TypedDict, total=False):
+    tool: str
+    path: str
+    action: str
+    element_id: str
+    element_name: str
+
+
+def safe_url(url: str) -> str:
     parts = urlsplit(url)
     return urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
 
 
-def origin(url):
+def origin(url: str) -> str:
     parts = urlsplit(url)
     return f"{parts.scheme}://{parts.netloc}"
 
@@ -57,28 +79,33 @@ class BrowserSession:
     def __init__(self, application: ApplicationConfig, artifact_root: Path) -> None:
         self.app, self.root = application, artifact_root
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="trace-browser")
-        self.playwright: Any | None = None
-        self.browser: Any | None = None
+        self.playwright: Playwright | None = None
+        self.browser: Browser | None = None
         self.run_id: str | None = None
-        self.contexts: dict[str, Any] = {}
-        self.pages: dict[str, Any] = {}
+        self.contexts: dict[str, BrowserContext] = {}
+        self.pages: dict[str, Page] = {}
         self.snapshots: dict[str, str] = {}
-        self.elements: dict[str, dict[str, tuple[Any, dict[str, Any]]]] = {}
-        self.transitions: list[dict[str, Any]] = []
+        self.elements: dict[str, dict[str, tuple[ElementHandle, ObservedElementPayload]]] = {}
+        self.transitions: list[UITransitionPayload] = []
         self.known_routes: dict[str, set[str]] = {}
 
-    def execute(self, name, arguments, context):
+    def execute(
+        self,
+        name: str,
+        arguments: NavigateInput | ObserveInput | ActionInput,
+        context: ToolContext,
+    ) -> ToolResult:
         # LangGraph nodes can run on different threads; sync Playwright cannot.
         # Every action remains a separate guarded tool invocation outside this adapter.
         return self.executor.submit(self._execute, name, arguments, context).result()
 
-    def close(self):
+    def close(self) -> None:
         try:
             self.executor.submit(self._close).result()
         finally:
             self.executor.shutdown(wait=True)
 
-    def _close(self):
+    def _close(self) -> None:
         if self.browser:
             self.browser.close()
         if self.playwright:
@@ -90,7 +117,7 @@ class BrowserSession:
         self.elements.clear()
         self.known_routes.clear()
 
-    def _page(self, environment, run_id):
+    def _page(self, environment: Environment, run_id: str) -> Page:
         if self.run_id != run_id:
             self._close()
             self.transitions = []
@@ -112,7 +139,7 @@ class BrowserSession:
             page.set_default_timeout(self.app.browser.timeout_seconds * 1000)
             page.set_default_navigation_timeout(self.app.browser.timeout_seconds * 1000)
 
-            def guard(route):
+            def guard(route: Route) -> None:
                 request = route.request
                 if request.is_navigation_request() and origin(request.url) != deployment.url:
                     route.abort()
@@ -125,7 +152,12 @@ class BrowserSession:
             self.contexts[environment], self.pages[environment] = browser_context, page
         return self.pages[environment]
 
-    def _execute(self, name, arguments, context):
+    def _execute(
+        self,
+        name: str,
+        arguments: NavigateInput | ObserveInput | ActionInput,
+        context: ToolContext,
+    ) -> ToolResult:
         if context.project_id != self.app.project_id:
             raise ToolFailure("Browser application is outside the project")
         environment = arguments.environment
@@ -136,8 +168,10 @@ class BrowserSession:
                 "Browser session unavailable after restart; navigate before observing or acting"
             )
         page = self._page(environment, context.run_id)
-        action = {"tool": name}
+        action: BrowserActionPayload = {"tool": name}
         if name == "browser.navigate":
+            if not isinstance(arguments, NavigateInput):
+                raise ToolFailure("Navigate tool received invalid arguments")
             path = arguments.path or deployment.entry_path
             if not path.startswith("/") or path.startswith("//") or "\\" in path:
                 raise ToolFailure("Navigation requires a route within the configured origin")
@@ -154,6 +188,8 @@ class BrowserSession:
                 raise ToolFailure("Application route returned an HTTP error")
             action["path"] = safe_url(url)
         elif name == "browser.act":
+            if not isinstance(arguments, ActionInput):
+                raise ToolFailure("Action tool received invalid arguments")
             if arguments.snapshot_id != previous or arguments.element_id not in self.elements.get(
                 environment, {}
             ):
@@ -220,21 +256,28 @@ class BrowserSession:
             page.locator(selected).first.wait_for(state="visible")
         return self._capture(page, environment, context, previous, action)
 
-    def _invalidate(self, environment):
+    def _invalidate(self, environment: Environment) -> None:
         # A mutation may succeed before capture fails. Old handles must not
         # authorize another action until a fresh observation succeeds.
         self.snapshots.pop(environment, None)
         self.elements.pop(environment, None)
 
-    def _capture(self, page, environment, context, previous, action):
-        elements: list[dict[str, Any]] = []
-        live_handles: dict[str, tuple[Any, dict[str, Any]]] = {}
+    def _capture(
+        self,
+        page: Page,
+        environment: Environment,
+        context: ToolContext,
+        previous: str | None,
+        action: BrowserActionPayload,
+    ) -> ToolResult:
+        elements: list[ObservedElementPayload] = []
+        live_handles: dict[str, tuple[ElementHandle, ObservedElementPayload]] = {}
         for handle in page.query_selector_all(SELECTOR):
             if len(elements) >= self.app.browser.max_elements:
                 break
             if not handle.is_visible():
                 continue
-            item = handle.evaluate(DESCRIBE)
+            item = _ELEMENT_ADAPTER.validate_python(handle.evaluate(DESCRIBE))
             item["name"] = item["name"].strip()[:250]
             if item["type"] in {"password", "file"}:
                 continue
@@ -244,8 +287,11 @@ class BrowserSession:
                 destination = urljoin(page.url, item["href"])
                 if origin(destination) == getattr(self.app, environment).url:
                     self.known_routes.setdefault(environment, set()).add(destination)
-            public = {**item, "href": safe_url(urljoin(page.url, item["href"])) if item["href"] else ""}
-            elements.append({"id": element_id, **public})
+            public: ObservedElementPayload = {
+                **item,
+                "href": safe_url(urljoin(page.url, item["href"])) if item["href"] else "",
+            }
+            elements.append(cast(ObservedElementPayload, {"id": element_id, **public}))
         text = page.locator("body").inner_text()
         text_truncated = len(text) > self.app.browser.max_text_chars
         text = text[: self.app.browser.max_text_chars]
@@ -258,7 +304,7 @@ class BrowserSession:
         if len(dom) > self.app.browser.max_dom_chars:
             raise ToolFailure("DOM exceeds capture budget; no incomplete DOM artifact accepted")
         image = page.screenshot(full_page=False, mask=[page.locator('input[type="password"]')])
-        observation = {
+        observation: ScreenPayload = {
             "environment": environment,
             "url": safe_url(page.url),
             "captured_at": time.time(),
@@ -282,7 +328,20 @@ class BrowserSession:
         data_ref = save_artifact(
             self.root, context.run_id, canonical(observation).encode(), ".observation.json"
         )
-        transition = {"environment": environment, "from": previous, "to": snapshot_id, **action}
+        transition: UITransitionPayload = {
+            "environment": environment,
+            "from": previous,
+            "to": snapshot_id,
+            "tool": action["tool"],
+        }
+        if "path" in action:
+            transition["path"] = action["path"]
+        if "action" in action:
+            transition["action"] = action["action"]
+        if "element_id" in action:
+            transition["element_id"] = action["element_id"]
+        if "element_name" in action:
+            transition["element_name"] = action["element_name"]
         transition_ref = save_artifact(
             self.root, context.run_id, canonical(transition).encode(), ".transition.json"
         )
@@ -302,7 +361,7 @@ class BrowserSession:
                         "observation": as_json_value(data_ref),
                         "transition": as_json_value(transition_ref),
                         "environment": environment,
-                        "transition_record": transition,
+                        "transition_record": as_json_value(transition),
                     },
                 ),
             ),
@@ -315,7 +374,7 @@ class BrowserSession:
 class BrowserTool:
     allowed_agents = frozenset({"coordinator"})
 
-    def __init__(self, name, session):
+    def __init__(self, name: str, session: BrowserSession) -> None:
         self.name, self.session = name, session
         input_models: dict[str, type[BaseModel]] = {
             "browser.navigate": NavigateInput,
@@ -336,5 +395,12 @@ class BrowserTool:
             )
         self.version = "playwright-v3:" + digest(session.app.model_dump(mode="json"))
 
-    def execute(self, arguments, context):
-        return self.session.execute(self.name, arguments, context)
+    def execute(
+        self,
+        arguments: BaseModel,
+        context: ToolContext,
+    ) -> ToolResult:
+        validated = self.input_model.model_validate(arguments)
+        if not isinstance(validated, (NavigateInput, ObserveInput, ActionInput)):
+            raise ToolFailure("Browser input validation returned an unsupported model")
+        return self.session.execute(self.name, validated, context)

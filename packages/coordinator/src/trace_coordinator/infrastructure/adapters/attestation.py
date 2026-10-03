@@ -5,10 +5,11 @@ from typing import Literal
 from urllib.parse import urljoin, urlsplit
 
 import httpx
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
-from trace_coordinator.domain.models import Evidence, Record, ToolResult
+from trace_coordinator.domain.models import Evidence, Record, ToolContext, ToolResult
+from trace_coordinator.domain.project import ApplicationConfig
 from trace_coordinator.infrastructure.ledger import canonical, digest
 
 
@@ -31,7 +32,7 @@ class DeploymentAttestationTool:
     input_model = AttestationInput
     allowed_agents = frozenset({"coordinator"})
 
-    def __init__(self, application, client=None):
+    def __init__(self, application: ApplicationConfig, client: httpx.Client | None = None) -> None:
         self.app = application
         self.client = client or httpx.Client(
             timeout=application.github_timeout_seconds, follow_redirects=False
@@ -44,11 +45,12 @@ class DeploymentAttestationTool:
             }
         )
 
-    def close(self):
+    def close(self) -> None:
         if self._owns_client:
             self.client.close()
 
-    def execute(self, arguments, context):
+    def execute(self, arguments: BaseModel, context: ToolContext) -> ToolResult:
+        arguments = AttestationInput.model_validate(arguments)
         if context.project_id != self.app.project_id:
             raise ToolFailure("Attestation application is outside the project")
         deployment = getattr(self.app, arguments.environment)

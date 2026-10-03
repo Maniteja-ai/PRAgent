@@ -1,8 +1,10 @@
 """Deterministic offline fixtures, explicitly labelled as replay evidence."""
 
-from pydantic import Field
+from collections.abc import Mapping, Sequence
 
-from trace_coordinator.domain.models import Decision, Record, ToolResult
+from pydantic import BaseModel, Field
+
+from trace_coordinator.domain.models import Decision, Record, ToolContext, ToolResult
 from trace_coordinator.infrastructure.ledger import digest
 
 
@@ -22,7 +24,7 @@ class ObserveInput(Record):
 class FixtureTool:
     allowed_agents = frozenset({"coordinator"})
 
-    def __init__(self, name, data):
+    def __init__(self, name: str, data: object) -> None:
         self.name = name
         self.description = f"Replay saved fixture for {name}; performs no live operation."
         self.input_model = (
@@ -31,17 +33,20 @@ class FixtureTool:
         self.version = "fixture-v1:" + digest(data)
         self.result = ToolResult.model_validate(data)
 
-    def execute(self, arguments, context):
+    def execute(self, arguments: BaseModel, context: ToolContext) -> ToolResult:
         return self.result
 
 
 class FixtureModel:
-    def __init__(self, decisions):
+    def __init__(self, decisions: Sequence[object]) -> None:
         self.decisions = tuple(Decision.model_validate(item) for item in decisions)
         if not self.decisions:
             raise ValueError("A replay requires at least one decision")
         self.version = "fixture-v1:" + digest(decisions)
 
-    def decide(self, context):
+    def decide(self, context: Mapping[str, object]) -> Decision:
         # Round-based replay remains stable across process restarts.
-        return self.decisions[min(context["round"] - 1, len(self.decisions) - 1)]
+        round_number = context.get("round")
+        if not isinstance(round_number, int):
+            raise ValueError("Fixture model context requires an integer round")
+        return self.decisions[min(round_number - 1, len(self.decisions) - 1)]

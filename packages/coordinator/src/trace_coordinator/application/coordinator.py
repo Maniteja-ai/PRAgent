@@ -2,14 +2,15 @@
 
 import re
 import sqlite3
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from contextlib import closing
 from pathlib import Path
-from typing import cast
+from typing import Literal, cast
 
 from filelock import FileLock
+from langchain_core.runnables.config import RunnableConfig
 from langgraph.checkpoint.sqlite import SqliteSaver
-from langgraph.types import Command
+from langgraph.types import Checkpointer, Command, Interrupt
 
 from trace_coordinator.application.interfaces import DecisionModel, Tool
 from trace_coordinator.application.runtime import ToolRegistry, ToolRuntime
@@ -21,6 +22,7 @@ from trace_coordinator.config import (
     HumanReviewPolicy,
     VerificationPolicy,
 )
+from trace_coordinator.domain.contracts import AnalysisReportPayload, JsonObject, as_json_object
 from trace_coordinator.domain.errors import RunMismatch
 from trace_coordinator.domain.models import AnalysisRequest, ReviewResponse, ToolContext
 from trace_coordinator.domain.state import AnalysisState
@@ -106,7 +108,7 @@ class Coordinator:
 
     def run(
         self, request: AnalysisRequest, run_id: str, *, review: ReviewResponse | None = None
-    ) -> dict[str, object]:
+    ) -> JsonObject:
         request = AnalysisRequest.model_validate(request)
         self.guardrails.validate_user_text(request.question, field="request")
         if review is not None:
@@ -141,7 +143,7 @@ class Coordinator:
                         self.verification,
                         self.human_review,
                     )
-                    config = {
+                    config: RunnableConfig = {
                         "configurable": {"thread_id": run_id},
                         "recursion_limit": 30 + 4 * self.limits.max_rounds,
                     }
@@ -158,22 +160,21 @@ class Coordinator:
                     )
                     config.update(trace.graph_options())
                     snapshot = graph.get_state(config)
+                    snapshot_state = cast(AnalysisState, snapshot.values)
                     if snapshot.values and not snapshot.next:
                         if review is not None:
-                            result = self._follow_up_verification(
+                            follow_up = self._follow_up_verification(
                                 run_id,
                                 fingerprint,
                                 ReviewResponse.model_validate(review),
-                                snapshot.values,
+                                snapshot_state,
                                 saver,
                                 runtime,
                                 context,
                                 request,
                             )
-                            return cast(dict[str, object], result)
-                        return self.observability.attach(
-                            self.ledger, run_id, snapshot.values["report"], trace
-                        )
+                            return as_json_object(follow_up)
+                        return self.observability.attach(self.ledger, run_id, snapshot_state["report"], trace)
                     pending = [i.value for task in snapshot.tasks for i in task.interrupts]
                     if pending and review is None:
                         return self.observability.attach(
@@ -182,33 +183,35 @@ class Coordinator:
                     if review is not None and not pending:
                         raise RunMismatch("This run is not waiting for human review")
                     if review is not None:
-                        value: object = Command(
+                        value: AnalysisState | Command[str] | None = Command(
                             resume=ReviewResponse.model_validate(review).model_dump(mode="json")
                         )
                     elif snapshot.values:
                         value = None
                     else:
                         value = self._initial_state(request)
-                    result = graph.invoke(value, config)
-                    if result.get("__interrupt__"):
-                        output = self._waiting(run_id, [item.value for item in result["__interrupt__"]])
+                    graph_result = cast(Mapping[str, object], graph.invoke(value, config))
+                    raw_interrupts = graph_result.get("__interrupt__")
+                    if isinstance(raw_interrupts, (list, tuple)):
+                        interrupts = cast(Sequence[Interrupt], raw_interrupts)
+                        output = self._waiting(run_id, [item.value for item in interrupts])
                     else:
-                        output = result["report"]
+                        output = as_json_object(cast(AnalysisState, graph_result)["report"])
                     return self.observability.attach(self.ledger, run_id, output, trace)
                 finally:
                     connection.commit()
 
     def _follow_up_verification(
         self,
-        parent_run_id,
-        parent_fingerprint,
-        review,
-        parent_state,
-        saver,
-        runtime,
-        context,
-        request,
-    ):
+        parent_run_id: str,
+        parent_fingerprint: str,
+        review: ReviewResponse,
+        parent_state: AnalysisState,
+        saver: Checkpointer,
+        runtime: ToolRuntime,
+        context: ToolContext,
+        request: AnalysisRequest,
+    ) -> AnalysisReportPayload:
         parent_report = parent_state["report"]
         review_section = parent_report.get("human_review", {})
         pending = [
@@ -235,7 +238,9 @@ class Coordinator:
             }
         )
         self.ledger.register(follow_up_run_id, follow_up_fingerprint)
-        outcome = "APPROVED" if review.answer.strip().casefold() == "approve" else "REJECTED"
+        outcome: Literal["APPROVED", "REJECTED"] = (
+            "APPROVED" if review.answer.strip().casefold() == "approve" else "REJECTED"
+        )
         link = {
             "parent_run_id": parent_run_id,
             "follow_up_run_id": follow_up_run_id,
@@ -255,7 +260,7 @@ class Coordinator:
             self.verification,
             self.human_review,
         )
-        config = {
+        config: RunnableConfig = {
             "configurable": {"thread_id": follow_up_run_id},
             "recursion_limit": 30 + 4 * self.limits.max_rounds,
         }
@@ -271,15 +276,19 @@ class Coordinator:
         )
         config.update(trace.graph_options())
         snapshot = graph.get_state(config)
+        snapshot_state = cast(AnalysisState, snapshot.values)
         if snapshot.values and not snapshot.next:
-            report = snapshot.values["report"]
+            report = snapshot_state["report"]
         else:
             if not snapshot.values:
-                seed = {key: value for key, value in parent_state.items() if key != "report"}
+                seed = cast(
+                    AnalysisState,
+                    {key: value for key, value in parent_state.items() if key != "report"},
+                )
                 seed.update(
                     {
                         "verification_approved": outcome == "APPROVED",
-                        "reviews": [*seed.get("reviews", []), review.answer],
+                        "reviews": [*parent_state.get("reviews", []), review.answer],
                         "review_requests": [
                             {
                                 **item,
@@ -288,7 +297,7 @@ class Coordinator:
                             }
                             if item == original
                             else item
-                            for item in seed.get("review_requests", [])
+                            for item in parent_state.get("review_requests", [])
                         ],
                         "review_outcome": outcome,
                     }
@@ -301,10 +310,10 @@ class Coordinator:
                         "reason": "Scenario was not approved",
                     }
                 graph.update_state(config, seed, as_node="verification_review")
-            result = graph.invoke(None, config)
-            if result.get("__interrupt__"):
+            graph_result = cast(Mapping[str, object], graph.invoke(None, config))
+            if graph_result.get("__interrupt__"):
                 raise RunMismatch("Follow-up verification requested an unexpected additional review")
-            report = result["report"]
+            report = cast(AnalysisState, graph_result)["report"]
 
         parent_evidence = parent_report.get("evidence", {})
         if any(report.get("evidence", {}).get(key) != value for key, value in parent_evidence.items()):
@@ -336,12 +345,17 @@ class Coordinator:
             linked["completeness"] = "PARTIAL"
         linked["tool_usage"] = self.ledger.usage(parent_run_id)
         linked["audit_events"] = self.ledger.events(parent_run_id)
-        return self.observability.attach(self.ledger, follow_up_run_id, linked, trace)
+        return cast(
+            AnalysisReportPayload,
+            self.observability.attach(self.ledger, follow_up_run_id, linked, trace),
+        )
 
-    def _waiting(self, run_id, pending):
-        return {
-            "run_id": run_id,
-            "status": "WAITING_FOR_REVIEW",
-            "questions": pending,
-            "tool_usage": self.ledger.usage(run_id),
-        }
+    def _waiting(self, run_id: str, pending: list[object]) -> JsonObject:
+        return as_json_object(
+            {
+                "run_id": run_id,
+                "status": "WAITING_FOR_REVIEW",
+                "questions": pending,
+                "tool_usage": self.ledger.usage(run_id),
+            }
+        )

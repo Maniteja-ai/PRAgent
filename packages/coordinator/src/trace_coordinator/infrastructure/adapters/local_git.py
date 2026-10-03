@@ -1,7 +1,12 @@
 """Local change source with explicit commit IDs and no remote PR metadata lookup."""
 
+from pathlib import Path
+
+from pydantic import BaseModel
+
 from trace_coordinator.domain.errors import ToolFailure
-from trace_coordinator.domain.project import LocalGitSource
+from trace_coordinator.domain.models import ToolContext, ToolResult
+from trace_coordinator.domain.project import ApplicationConfig, LocalGitSource
 from trace_coordinator.infrastructure.adapters.fixtures import PRInput
 from trace_coordinator.infrastructure.adapters.git_changes import compare, evidence, git
 from trace_coordinator.infrastructure.ledger import digest
@@ -14,14 +19,16 @@ class LocalGitDiffTool:
     input_model = PRInput
     allowed_agents = frozenset({"coordinator"})
 
-    def __init__(self, application, artifact_root):
+    def __init__(self, application: ApplicationConfig, artifact_root: Path) -> None:
         if not isinstance(application.change_source, LocalGitSource):
             raise ValueError("Local Git adapter requires a local_git change source")
         self.app, self.root = application, artifact_root
+        self.source: LocalGitSource = application.change_source
         self.version = "local-git-v1:" + digest(application.model_dump(mode="json"))
 
-    def execute(self, arguments, context):
-        selected = self.app.change_source
+    def execute(self, arguments: BaseModel, context: ToolContext) -> ToolResult:
+        arguments = PRInput.model_validate(arguments)
+        selected = self.source
         if (
             arguments.repository != self.app.repository
             or context.project_id != self.app.project_id

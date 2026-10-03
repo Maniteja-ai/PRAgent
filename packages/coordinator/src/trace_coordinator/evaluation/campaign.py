@@ -3,11 +3,32 @@
 import hashlib
 import json
 from pathlib import Path
-from typing import Literal
+from typing import Literal, TypedDict
 
 from pydantic import Field
 
+from trace_coordinator.domain.contracts import JsonObject, as_json_object, as_json_value
 from trace_coordinator.domain.models import Record
+
+
+class CampaignCheckPayload(TypedDict):
+    stage: str
+    name: str
+    passed: bool
+    actual: object
+    threshold: object
+
+
+def _object(value: object) -> JsonObject:
+    return as_json_object(value)
+
+
+def _number(value: object, default: float = 0.0) -> float:
+    if value is None:
+        return default
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError("Campaign metric is not numeric")
+    return float(value)
 
 
 class CampaignThresholds(Record):
@@ -54,11 +75,11 @@ _FILE_FIELDS = (
 )
 
 
-def _read_json(path):
-    return json.loads(path.read_text(encoding="utf-8-sig"))
+def _read_json(path: Path) -> JsonObject:
+    return as_json_object(json.loads(path.read_text(encoding="utf-8-sig")))
 
 
-def load_campaign(path):
+def load_campaign(path: str | Path) -> tuple[Path, CampaignConfig, dict[str, Path]]:
     source = Path(path).resolve()
     config = CampaignConfig.model_validate_json(source.read_text(encoding="utf-8-sig"))
     files = {name: (source.parent / getattr(config, name)).resolve() for name in _FILE_FIELDS}
@@ -68,31 +89,31 @@ def load_campaign(path):
     return source, config, files
 
 
-def run_campaign(path):
+def run_campaign(path: str | Path) -> JsonObject:
     source, config, files = load_campaign(path)
     values = {name: _read_json(file) for name, file in files.items()}
     thresholds = config.thresholds
-    checks = []
-    limitations = []
+    checks: list[CampaignCheckPayload] = []
+    limitations: list[str] = []
 
-    def check(stage, name, passed, actual, threshold=None):
+    def check(stage: str, name: str, passed: object, actual: object, threshold: object = None) -> None:
         checks.append(
             {
                 "stage": stage,
                 "name": name,
                 "passed": bool(passed),
-                "actual": actual,
-                "threshold": threshold,
+                "actual": as_json_value(actual),
+                "threshold": as_json_value(threshold),
             }
         )
 
     ingestion = values["ingestion_report_file"]
-    verification = ingestion.get("verification", {})
+    verification = _object(ingestion.get("verification", {}))
     check("ingestion", "pipeline completed", ingestion.get("status") == "COMPLETE", ingestion.get("status"))
     check(
         "ingestion",
         "all chunks indexed and processed",
-        ingestion.get("chunks", 0) > 0
+        _number(ingestion.get("chunks", 0)) > 0
         and ingestion.get("indexed_chunks") == ingestion.get("chunks")
         and ingestion.get("processed_chunks") == ingestion.get("chunks"),
         {
@@ -119,68 +140,69 @@ def run_campaign(path):
         )
 
     dataset = values["retrieval_dataset_manifest_file"]
-    if dataset.get("golden_release") is not True or dataset.get("review", {}).get("approved") is not True:
+    dataset_review = _object(dataset.get("review", {}))
+    if dataset.get("golden_release") is not True or dataset_review.get("approved") is not True:
         limitations.append(
             "Retrieval and graph labels are development references created by the implementation author; no independent reviewer approved them."
         )
 
-    vector = values["vector_summary_file"]["scores"]["5"]["summary"]
+    vector = _object(_object(_object(values["vector_summary_file"]["scores"])["5"])["summary"])
     check(
         "vector", "40-query benchmark completed", vector.get("completed") == 40, vector.get("completed"), 40
     )
     check(
         "vector",
         "passage recall at five",
-        vector.get("recall", 0) >= thresholds.vector_recall_at_five,
+        _number(vector.get("recall", 0)) >= thresholds.vector_recall_at_five,
         vector.get("recall"),
         thresholds.vector_recall_at_five,
     )
     check(
         "vector",
         "required evidence recall at five",
-        vector.get("mean_evidence_recall_at_k", 0) >= thresholds.vector_required_evidence_recall,
+        _number(vector.get("mean_evidence_recall_at_k", 0)) >= thresholds.vector_required_evidence_recall,
         vector.get("mean_evidence_recall_at_k"),
         thresholds.vector_required_evidence_recall,
     )
     check(
         "vector",
         "mean reciprocal rank",
-        vector.get("mean_reciprocal_rank", 0) >= thresholds.vector_mrr,
+        _number(vector.get("mean_reciprocal_rank", 0)) >= thresholds.vector_mrr,
         vector.get("mean_reciprocal_rank"),
         thresholds.vector_mrr,
     )
     limitations.append(
-        f"Raw vector precision at five is {vector.get('precision', 0):.2%}; use the evidence selector when precision matters."
+        f"Raw vector precision at five is {_number(vector.get('precision', 0)):.2%}; use the evidence selector when precision matters."
     )
 
-    selected = values["reranker_summary_file"]["selected"]["summary"]
+    selected = _object(_object(values["reranker_summary_file"]["selected"])["summary"])
     check(
         "optional reranker",
         "selected evidence precision",
-        selected.get("precision", 0) >= thresholds.reranker_precision,
+        _number(selected.get("precision", 0)) >= thresholds.reranker_precision,
         selected.get("precision"),
         thresholds.reranker_precision,
     )
     check(
         "optional reranker",
         "selected evidence recall",
-        selected.get("recall", 0) >= thresholds.reranker_recall,
+        _number(selected.get("recall", 0)) >= thresholds.reranker_recall,
         selected.get("recall"),
         thresholds.reranker_recall,
     )
 
     graph = values["graph_summary_file"]
     for field, label in (("ui_ids", "UI nodes"), ("flow_ids", "flows"), ("requirement_ids", "requirements")):
-        summary = graph[field]["summary"]
+        summary = _object(_object(graph[field])["summary"])
         check(
             "neo4j",
             f"{label} precision and recall",
-            summary.get("precision", 0) >= thresholds.graph_precision
-            and summary.get("recall", 0) >= thresholds.graph_recall,
+            _number(summary.get("precision", 0)) >= thresholds.graph_precision
+            and _number(summary.get("recall", 0)) >= thresholds.graph_recall,
             {"precision": summary.get("precision"), "recall": summary.get("recall")},
             {"precision": thresholds.graph_precision, "recall": thresholds.graph_recall},
         )
-    if graph.get("checks", {}).get("fixture_only") is True:
+    if _object(graph.get("checks", {})).get("fixture_only") is True:
         limitations.append(
             "Neo4j accuracy uses a synthetic contract graph; the Saleor code-to-UI-to-requirement graph is not independently labelled."
         )
@@ -189,7 +211,7 @@ def run_campaign(path):
     check(
         "neo4j",
         "100-run query stability",
-        graph_stability.get("scheduled") >= thresholds.stability_runs
+        _number(graph_stability.get("scheduled")) >= thresholds.stability_runs
         and graph_stability.get("completed") == graph_stability.get("scheduled")
         and graph_stability.get("correct") == graph_stability.get("scheduled")
         and graph_stability.get("distinct_success_outputs") == 1,
@@ -205,22 +227,24 @@ def run_campaign(path):
         "coordinator",
         "golden contract cases",
         coordinator.get("status") == "PASSED"
-        and coordinator.get("metrics", {}).get("case_pass_rate", 0) >= thresholds.coordinator_case_pass_rate,
+        and _number(_object(coordinator.get("metrics", {})).get("case_pass_rate", 0))
+        >= thresholds.coordinator_case_pass_rate,
         coordinator.get("metrics"),
         thresholds.coordinator_case_pass_rate,
     )
-    if coordinator.get("metrics", {}).get("cases_total", 0) < 10:
+    coordinator_metrics = _object(coordinator.get("metrics", {}))
+    if _number(coordinator_metrics.get("cases_total", 0)) < 10:
         limitations.append(
-            f"Coordinator accuracy covers {coordinator.get('metrics', {}).get('cases_total', 0)} fixture cases; broader PR coverage remains future work."
+            f"Coordinator accuracy covers {coordinator_metrics.get('cases_total', 0)} fixture cases; broader PR coverage remains future work."
         )
 
     coordinator_stability = values["coordinator_stability_file"]
-    stability_metrics = coordinator_stability.get("metrics", {})
+    stability_metrics = _object(coordinator_stability.get("metrics", {}))
     check(
         "coordinator",
         "100-run agent stability",
         coordinator_stability.get("status") == "PASSED"
-        and stability_metrics.get("scheduled") >= thresholds.stability_runs
+        and _number(stability_metrics.get("scheduled")) >= thresholds.stability_runs
         and stability_metrics.get("passed") == stability_metrics.get("scheduled")
         and stability_metrics.get("distinct_behavioral_outputs") == 1,
         stability_metrics,
@@ -228,16 +252,17 @@ def run_campaign(path):
     )
 
     llm = values["llm_evaluation_file"]
-    llm_metrics = llm.get("metrics", {})
+    llm_metrics = _object(llm.get("metrics", {}))
+    provider_calls = _number(llm_metrics.get("provider_calls", 0))
     check(
         "llm",
         "live grounding and safety",
         llm.get("status") == "PASSED"
-        and llm_metrics.get("case_pass_rate", 0) >= thresholds.llm_case_pass_rate
+        and _number(llm_metrics.get("case_pass_rate", 0)) >= thresholds.llm_case_pass_rate
         and llm_metrics.get("structured_output_rate") == 1
         and llm_metrics.get("grounded_finding_rate") == 1
         and llm_metrics.get("sensitive_output_leaks") == 0
-        and 0 < llm_metrics.get("provider_calls", 0) <= 5,
+        and 0 < provider_calls <= 5,
         llm_metrics,
         thresholds.llm_case_pass_rate,
     )
@@ -252,43 +277,54 @@ def run_campaign(path):
         workflow.get("status") == "COMPLETED"
         and workflow.get("completeness") == "COMPLETE_FOR_CONFIGURED_SCOPE"
         and workflow.get("verification") == "COMPLETED"
-        and workflow.get("runtime_attestation", {}).get("status") == "VERIFIED"
-        and workflow.get("behavior_verification", {}).get("comparison", {}).get("status") == "SUPPORTED",
+        and _object(workflow.get("runtime_attestation", {})).get("status") == "VERIFIED"
+        and _object(_object(workflow.get("behavior_verification", {})).get("comparison", {})).get("status")
+        == "SUPPORTED",
         {
             "status": workflow.get("status"),
             "completeness": workflow.get("completeness"),
             "verification": workflow.get("verification"),
-            "attestation": workflow.get("runtime_attestation", {}).get("status"),
-            "attribution": workflow.get("behavior_verification", {}).get("comparison", {}).get("status"),
+            "attestation": _object(workflow.get("runtime_attestation", {})).get("status"),
+            "attribution": _object(
+                _object(workflow.get("behavior_verification", {})).get("comparison", {})
+            ).get("status"),
         },
     )
-    limitations.extend(workflow.get("gaps", []))
+    workflow_gaps = workflow.get("gaps", [])
+    if not isinstance(workflow_gaps, list) or not all(isinstance(item, str) for item in workflow_gaps):
+        raise ValueError("Workflow gaps are invalid")
+    for gap in workflow_gaps:
+        if isinstance(gap, str):
+            limitations.append(gap)
 
     all_passed = all(item["passed"] for item in checks)
     status = "PASSED_WITH_LIMITATIONS" if all_passed else "FAILED"
-    return {
-        "schema_version": 1,
-        "status": status,
-        "campaign": config.id,
-        "checks": checks,
-        "summary": {
-            "checks_passed": sum(item["passed"] for item in checks),
-            "checks_total": len(checks),
-            "limitations": len(dict.fromkeys(limitations)),
-        },
-        "limitations": list(dict.fromkeys(limitations)),
-        "inputs": {
-            name: {
-                "path": str(file),
-                "sha256": hashlib.sha256(file.read_bytes()).hexdigest(),
+    return as_json_object(
+        {
+            "schema_version": 1,
+            "status": status,
+            "campaign": config.id,
+            "checks": checks,
+            "summary": {
+                "checks_passed": sum(item["passed"] for item in checks),
+                "checks_total": len(checks),
+                "limitations": len(dict.fromkeys(limitations)),
+            },
+            "limitations": list(dict.fromkeys(limitations)),
+            "inputs": {
+                name: {
+                    "path": str(file),
+                    "sha256": hashlib.sha256(file.read_bytes()).hexdigest(),
+                }
+                for name, file in files.items()
             }
-            for name, file in files.items()
+            | {"config": {"path": str(source), "sha256": hashlib.sha256(source.read_bytes()).hexdigest()}},
         }
-        | {"config": {"path": str(source), "sha256": hashlib.sha256(source.read_bytes()).hexdigest()}},
-    }
+    )
 
 
-def campaign_markdown(report):
+def campaign_markdown(report: JsonObject) -> str:
+    summary = _object(report["summary"])
     lines = [
         "# Final evaluation campaign",
         "",
@@ -296,12 +332,16 @@ def campaign_markdown(report):
         "",
         f"Campaign: `{report['campaign']}`",
         "",
-        f"Passed {report['summary']['checks_passed']} of {report['summary']['checks_total']} machine checks.",
+        f"Passed {summary['checks_passed']} of {summary['checks_total']} machine checks.",
         "",
         "| Stage | Check | Result | Measured | Threshold |",
         "| --- | --- | --- | --- | --- |",
     ]
-    for item in report["checks"]:
+    check_values = report.get("checks")
+    if not isinstance(check_values, list):
+        raise ValueError("Campaign checks are invalid")
+    for value in check_values:
+        item = _object(value)
         actual = json.dumps(item["actual"], sort_keys=True).replace("|", "\\|")
         threshold = json.dumps(item["threshold"], sort_keys=True).replace("|", "\\|")
         lines.append(
@@ -309,7 +349,10 @@ def campaign_markdown(report):
             f"`{actual}` | `{threshold}` |"
         )
     lines.extend(["", "## Limits on the claim", ""])
-    lines.extend(f"- {item}" for item in report["limitations"])
+    limitation_values = report.get("limitations")
+    if not isinstance(limitation_values, list):
+        raise ValueError("Campaign limitations are invalid")
+    lines.extend(f"- {item}" for item in limitation_values)
     lines.extend(
         [
             "",
@@ -323,9 +366,11 @@ def campaign_markdown(report):
     return "\n".join(lines)
 
 
-def campaign_schema():
-    return {
-        **CampaignConfig.model_json_schema(),
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "title": "Final evaluation campaign",
-    }
+def campaign_schema() -> JsonObject:
+    return as_json_object(
+        {
+            **CampaignConfig.model_json_schema(),
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "title": "Final evaluation campaign",
+        }
+    )

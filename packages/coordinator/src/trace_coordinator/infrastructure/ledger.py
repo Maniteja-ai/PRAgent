@@ -27,7 +27,7 @@ def digest(value: object) -> str:
 
 
 class CallLedger:
-    def __init__(self, path: Path):
+    def __init__(self, path: Path) -> None:
         self.path = path
         path.parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:

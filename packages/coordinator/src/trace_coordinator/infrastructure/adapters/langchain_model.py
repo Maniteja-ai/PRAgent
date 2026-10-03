@@ -2,10 +2,12 @@
 
 import json
 import os
+from collections.abc import Mapping
 from typing import Any, Literal
 
 from pydantic import BaseModel, ValidationError
 
+from trace_coordinator.config import GeminiProvider, OpenAIProvider
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
 from trace_coordinator.domain.models import Decision
 from trace_coordinator.infrastructure.ledger import canonical, digest
@@ -32,10 +34,12 @@ class ModelDecision(BaseModel):
     findings: list[ModelFinding]
 
 
-def classify_failure(exc):
+def classify_failure(exc: BaseException) -> tuple[FailureCode, bool]:
     """Read typed status fields through SDK wrapping; never parse raw error bodies."""
-    current = exc
+    current: BaseException | None = exc
     for _ in range(8):
+        if current is None:
+            break
         if (
             isinstance(current, (ValidationError, json.JSONDecodeError))
             or type(current).__name__ == "OutputParserException"
@@ -49,8 +53,6 @@ def classify_failure(exc):
         if status == 400:
             return FailureCode.PROVIDER_INVALID_REQUEST, False
         current = current.__cause__
-        if current is None:
-            break
     return FailureCode.PROVIDER_FAILURE, False
 
 
@@ -108,13 +110,13 @@ do not write findings now. Each action returns a NEW screen for the next decisio
 
 
 class LangChainModel:
-    def __init__(self, config):
+    def __init__(self, config: GeminiProvider | OpenAIProvider) -> None:
         self.max_input_chars = config.max_input_chars
         self.retry_invalid_response = config.retry_invalid_response
         key = os.environ.get(config.api_key_env)
         if not key:
             raise ValueError(f"Set environment variable {config.api_key_env}")
-        options = {
+        options: dict[str, Any] = {
             "model": config.model,
             "api_key": key,
             "temperature": 0,
@@ -137,7 +139,7 @@ class LangChainModel:
             {"config": config.model_dump(), "prompt": PROMPT, "exploration_prompt": EXPLORATION_PROMPT}
         )
 
-    def decide(self, context):
+    def decide(self, context: Mapping[str, object]) -> Decision:
         content = canonical(context)
         prompt = EXPLORATION_PROMPT if context.get("phase") == "exploration" else PROMPT
         if len(content) + len(prompt) > self.max_input_chars:
@@ -175,7 +177,7 @@ class LangChainModel:
                 retryable=self.retry_invalid_response,
             ) from exc
 
-    def close(self):
+    def close(self) -> None:
         # Provider-specific clients are optional and need not expose close().
         for name in ("root_client", "client"):
             client = getattr(self.client, name, None)

@@ -1,29 +1,51 @@
 """Explicit orchestration with a bounded tool-using reasoning loop."""
 
 import json
+from collections.abc import Callable
+from typing import cast
 
 from langgraph.graph import END, START, StateGraph
-from langgraph.types import interrupt
+from langgraph.graph.state import CompiledStateGraph
+from langgraph.types import Checkpointer, interrupt
 from pydantic import ValidationError
 
 from trace_coordinator.application.exploration import exploration_status, screens
+from trace_coordinator.application.runtime import ToolRuntime
 from trace_coordinator.application.ui_evidence import ui_index
-from trace_coordinator.application.verification_stage import skipped
+from trace_coordinator.application.verification_stage import VerificationStage, skipped
+from trace_coordinator.config import ExplorationConfig, HumanReviewPolicy
+from trace_coordinator.domain.contracts import (
+    AnalysisReportPayload,
+    DecisionPayload,
+    ExplorationContextPayload,
+    FindingPayload,
+    JsonObject,
+    ModelContextPayload,
+    ReviewRequestPayload,
+    RuntimeAttestationPayload,
+)
 from trace_coordinator.domain.errors import LimitReached, ToolFailure, UncertainExecution
-from trace_coordinator.domain.models import ChangeSet, Decision, Evidence, ReviewResponse
+from trace_coordinator.domain.models import ChangeSet, Decision, Evidence, ReviewResponse, ToolContext
 from trace_coordinator.domain.state import AnalysisState, merge_evidence
 from trace_coordinator.infrastructure.ledger import canonical, digest
 
 WORKFLOW_VERSION = "pr-impact-production-v5"
 
 
-def build_workflow(runtime, context, checkpointer, exploration, verification, human_review_policy):
+def build_workflow(
+    runtime: ToolRuntime,
+    context: ToolContext,
+    checkpointer: Checkpointer,
+    exploration: ExplorationConfig,
+    verification: VerificationStage,
+    human_review_policy: HumanReviewPolicy,
+) -> CompiledStateGraph[AnalysisState, None, AnalysisState, AnalysisState]:
     limits = runtime.limits
 
-    def stopped(state, exc):
+    def stopped(state: AnalysisState, exc: Exception) -> AnalysisState:
         return {"gaps": [*state.get("gaps", []), str(exc)], "stop_reason": type(exc).__name__}
 
-    def scoped_context(state):
+    def scoped_context(state: AnalysisState) -> ToolContext:
         changes = next(
             (
                 e["metadata"]["changes"]
@@ -44,7 +66,7 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
             }
         )
 
-    def fetch_changes(state):
+    def fetch_changes(state: AnalysisState) -> AnalysisState:
         request = state["request"]
         try:
             result = runtime.call_tool(
@@ -62,7 +84,7 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
         except (LimitReached, ToolFailure, UncertainExecution) as exc:
             return stopped(state, exc)
 
-    def retrieve(state):
+    def retrieve(state: AnalysisState) -> AnalysisState:
         evidence, gaps = dict(state["evidence"]), list(state.get("gaps", []))
         for name in ("knowledge.graph", "knowledge.documents"):
             try:
@@ -82,7 +104,7 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
                 return {"evidence": evidence, "gaps": [*gaps, str(exc)], "stop_reason": type(exc).__name__}
         return {"evidence": evidence, "gaps": gaps}
 
-    def attest_deployments(state):
+    def attest_deployments(state: AnalysisState) -> AnalysisState:
         if "deployment.attest" not in runtime.registry.tools:
             return {"usage": runtime.ledger.usage(context.run_id)}
         evidence, gaps = dict(state["evidence"]), list(state.get("gaps", []))
@@ -112,11 +134,21 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
             }
         return {"evidence": evidence, "gaps": gaps, "usage": runtime.ledger.usage(context.run_id)}
 
-    def reason(state):
+    def reason(state: AnalysisState) -> AnalysisState:
         if state["rounds"] >= limits.max_rounds:
             return stopped(state, LimitReached("Reasoning round limit reached"))
         next_round = state["rounds"] + 1
-        payload = {
+        exploration_context: ExplorationContextPayload = {
+            "enabled": exploration.enabled,
+            "environment": exploration.environment,
+            "goal": exploration.goal,
+            "target_controls": list(exploration.target_controls),
+            "max_steps": exploration.max_steps,
+            "max_state_visits": exploration.max_state_visits,
+            "status": state.get("exploration_status", "DISABLED"),
+            "steps": state.get("exploration_steps", 0),
+        }
+        payload: ModelContextPayload = {
             "request": state["request"],
             "round": next_round,
             "evidence": state["evidence"],
@@ -132,11 +164,7 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
             "validation_errors": state.get("validation_errors", []),
             "previous_findings": state.get("decision", {}).get("findings", []),
             "phase": state.get("phase", "analysis"),
-            "exploration": {
-                **exploration.model_dump(mode="json"),
-                "status": state.get("exploration_status", "DISABLED"),
-                "steps": state.get("exploration_steps", 0),
-            },
+            "exploration": exploration_context,
         }
         if verification.policy.enabled and state.get("phase") != "exploration":
             payload["tools"] = [
@@ -148,7 +176,11 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
             payload["approved_verification"] = {
                 "selection": "After valid findings, the workflow selects exactly one configured scenario by changed paths. Do not execute its steps yourself.",
                 "scenarios": [
-                    {"id": s.id, "description": s.description, "changed_paths": s.changed_paths}
+                    {
+                        "id": s.id,
+                        "description": s.description,
+                        "changed_paths": list(s.changed_paths),
+                    }
                     for s in verification.scenarios.values()
                 ],
             }
@@ -162,11 +194,14 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
             payload["previous_findings"] = []
         try:
             decision = runtime.decide(context, f"reason:{next_round}", payload)
-            return {"decision": decision.model_dump(mode="json"), "rounds": next_round}
+            return {
+                "decision": cast(DecisionPayload, decision.model_dump(mode="json")),
+                "rounds": next_round,
+            }
         except (LimitReached, ToolFailure, UncertainExecution) as exc:
             return {**stopped(state, exc), "rounds": next_round}
 
-    def observe_entries(state):
+    def observe_entries(state: AnalysisState) -> AnalysisState:
         if "browser.navigate" not in runtime.registry.tools:
             return {"usage": runtime.ledger.usage(context.run_id)}
         evidence, gaps = dict(state["evidence"]), list(state["gaps"])
@@ -186,7 +221,7 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
                 return {"evidence": evidence, "gaps": [*gaps, str(exc)], "stop_reason": type(exc).__name__}
         return {"evidence": evidence, "gaps": gaps, "usage": runtime.ledger.usage(context.run_id)}
 
-    def execute_tool(state):
+    def execute_tool(state: AnalysisState) -> AnalysisState:
         decision = Decision.model_validate(state["decision"])
         try:
             tool_name = decision.tool
@@ -227,9 +262,11 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
         except (LimitReached, UncertainExecution) as exc:
             return stopped(state, exc)
 
-    def validate_findings(state):
+    def validate_findings(state: AnalysisState) -> AnalysisState:
         decision = Decision.model_validate(state["decision"])
-        findings, gaps, errors = [], list(state["gaps"]), []
+        findings: list[FindingPayload] = []
+        gaps = list(state["gaps"])
+        errors: list[str] = []
         aliases: dict[str, set[str]] = {}
         for evidence_id, item in state["evidence"].items():
             if item["kind"] != "graph":
@@ -263,7 +300,12 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
                 errors.append(f"Finding has no independent supporting evidence: {finding.title}")
             else:
                 findings.append(
-                    finding.model_copy(update={"evidence_ids": tuple(normalized)}).model_dump(mode="json")
+                    cast(
+                        FindingPayload,
+                        finding.model_copy(update={"evidence_ids": tuple(normalized)}).model_dump(
+                            mode="json"
+                        ),
+                    )
                 )
         if errors and state.get("validation_repairs", 0) < limits.max_validation_repairs:
             return {
@@ -277,16 +319,21 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
             gaps.append("No sufficiently referenced impact findings; this does not establish zero impact")
         return {"findings": findings, "gaps": gaps, "stop_reason": "ANALYSIS_FINISHED"}
 
-    def human_review(state):
+    def human_review(state: AnalysisState) -> AnalysisState:
         if state["review_count"] >= limits.max_review_requests:
             return stopped(state, LimitReached("Human review request limit reached"))
-        question = state["decision"]["question"]
-        request = {"kind": "analysis", "question": question}
+        question = state["decision"]["question"] or "Review the current evidence before continuing."
         if human_review_policy.policy == "non_blocking":
+            review_request: ReviewRequestPayload = {
+                "kind": "analysis",
+                "question": question,
+                "status": "NOT_ANSWERED",
+                "answer": None,
+            }
             return {
                 "review_requests": [
                     *state.get("review_requests", []),
-                    {**request, "status": "NOT_ANSWERED", "answer": None},
+                    review_request,
                 ],
                 "review_count": state["review_count"] + 1,
                 "review_outcome": "NOT_ANSWERED",
@@ -309,18 +356,24 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
             answer = ReviewResponse.model_validate(response)
         except ValidationError:
             return stopped(state, ToolFailure("Invalid human review response"))
+        answered_request: ReviewRequestPayload = {
+            "kind": "analysis",
+            "question": question,
+            "status": "ANSWERED",
+            "answer": answer.answer,
+        }
         return {
             "reviews": [*state["reviews"], answer.answer],
             "review_requests": [
                 *state.get("review_requests", []),
-                {**request, "status": "ANSWERED", "answer": answer.answer},
+                answered_request,
             ],
             "review_count": state["review_count"] + 1,
             "review_outcome": "ANSWERED",
             "usage": runtime.ledger.usage(context.run_id),
         }
 
-    def finalize(state):
+    def finalize(state: AnalysisState) -> AnalysisState:
         stop_reason = state.get("stop_reason", "FINISHED")
         status = (
             "COMPLETED"
@@ -358,16 +411,20 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
                 + "; observed controls do not establish a passing behavioral test."
             )
         behavior = state.get("verification_result", skipped("Analysis did not reach verification"))
-        attested = {
-            e["metadata"]["environment"]: e["metadata"]
-            for e in state.get("evidence", {}).values()
-            if e["kind"] == "attestation"
+        attested: dict[str, JsonObject] = {}
+        for evidence in state.get("evidence", {}).values():
+            environment = evidence["metadata"].get("environment")
+            if evidence["kind"] == "attestation" and isinstance(environment, str):
+                attested[environment] = evidence["metadata"]
+        backend_fingerprints = {
+            fingerprint
+            for item in attested.values()
+            if isinstance((fingerprint := item.get("backend_fingerprint")), str)
         }
-        runtime_attestation = {
+        runtime_attestation: RuntimeAttestationPayload = {
             "status": "VERIFIED" if set(attested) == {"baseline", "patched"} else "NOT_VERIFIED",
             "deployments": attested,
-            "shared_backend": len(attested) == 2
-            and len({e["backend_fingerprint"] for e in attested.values()}) == 1,
+            "shared_backend": len(attested) == 2 and len(backend_fingerprints) == 1,
         }
         guardrail_events = [
             event for event in runtime.ledger.events(context.run_id) if event["kind"] == "MODEL_GUARDRAIL"
@@ -412,74 +469,72 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
                     "Verification: "
                     + behavior.get("reason", behavior.get("stop_reason") or behavior["status"])
                 )
-        return {
-            "report": {
-                "schema_version": 1,
-                "workflow_version": WORKFLOW_VERSION,
-                "run_id": context.run_id,
-                "request": state["request"],
-                "status": status,
-                "completeness": (
-                    "COMPLETE_FOR_CONFIGURED_SCOPE"
-                    if status == "COMPLETED"
-                    and state.get("findings")
-                    and runtime_attestation["status"] == "VERIFIED"
-                    and behavior["status"] == "COMPLETED"
-                    else "PARTIAL"
+        report: AnalysisReportPayload = {
+            "schema_version": 1,
+            "workflow_version": WORKFLOW_VERSION,
+            "run_id": context.run_id,
+            "request": state["request"],
+            "status": status,
+            "completeness": (
+                "COMPLETE_FOR_CONFIGURED_SCOPE"
+                if status == "COMPLETED"
+                and state.get("findings")
+                and runtime_attestation["status"] == "VERIFIED"
+                and behavior["status"] == "COMPLETED"
+                else "PARTIAL"
+            ),
+            "verification": behavior["status"],
+            "verification_plan": state.get("verification_plan", {}),
+            "verification_approval": {
+                "mode": verification.policy.approval,
+                "approved": state.get("verification_approved", False),
+                "scenario_id": state.get("verification_plan", {}).get("scenario_id"),
+                "policy_fingerprint": digest(verification.fingerprint),
+            },
+            "human_review": {
+                "policy": human_review_policy.policy,
+                "status": state.get("review_outcome", "NOT_REQUESTED"),
+                "requests": state.get("review_requests", []),
+                "follow_up_verification_allowed": (
+                    human_review_policy.policy == "non_blocking"
+                    and human_review_policy.allow_follow_up_verification
+                    and any(
+                        item.get("kind") == "verification_approval" and item.get("status") == "NOT_ANSWERED"
+                        for item in state.get("review_requests", [])
+                    )
                 ),
-                "verification": behavior["status"],
-                "verification_plan": state.get("verification_plan", {}),
-                "verification_approval": {
-                    "mode": verification.policy.approval,
-                    "approved": state.get("verification_approved", False),
-                    "scenario_id": state.get("verification_plan", {}).get("scenario_id"),
-                    "policy_fingerprint": digest(verification.fingerprint),
-                },
-                "human_review": {
-                    "policy": human_review_policy.policy,
-                    "status": state.get("review_outcome", "NOT_REQUESTED"),
-                    "requests": state.get("review_requests", []),
-                    "follow_up_verification_allowed": (
-                        human_review_policy.policy == "non_blocking"
-                        and human_review_policy.allow_follow_up_verification
-                        and any(
-                            item.get("kind") == "verification_approval"
-                            and item.get("status") == "NOT_ANSWERED"
-                            for item in state.get("review_requests", [])
-                        )
-                    ),
-                },
-                "behavior_verification": behavior,
-                "runtime_attestation": runtime_attestation,
-                "stop_reason": stop_reason,
-                "findings": state.get("findings", []),
-                "evidence": state.get("evidence", {}),
-                "gaps": gaps,
-                "tool_usage": runtime.ledger.usage(context.run_id),
-                "limit_events": [
-                    e for e in runtime.ledger.events(context.run_id) if e["kind"] == "LIMIT_REACHED"
-                ],
-                "audit_events": runtime.ledger.events(context.run_id),
-                "model_guardrails": {
-                    "status": (
-                        "SANITIZED"
-                        if any('"status":"SANITIZED"' in event["detail"] for event in guardrail_events)
-                        else "PASSED"
-                    ),
-                    "events": guardrail_events,
-                    "policy_fingerprint": runtime.guardrails.version.split(":", 1)[1],
-                },
-                "exploration": {
-                    "status": state.get("exploration_status", "DISABLED"),
-                    "environment": exploration.environment,
-                    "goal": exploration.goal if exploration.enabled else None,
-                    "steps": state.get("exploration_steps", 0),
-                },
-                "ui_knowledge": ui_index(state.get("evidence", {})),
-            }
+            },
+            "behavior_verification": behavior,
+            "runtime_attestation": runtime_attestation,
+            "stop_reason": stop_reason,
+            "findings": state.get("findings", []),
+            "evidence": state.get("evidence", {}),
+            "gaps": gaps,
+            "tool_usage": runtime.ledger.usage(context.run_id),
+            "limit_events": [
+                e for e in runtime.ledger.events(context.run_id) if e["kind"] == "LIMIT_REACHED"
+            ],
+            "audit_events": runtime.ledger.events(context.run_id),
+            "model_guardrails": {
+                "status": (
+                    "SANITIZED"
+                    if any('"status":"SANITIZED"' in event["detail"] for event in guardrail_events)
+                    else "PASSED"
+                ),
+                "events": guardrail_events,
+                "policy_fingerprint": runtime.guardrails.version.split(":", 1)[1],
+            },
+            "exploration": {
+                "status": state.get("exploration_status", "DISABLED"),
+                "environment": exploration.environment,
+                "goal": exploration.goal if exploration.enabled else None,
+                "steps": state.get("exploration_steps", 0),
+            },
+            "ui_knowledge": ui_index(state.get("evidence", {})),
         }
+        return {"report": report}
 
-    def plan_verification(state):
+    def plan_verification(state: AnalysisState) -> AnalysisState:
         plan = verification.select(state, scoped_context(state))
         if plan["status"] != "SELECTED":
             return {"verification_plan": plan, "verification_result": skipped(plan["reason"])}
@@ -494,7 +549,7 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
             "verification_approved": verification.policy.approval == "preapproved",
         }
 
-    def verification_review(state):
+    def verification_review(state: AnalysisState) -> AnalysisState:
         if state["review_count"] >= limits.max_review_requests:
             return {
                 "verification_approved": False,
@@ -502,11 +557,13 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
             }
         plan = state["verification_plan"]
         question = f"Approve scenario {plan['scenario_id']}: {plan['description']}? Reply approve or reject."
-        request = {
+        request: ReviewRequestPayload = {
             "kind": "verification_approval",
             "question": question,
             "scenario_id": plan["scenario_id"],
             "scenario": plan,
+            "status": "NOT_ANSWERED",
+            "answer": None,
         }
         if human_review_policy.policy == "non_blocking":
             return {
@@ -517,7 +574,7 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
                 ),
                 "review_requests": [
                     *state.get("review_requests", []),
-                    {**request, "status": "NOT_ANSWERED", "answer": None},
+                    request,
                 ],
                 "review_count": state["review_count"] + 1,
                 "review_outcome": "NOT_ANSWERED",
@@ -535,16 +592,17 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
         except ValidationError:
             answer = "invalid response"
         approved = answer.strip().casefold() == "approve"
+        completed_request: ReviewRequestPayload = {
+            **request,
+            "status": "APPROVED" if approved else "REJECTED",
+            "answer": answer,
+        }
         return {
             "verification_approved": approved,
             "reviews": [*state["reviews"], answer],
             "review_requests": [
                 *state.get("review_requests", []),
-                {
-                    **request,
-                    "status": "APPROVED" if approved else "REJECTED",
-                    "answer": answer,
-                },
+                completed_request,
             ],
             "review_count": state["review_count"] + 1,
             "review_outcome": "APPROVED" if approved else "REJECTED",
@@ -555,7 +613,7 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
             ),
         }
 
-    def verify_behavior(state):
+    def verify_behavior(state: AnalysisState) -> AnalysisState:
         if not state.get("verification_approved"):
             return {"verification_result": skipped("Scenario was not approved", status="NOT_EXECUTED")}
         try:
@@ -575,38 +633,38 @@ def build_workflow(runtime, context, checkpointer, exploration, verification, hu
             "usage": runtime.ledger.usage(context.run_id),
         }
 
-    def route_verification(state):
+    def route_verification(state: AnalysisState) -> str:
         if state["verification_plan"]["status"] != "SELECTED":
             return "finalize"
         return "verify_behavior" if state.get("verification_approved") else "verification_review"
 
-    def continue_to(target):
+    def continue_to(target: str) -> Callable[[AnalysisState], str]:
         return lambda state: "finalize" if state.get("stop_reason") else target
 
-    def prepare_exploration(state):
+    def prepare_exploration(state: AnalysisState) -> AnalysisState:
         status = exploration_status(state, exploration, limits, context.agent_id)
         if "browser.navigate" not in runtime.registry.tools and exploration.enabled:
             status = "NO_BROWSER"
         return {"exploration_status": status, "phase": "exploration" if status == "ACTIVE" else "analysis"}
 
-    def finish_exploration(state):
+    def finish_exploration(state: AnalysisState) -> AnalysisState:
         return {
             "phase": "analysis",
             "exploration_status": "MODEL_STOPPED",
             "usage": runtime.ledger.usage(context.run_id),
         }
 
-    def after_action(state):
+    def after_action(state: AnalysisState) -> str:
         if state.get("stop_reason"):
             return "finalize"
         return "prepare_exploration" if state.get("phase") == "exploration" else "reason"
 
-    def after_review(state):
+    def after_review(state: AnalysisState) -> str:
         if human_review_policy.policy == "non_blocking":
             return "finalize"
         return after_action(state)
 
-    def route_decision(state):
+    def route_decision(state: AnalysisState) -> str:
         if state.get("stop_reason"):
             return "finalize"
         if state.get("phase") == "exploration" and state["decision"]["action"] == "finish":

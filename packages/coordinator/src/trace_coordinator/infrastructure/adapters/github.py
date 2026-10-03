@@ -5,8 +5,10 @@ import re
 from pathlib import Path
 
 import httpx
+from pydantic import BaseModel
 
 from trace_coordinator.domain.errors import ToolFailure
+from trace_coordinator.domain.models import ToolContext, ToolResult
 from trace_coordinator.domain.project import ApplicationConfig
 from trace_coordinator.infrastructure.adapters.fixtures import PRInput
 from trace_coordinator.infrastructure.adapters.git_changes import compare, evidence
@@ -37,10 +39,11 @@ class GitHubDiffTool:
             headers=headers, timeout=application.github_timeout_seconds, follow_redirects=False
         )
 
-    def close(self):
+    def close(self) -> None:
         self.client.close()
 
-    def execute(self, arguments, context):
+    def execute(self, arguments: BaseModel, context: ToolContext) -> ToolResult:
+        arguments = PRInput.model_validate(arguments)
         if arguments.repository != self.app.repository or context.project_id != self.app.project_id:
             raise ToolFailure("PR repository/project does not match the application")
         response = self.client.get(

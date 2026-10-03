@@ -1,7 +1,9 @@
 """Deterministic Markdown rendering for PR impact reports."""
 
+from trace_coordinator.domain.contracts import AnalysisReportPayload
 
-def markdown(report):
+
+def markdown(report: AnalysisReportPayload) -> str:
     lines = ["# PR impact report", "", f"Status: {report['status']}", ""]
     observability = report.get("observability")
     if observability:
@@ -54,7 +56,9 @@ def markdown(report):
         if behavior.get("not_run"):
             lines.extend(["", "Not run: " + ", ".join(behavior["not_run"])])
         if behavior.get("reason") or behavior.get("stop_reason"):
-            lines.extend(["", behavior.get("reason") or behavior["stop_reason"]])
+            message = behavior.get("reason") or behavior.get("stop_reason")
+            if message:
+                lines.extend(["", message])
         lines.append("")
     elif behavior and report.get("verification_plan", {}).get("reason"):
         lines.extend(["Verification not run: " + report["verification_plan"]["reason"], ""])

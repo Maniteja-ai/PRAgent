@@ -5,10 +5,11 @@ import time
 from collections.abc import Callable, Mapping
 from typing import TypeVar
 
-from pydantic import BaseModel, JsonValue
+from pydantic import BaseModel
 
 from trace_coordinator.application.interfaces import DecisionModel, Tool
 from trace_coordinator.config import CallLimits
+from trace_coordinator.domain.contracts import ToolDescriptionPayload, as_json_object
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
 from trace_coordinator.domain.models import Decision, ToolContext, ToolResult
 from trace_coordinator.infrastructure.ledger import CallLedger
@@ -18,16 +19,20 @@ _ResultT = TypeVar("_ResultT", bound=BaseModel)
 
 
 class ToolRegistry:
-    def __init__(self, tools: list[Tool]):
+    def __init__(self, tools: list[Tool]) -> None:
         self.tools: dict[str, Tool] = {}
         for tool in tools:
             if tool.name in self.tools or tool.name == "model.decide":
                 raise ValueError("Duplicate or reserved canonical tool name")
             self.tools[tool.name] = tool
 
-    def descriptions(self, agent: str) -> list[dict[str, JsonValue]]:
+    def descriptions(self, agent: str) -> list[ToolDescriptionPayload]:
         return [
-            {"name": t.name, "description": t.description, "arguments": t.input_model.model_json_schema()}
+            {
+                "name": t.name,
+                "description": t.description,
+                "arguments": as_json_object(t.input_model.model_json_schema()),
+            }
             for t in self.tools.values()
             if agent in t.allowed_agents
         ]
@@ -117,7 +122,7 @@ class ToolRuntime:
 
         return self._execute(context, operation, name, parsed.model_dump(mode="json"), execute, ToolResult)
 
-    def decide(self, context: ToolContext, operation: str, payload: dict[str, object]) -> Decision:
+    def decide(self, context: ToolContext, operation: str, payload: Mapping[str, object]) -> Decision:
         if self.model is None:
             raise ToolFailure("Decision model is unavailable in this tool-only runtime")
         model = self.model

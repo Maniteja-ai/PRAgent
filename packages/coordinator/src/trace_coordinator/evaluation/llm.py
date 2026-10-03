@@ -4,11 +4,13 @@ import hashlib
 import time
 from pathlib import Path
 from statistics import median
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import Field
 
+from trace_coordinator.application.interfaces import DecisionModel
 from trace_coordinator.config import GeminiProvider, OpenAIProvider
+from trace_coordinator.domain.contracts import GuardrailAuditPayload, JsonObject, as_json_object
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
 from trace_coordinator.domain.models import Evidence, Record
 from trace_coordinator.infrastructure.adapters.langchain_model import LangChainModel
@@ -45,30 +47,37 @@ class LiveLLMEvaluationConfig(Record):
     cases: tuple[LiveLLMCase, ...] = Field(min_length=1, max_length=20)
 
 
-def _context(case, evidence):
-    return {
-        "request": {
-            "schema_version": 1,
-            "project_id": "live-llm-evaluation",
-            "repository": "saleor/storefront",
-            "pull_request": 1199,
-            "question": case.question,
-        },
-        "round": 1,
-        "evidence": {item.id: item.model_dump(mode="json") for item in evidence},
-        "gaps": [],
-        "human_answers": [],
-        "tools": [],
-        "per_tool_limit": 5,
-        "calls_already_used": [],
-        "validation_errors": [],
-        "previous_findings": [],
-        "phase": "analysis",
-        "exploration": {"enabled": False, "status": "DISABLED", "steps": 0},
-    }
+def _context(case: LiveLLMCase, evidence: tuple[Evidence, ...]) -> JsonObject:
+    return as_json_object(
+        {
+            "request": {
+                "schema_version": 1,
+                "project_id": "live-llm-evaluation",
+                "repository": "saleor/storefront",
+                "pull_request": 1199,
+                "question": case.question,
+            },
+            "round": 1,
+            "evidence": {item.id: item.model_dump(mode="json") for item in evidence},
+            "gaps": [],
+            "human_answers": [],
+            "tools": [],
+            "per_tool_limit": 5,
+            "calls_already_used": [],
+            "validation_errors": [],
+            "previous_findings": [],
+            "phase": "analysis",
+            "exploration": {"enabled": False, "status": "DISABLED", "steps": 0},
+        }
+    )
 
 
-def evaluate_live_llm(path, output_directory, *, model=None):
+def evaluate_live_llm(
+    path: str | Path,
+    output_directory: str | Path,
+    *,
+    model: DecisionModel | None = None,
+) -> JsonObject:
     source = Path(path).resolve()
     output = Path(output_directory).resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -80,16 +89,19 @@ def evaluate_live_llm(path, output_directory, *, model=None):
         load_dotenv(source.parent / config.env_file, override=False)
     engine = GuardrailEngine(config.guardrails)
     owned = model is None
-    selected_model: Any = model or LangChainModel(config.model)
+    selected_model: DecisionModel = model or LangChainModel(config.model)
     provider_calls = structured = grounded_findings = total_findings = 0
-    results: list[dict[str, Any]] = []
+    results: list[JsonObject] = []
+    called_cases = 0
+    cases_passed = 0
+    sensitive_output_leaks = 0
     latencies: list[float] = []
     try:
         for case in config.cases:
             called = False
             decision = None
             error = None
-            input_audit: dict[str, object] = {"status": "BLOCKED", "counts": {}}
+            input_audit: GuardrailAuditPayload = {"status": "BLOCKED", "counts": {}}
             started = time.perf_counter()
             try:
                 engine.validate_user_text(case.question, field="evaluation request")
@@ -105,6 +117,7 @@ def evaluate_live_llm(path, output_directory, *, model=None):
             elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
             if called:
                 latencies.append(elapsed_ms)
+                called_cases += 1
             evidence_ids = {item.id for item in case.evidence}
             cited = {
                 citation for item in (decision.findings if decision else ()) for citation in item.evidence_ids
@@ -139,26 +152,29 @@ def evaluate_live_llm(path, output_directory, *, model=None):
                 and (finding_count == 0 or case_grounded)
                 and not leaks
             )
+            cases_passed += int(bool(passed))
+            sensitive_output_leaks += int(bool(leaks))
             results.append(
-                {
-                    "id": case.id,
-                    "passed": bool(passed),
-                    "provider_called": called,
-                    "latency_ms": elapsed_ms if called else None,
-                    "guardrail": input_audit,
-                    "actual_guardrail_status": actual_guardrail,
-                    "error": error,
-                    "decision": decision.model_dump(mode="json") if decision else None,
-                    "citations_valid": not decision or cited <= evidence_ids,
-                    "grounded": case_grounded,
-                    "sensitive_output_findings": leaks,
-                }
+                as_json_object(
+                    {
+                        "id": case.id,
+                        "passed": bool(passed),
+                        "provider_called": called,
+                        "latency_ms": elapsed_ms if called else None,
+                        "guardrail": input_audit,
+                        "actual_guardrail_status": actual_guardrail,
+                        "error": error,
+                        "decision": decision.model_dump(mode="json") if decision else None,
+                        "citations_valid": not decision or cited <= evidence_ids,
+                        "grounded": case_grounded,
+                        "sensitive_output_findings": leaks,
+                    }
+                )
             )
     finally:
-        if owned:
+        if owned and isinstance(selected_model, LangChainModel):
             selected_model.close()
-    called_cases = sum(item["provider_called"] for item in results)
-    case_pass_rate = sum(item["passed"] for item in results) / len(results)
+    case_pass_rate = cases_passed / len(results)
     structured_rate = structured / called_cases if called_cases else 1.0
     grounded_rate = grounded_findings / total_findings if total_findings else 1.0
     passed = (
@@ -167,45 +183,52 @@ def evaluate_live_llm(path, output_directory, *, model=None):
         and grounded_rate >= config.minimum_grounded_finding_rate
         and provider_calls <= config.max_provider_calls
     )
-    return {
-        "schema_version": 1,
-        "status": "PASSED" if passed else "FAILED",
-        "dataset": {
-            "id": config.id,
-            "path": str(source),
-            "sha256": hashlib.sha256(raw).hexdigest(),
-        },
-        "model": {"provider": config.model.provider, "name": config.model.model},
-        "guardrail_policy_fingerprint": engine.version.split(":", 1)[1],
-        "metrics": {
-            "cases_passed": sum(item["passed"] for item in results),
-            "cases_total": len(results),
-            "case_pass_rate": case_pass_rate,
-            "provider_calls": provider_calls,
-            "structured_output_rate": structured_rate,
-            "grounded_finding_rate": grounded_rate,
-            "sensitive_output_leaks": sum(bool(item["sensitive_output_findings"]) for item in results),
-            "latency_ms_median": round(median(latencies), 2) if latencies else None,
-            "latency_ms_max": max(latencies) if latencies else None,
-        },
-        "thresholds": {
-            "case_pass_rate": config.minimum_case_pass_rate,
-            "structured_output_rate": config.minimum_structured_output_rate,
-            "grounded_finding_rate": config.minimum_grounded_finding_rate,
-            "max_provider_calls": config.max_provider_calls,
-        },
-        "cases": results,
-    }
+    return as_json_object(
+        {
+            "schema_version": 1,
+            "status": "PASSED" if passed else "FAILED",
+            "dataset": {
+                "id": config.id,
+                "path": str(source),
+                "sha256": hashlib.sha256(raw).hexdigest(),
+            },
+            "model": {"provider": config.model.provider, "name": config.model.model},
+            "guardrail_policy_fingerprint": engine.version.split(":", 1)[1],
+            "metrics": {
+                "cases_passed": cases_passed,
+                "cases_total": len(results),
+                "case_pass_rate": case_pass_rate,
+                "provider_calls": provider_calls,
+                "structured_output_rate": structured_rate,
+                "grounded_finding_rate": grounded_rate,
+                "sensitive_output_leaks": sensitive_output_leaks,
+                "latency_ms_median": round(median(latencies), 2) if latencies else None,
+                "latency_ms_max": max(latencies) if latencies else None,
+            },
+            "thresholds": {
+                "case_pass_rate": config.minimum_case_pass_rate,
+                "structured_output_rate": config.minimum_structured_output_rate,
+                "grounded_finding_rate": config.minimum_grounded_finding_rate,
+                "max_provider_calls": config.max_provider_calls,
+            },
+            "cases": results,
+        }
+    )
 
 
-def live_llm_markdown(report):
-    metrics = report["metrics"]
+def live_llm_markdown(report: JsonObject) -> str:
+    metrics = as_json_object(report["metrics"])
+    model = as_json_object(report["model"])
+    raw_cases = report["cases"]
+    if not isinstance(raw_cases, list):
+        raise ValueError("Live LLM report cases must be a list")
+    cases = [as_json_object(item) for item in raw_cases]
     lines = [
         "# Live LLM evaluation",
         "",
         f"Status: {report['status']}",
         "",
-        f"Model: {report['model']['provider']} / {report['model']['name']}",
+        f"Model: {model['provider']} / {model['name']}",
         "",
         "| Metric | Result |",
         "| --- | ---: |",
@@ -224,14 +247,16 @@ def live_llm_markdown(report):
         f"| {item['id']} | {'PASS' if item['passed'] else 'FAIL'} | "
         f"{'called' if item['provider_called'] else 'blocked'} | {item['actual_guardrail_status']} | "
         f"{item['latency_ms'] if item['latency_ms'] is not None else '-'} |"
-        for item in report["cases"]
+        for item in cases
     )
     return "\n".join(lines) + "\n"
 
 
-def live_llm_schema():
-    return {
-        **LiveLLMEvaluationConfig.model_json_schema(),
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "title": "Live LLM evaluation",
-    }
+def live_llm_schema() -> JsonObject:
+    return as_json_object(
+        {
+            **LiveLLMEvaluationConfig.model_json_schema(),
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "title": "Live LLM evaluation",
+        }
+    )

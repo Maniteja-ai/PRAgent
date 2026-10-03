@@ -5,22 +5,42 @@ or automatic mutation retries exist in this provider.
 """
 
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 from decimal import Decimal, InvalidOperation
-from typing import Literal
+from pathlib import Path
+from typing import TYPE_CHECKING, Literal, TypedDict
 from urllib.parse import urlencode
 
 import httpx
+from pydantic import BaseModel
 
-from trace_coordinator.domain.contracts import as_json_value
+from trace_coordinator.application.interfaces import Tool
+from trace_coordinator.application.runtime import ToolRuntime
+from trace_coordinator.config import ScenarioBinding
+from trace_coordinator.domain.contracts import (
+    JsonObject,
+    VerificationResultPayload,
+    as_json_object,
+    as_json_value,
+)
 from trace_coordinator.domain.errors import ToolFailure
-from trace_coordinator.domain.models import Evidence, Record, ToolResult
+from trace_coordinator.domain.models import Evidence, Record, ToolContext, ToolResult
+from trace_coordinator.domain.project import ApplicationConfig
 from trace_coordinator.infrastructure.adapters.browser import DESCRIBE, BrowserSession, BrowserTool
 from trace_coordinator.infrastructure.artifacts import save_artifact
 from trace_coordinator.infrastructure.ledger import canonical, digest
 
+if TYPE_CHECKING:
+    from trace_coordinator.application.verification import VoucherVerificationConfig
+
 FIELDS = """id voucherCode discount { amount currency } totalPrice { gross { amount currency } }
 lines { quantity variant { id } } channel { slug } shippingAddress { country { code } }"""
+
+
+class ObservedTotalPayload(TypedDict):
+    value: str | None
+    text: str
 
 
 class VoucherScenario:
@@ -36,14 +56,20 @@ class VoucherScenario:
         "browser.check": 5,
     }
 
-    def __init__(self, binding, config, application, root):
+    def __init__(
+        self,
+        binding: ScenarioBinding,
+        config: "VoucherVerificationConfig",
+        application: ApplicationConfig,
+        root: Path,
+    ) -> None:
         self.id, self.description, self.changed_paths = binding.id, binding.description, binding.changed_paths
         self.config, self.app, self.root = config, application, root
         self.version = "integrated-voucher-v1:" + digest(
             {"config": config.model_dump(mode="json"), "application": application.model_dump(mode="json")}
         )
 
-    def execute(self, runtime, context):
+    def execute(self, runtime: ToolRuntime, context: ToolContext) -> VerificationResultPayload:
         from trace_coordinator.application.runtime import ToolRegistry, ToolRuntime
         from trace_coordinator.application.verification import VoucherVerifier
 
@@ -68,7 +94,11 @@ class VoucherScenario:
             )
             verifier = VoucherVerifier(self.config, self.app, runtime.ledger, runtime=shared)
             result = verifier.run(context.run_id, operation_prefix=f"verification:{self.id}:")
-            attestations = context.runtime_attestations
+            attestations = {
+                name: as_json_object(item)
+                for name, item in context.runtime_attestations.items()
+                if isinstance(item, dict)
+            }
             if (
                 set(attestations) == {"baseline", "patched"}
                 and len({item["backend_fingerprint"] for item in attestations.values()}) == 1
@@ -99,23 +129,56 @@ class ProbeInput(Record):
     voucher_code: str
 
 
-def normalize(checkout):
-    return dict(
-        voucher=checkout["voucherCode"],
-        discount=str(checkout["discount"]["amount"]),
-        total=str(checkout["totalPrice"]["gross"]["amount"]),
-        currency=checkout["totalPrice"]["gross"]["currency"],
-        channel=checkout["channel"]["slug"],
-        shipping_country=(checkout["shippingAddress"] or {}).get("country"),
-        lines=sorted(
-            [dict(variant=line["variant"]["id"], quantity=line["quantity"]) for line in checkout["lines"]],
-            key=lambda line: line["variant"],
-        ),
+def normalize(checkout: JsonObject) -> JsonObject:
+    discount = as_json_object(checkout["discount"])
+    total_price = as_json_object(checkout["totalPrice"])
+    gross = as_json_object(total_price["gross"])
+    channel = as_json_object(checkout["channel"])
+    address = as_json_object(checkout.get("shippingAddress") or {})
+    lines_value = checkout["lines"]
+    if not isinstance(lines_value, list):
+        raise ToolFailure("Checkout lines are invalid")
+    lines = [as_json_object(line) for line in lines_value]
+    return as_json_object(
+        dict(
+            voucher=checkout["voucherCode"],
+            discount=str(discount["amount"]),
+            total=str(gross["amount"]),
+            currency=gross["currency"],
+            channel=channel["slug"],
+            shipping_country=address.get("country"),
+            lines=sorted(
+                [
+                    dict(variant=as_json_object(line["variant"])["id"], quantity=line["quantity"])
+                    for line in lines
+                ],
+                key=lambda line: str(line["variant"]),
+            ),
+        )
     )
 
 
+def _objects(value: object, *, field: str) -> list[JsonObject]:
+    if not isinstance(value, list):
+        raise ToolFailure(f"Sandbox field {field} is not a list")
+    return [as_json_object(item) for item in value]
+
+
+def _text(value: object, *, field: str) -> str:
+    if not isinstance(value, str):
+        raise ToolFailure(f"Sandbox field {field} is not text")
+    return value
+
+
 class SaleorFixtures:
-    def __init__(self, config, application, session, root, client):
+    def __init__(
+        self,
+        config: "VoucherVerificationConfig",
+        application: ApplicationConfig,
+        session: BrowserSession,
+        root: Path,
+        client: httpx.Client,
+    ) -> None:
         self.config, self.app, self.session, self.root, self.client = (
             config,
             application,
@@ -123,47 +186,61 @@ class SaleorFixtures:
             root,
             client,
         )
-        self.variant = None
-        self.checkouts = {}
+        self.variant: str | None = None
+        self.checkouts: dict[Literal["control", "baseline", "patched"], str] = {}
 
-    def request(self, query, variables, field):
+    def request(self, query: str, variables: JsonObject, field: str) -> JsonObject:
         response = self.client.post(self.config.graphql_url, json={"query": query, "variables": variables})
         response.raise_for_status()
-        result = response.json()
-        if result.get("errors") or not result.get("data") or result["data"].get(field) is None:
+        result = as_json_object(response.json())
+        data_value = result.get("data")
+        if result.get("errors") or not isinstance(data_value, dict):
             raise ToolFailure("Sandbox API response is unavailable or rejected")
-        data = result["data"][field]
+        payload = as_json_object(data_value)
+        if payload.get(field) is None:
+            raise ToolFailure("Sandbox API response omitted the requested field")
+        data = as_json_object(payload[field])
         if data.get("errors"):
             raise ToolFailure("Sandbox rejected the fixture operation; eligibility must be checked")
         return data
 
-    def execute(self, name, arguments, context):
+    def execute(
+        self,
+        name: str,
+        arguments: EmptyInput | FixtureInput,
+        context: ToolContext,
+    ) -> ToolResult:
         if context.project_id != self.app.project_id:
             raise ToolFailure("Fixture application is outside the project")
+        public: JsonObject
         if name == "fixture.catalog":
             data = self.request(
                 "query($slug:String!,$channel:String!){product(slug:$slug,channel:$channel){name slug variants{id name quantityAvailable}}}",
-                dict(slug=self.config.product_slug, channel=self.config.channel),
+                as_json_object(dict(slug=self.config.product_slug, channel=self.config.channel)),
                 "product",
             )
             matches = [
                 v
-                for v in data["variants"]
+                for v in _objects(data["variants"], field="variants")
                 if v["name"] == self.config.variant_name
                 and isinstance(v["quantityAvailable"], int)
                 and v["quantityAvailable"] >= self.config.quantity
             ]
             if len(matches) != 1:
                 raise ToolFailure("Expected one stocked variant with the configured name")
-            self.variant = matches[0]["id"]
-            public = dict(
-                product=data["slug"],
-                variant=self.variant,
-                variant_name=matches[0]["name"],
-                quantity_available=matches[0]["quantityAvailable"],
-                backend_version="UNAVAILABLE_PUBLIC_API",
+            self.variant = _text(matches[0]["id"], field="variant.id")
+            public = as_json_object(
+                dict(
+                    product=data["slug"],
+                    variant=self.variant,
+                    variant_name=matches[0]["name"],
+                    quantity_available=matches[0]["quantityAvailable"],
+                    backend_version="UNAVAILABLE_PUBLIC_API",
+                )
             )
         else:
+            if not isinstance(arguments, FixtureInput):
+                raise ToolFailure("Fixture operation requires an environment")
             environment = arguments.environment
             if name == "fixture.prepare":
                 if not self.variant or environment in self.checkouts:
@@ -172,22 +249,25 @@ class SaleorFixtures:
                     "mutation($input:CheckoutCreateInput!){checkoutCreate(input:$input){errors{code} checkout{"
                     + FIELDS
                     + "}}}",
-                    {
-                        "input": dict(
-                            channel=self.config.channel,
-                            lines=[dict(variantId=self.variant, quantity=self.config.quantity)],
-                        )
-                    },
+                    as_json_object(
+                        {
+                            "input": dict(
+                                channel=self.config.channel,
+                                lines=[dict(variantId=self.variant, quantity=self.config.quantity)],
+                            )
+                        }
+                    ),
                     "checkoutCreate",
                 )
-                checkout = data["checkout"]
-                self.checkouts[environment] = checkout["id"]
+                checkout = as_json_object(data["checkout"])
+                checkout_id = _text(checkout["id"], field="checkout.id")
+                self.checkouts[environment] = checkout_id
                 if environment != "control":
                     deployment = getattr(self.app, environment).model_copy(
                         update={
                             "entry_path": self.config.checkout_path
                             + "?"
-                            + urlencode({"checkout": checkout["id"]})
+                            + urlencode({"checkout": checkout_id})
                         }
                     )
                     self.session.app = self.session.app.model_copy(update={environment: deployment})
@@ -203,14 +283,14 @@ class SaleorFixtures:
                         "mutation($id:ID!,$code:String!){checkoutAddPromoCode(id:$id,promoCode:$code){errors{code} checkout{"
                         + FIELDS
                         + "}}}",
-                        dict(id=self.checkouts[environment], code=self.config.voucher_code),
+                        as_json_object(dict(id=self.checkouts[environment], code=self.config.voucher_code)),
                         "checkoutAddPromoCode",
                     )
-                    checkout = data["checkout"]
+                    checkout = as_json_object(data["checkout"])
                 else:
                     checkout = self.request(
                         "query($id:ID!){checkout(id:$id){" + FIELDS + "}}",
-                        dict(id=self.checkouts[environment]),
+                        as_json_object(dict(id=self.checkouts[environment])),
                         "checkout",
                     )
             public = normalize(checkout)
@@ -244,12 +324,13 @@ class FixtureTool:
     description = "One bounded sandbox fixture operation. Never creates an order."
     version = "saleor-fixture-v1"
 
-    def __init__(self, name, provider):
+    def __init__(self, name: str, provider: SaleorFixtures) -> None:
         self.name, self.provider = name, provider
         self.input_model = EmptyInput if name == "fixture.catalog" else FixtureInput
 
-    def execute(self, arguments, context):
-        return self.provider.execute(self.name, arguments, context)
+    def execute(self, arguments: BaseModel, context: ToolContext) -> ToolResult:
+        validated = self.input_model.model_validate(arguments)
+        return self.provider.execute(self.name, validated, context)
 
 
 class VoucherProbe:
@@ -259,13 +340,14 @@ class VoucherProbe:
     description = "Read-only, bounded assertion of voucher state and total, with a fresh capture."
     version = "voucher-probe-v1"
 
-    def __init__(self, session, config):
+    def __init__(self, session: BrowserSession, config: "VoucherVerificationConfig") -> None:
         self.session, self.config = session, config
 
-    def execute(self, arguments, context):
-        return self.session.executor.submit(self._execute, arguments, context).result()
+    def execute(self, arguments: BaseModel, context: ToolContext) -> ToolResult:
+        validated = ProbeInput.model_validate(arguments)
+        return self.session.executor.submit(self._execute, validated, context).result()
 
-    def _execute(self, arguments, context):
+    def _execute(self, arguments: ProbeInput, context: ToolContext) -> ToolResult:
         if (
             context.project_id != self.session.app.project_id
             or self.session.run_id != context.run_id
@@ -279,7 +361,7 @@ class VoucherProbe:
         )
         deadline = time.monotonic() + self.config.assertion_timeout_seconds
         while True:
-            totals = [
+            totals: list[ObservedTotalPayload] = [
                 {"value": node.get_attribute("value"), "text": node.inner_text()}
                 for node in page.locator(self.config.total_selector).all()
                 if node.is_visible()
@@ -293,9 +375,11 @@ class VoucherProbe:
             field = [c for c in controls if c["name"].strip() == self.config.input_name]
             remove = [c for c in controls if c["name"].strip() == self.config.remove_name]
             try:
-                total_matches = (
+                observed_value = totals[0]["value"] if len(totals) == 1 else None
+                total_matches = bool(
                     len(totals) == 1
-                    and Decimal(totals[0]["value"]) == arguments.expected_total
+                    and observed_value is not None
+                    and Decimal(observed_value) == arguments.expected_total
                     and " ".join(totals[0]["text"].split()) == " ".join(expected_text.split())
                 )
             except (InvalidOperation, TypeError):
@@ -354,7 +438,12 @@ class VoucherProbe:
 
 
 @contextmanager
-def verification_tools(application, config, root, run_id):
+def verification_tools(
+    application: ApplicationConfig,
+    config: "VoucherVerificationConfig",
+    root: Path,
+    run_id: str,
+) -> Iterator[list[Tool]]:
     # Exactly these actions are authorized for this test, not order submission.
     app = application.model_copy(
         update={

@@ -4,10 +4,25 @@ import hashlib
 import json
 import subprocess
 from pathlib import Path
+from typing import Any
 
-from trace_coordinator.domain.contracts import as_json_value
+from pydantic import BaseModel, TypeAdapter
+
+from trace_coordinator.application.mapping import MappingConfig
+from trace_coordinator.domain.contracts import (
+    AnalysisReportPayload,
+    ArtifactPayload,
+    JsonObject,
+    ObservedElementPayload,
+    SourceInspectionCandidatePayload,
+    SourceProvenancePayload,
+    ValidatedMappingPayload,
+    as_json_object,
+    as_json_value,
+)
 from trace_coordinator.domain.errors import ToolFailure
-from trace_coordinator.domain.models import Evidence, ToolResult
+from trace_coordinator.domain.models import Evidence, ToolContext, ToolResult
+from trace_coordinator.domain.project import ApplicationConfig
 from trace_coordinator.infrastructure.adapters.fixtures import QueryInput
 from trace_coordinator.infrastructure.artifacts import save_artifact
 from trace_coordinator.infrastructure.ledger import canonical, digest
@@ -16,7 +31,7 @@ from trace_coordinator.infrastructure.ledger import canonical, digest
 class TypeScriptMappingInspector:
     """Pinned Git blobs + trusted compiler; unsupported syntax fails closed."""
 
-    def __init__(self, application, config):
+    def __init__(self, application: ApplicationConfig, config: MappingConfig) -> None:
         from trace_impact.ingestion.code import typescript_analyzer
 
         from trace_coordinator.infrastructure.adapters.git_changes import git
@@ -24,15 +39,21 @@ class TypeScriptMappingInspector:
         self.app, self.config = application, config
         self.revision = getattr(application, config.environment).revision
         self.compiler = Path(typescript_analyzer.__file__).parent / "typescript/node_modules/typescript"
-        self.wrappers = [
-            {
-                **b.model_dump(),
-                "source": git(application, "show", f"{self.revision}:{b.path}").decode("utf-8-sig"),
-            }
+        self.wrappers: list[JsonObject] = [
+            as_json_object(
+                {
+                    **b.model_dump(),
+                    "source": git(application, "show", f"{self.revision}:{b.path}").decode("utf-8-sig"),
+                }
+            )
             for b in config.components
         ]
 
-    def inspect(self, candidate, element):
+    def inspect(
+        self,
+        candidate: SourceInspectionCandidatePayload,
+        element: ObservedElementPayload,
+    ) -> SourceProvenancePayload:
         from trace_coordinator.infrastructure.adapters.git_changes import git
 
         deployed = git(
@@ -72,24 +93,39 @@ class TypeScriptMappingInspector:
         )
         if result.returncode:
             raise ValueError("Static JSX validation failed; unsupported or ambiguous control mapping")
-        validated = json.loads(result.stdout)
+        validated = as_json_object(json.loads(result.stdout))
+        owner = validated.get("owner")
+        owner_start_line = validated.get("owner_start_line")
+        wrapper_path = validated.get("wrapper_path")
+        if (
+            not isinstance(owner, str)
+            or not isinstance(owner_start_line, int)
+            or (wrapper_path is not None and not isinstance(wrapper_path, str))
+        ):
+            raise ValueError("Static JSX validator returned an invalid provenance record")
         return {
-            **validated,
+            "owner": owner,
+            "owner_start_line": owner_start_line,
             "path": candidate["code_path"],
             "line": candidate["line"],
             "source_sha256": hashlib.sha256(source.encode()).hexdigest(),
+            "wrapper_path": wrapper_path,
             "wrapper_sha256": next(
                 (
-                    hashlib.sha256(b["source"].encode()).hexdigest()
+                    hashlib.sha256(wrapper_source.encode()).hexdigest()
                     for b in self.wrappers
-                    if b["path"] == validated["wrapper_path"]
+                    if wrapper_path is not None
+                    and b.get("path") == wrapper_path
+                    and isinstance((wrapper_source := b.get("source")), str)
                 ),
                 None,
             ),
         }
 
 
-def prepare_ui_snapshot(config_path):
+def prepare_ui_snapshot(
+    config_path: str | Path,
+) -> tuple[MappingConfig, ApplicationConfig, Any, JsonObject]:
     """Pure local preparation. No credentials, network, LLM calls, or graph writes."""
     from trace_impact.ingestion.code.config import TypeScriptOptions, load_code_config
     from trace_impact.ingestion.code.typescript_analyzer import TypeScriptAnalyzer
@@ -125,7 +161,8 @@ def prepare_ui_snapshot(config_path):
         or code_config.analyzer.provider != "typescript"
     ):
         raise ValueError("Code configuration differs from selected deployment")
-    mappings = validate_mappings(json.loads(raw_report), config, app, TypeScriptMappingInspector(app, config))
+    report = TypeAdapter(AnalysisReportPayload).validate_json(raw_report)
+    mappings = validate_mappings(report, config, app, TypeScriptMappingInspector(app, config))
     code = TypeScriptAnalyzer(TypeScriptOptions.model_validate(code_config.analyzer.options)).analyze(
         code_config
     )
@@ -133,23 +170,25 @@ def prepare_ui_snapshot(config_path):
         project_snapshot(code.model_dump(mode="json"), mappings, config, app.project_id, revision)
     )
     root = Path(config.output_directory)
-    prepared = {
-        "status": "PREPARED",
-        "snapshot": save_artifact(
-            root, "prepared", snapshot.model_dump_json(indent=2).encode(), ".graph.json"
-        ),
-        "graph_id": snapshot.id,
-        "code_graph_id": code.id,
-        "report_sha256": config.report_sha256,
-        "mappings": mappings,
-        "llm_calls": 0,
-        "behavior_verification": "NOT_RUN",
-    }
+    prepared = as_json_object(
+        {
+            "status": "PREPARED",
+            "snapshot": save_artifact(
+                root, "prepared", snapshot.model_dump_json(indent=2).encode(), ".graph.json"
+            ),
+            "graph_id": snapshot.id,
+            "code_graph_id": code.id,
+            "report_sha256": config.report_sha256,
+            "mappings": mappings,
+            "llm_calls": 0,
+            "behavior_verification": "NOT_RUN",
+        }
+    )
     save_artifact(root, "prepared", canonical(prepared).encode(), ".validation.json")
     return config, app, snapshot, prepared
 
 
-def publish_ui_snapshot(config_path):
+def publish_ui_snapshot(config_path: str | Path) -> tuple[JsonObject, ArtifactPayload]:
     """Publish atomically in Neo4j, then verify traversal before a committed receipt.
 
     Repeating an interrupted operation uses the same immutable snapshot identity.
@@ -161,7 +200,8 @@ def publish_ui_snapshot(config_path):
 
     config, app, snapshot, prepared = prepare_ui_snapshot(config_path)
     load_dotenv(config.env_file, override=False)
-    paths = tuple(sorted({m["candidate"]["code_path"] for m in prepared["mappings"]}))
+    mappings = TypeAdapter(list[ValidatedMappingPayload]).validate_python(prepared["mappings"])
+    paths = tuple(sorted({mapping["candidate"]["code_path"] for mapping in mappings}))
     expected_ui = {n.id for n in snapshot.nodes if n.kind == "UIElement"}
     expected_flows = {n.id for n in snapshot.nodes if n.kind == "UserFlow"}
     with create_pipeline(Settings.from_env()) as pipeline:
@@ -185,12 +225,14 @@ def publish_ui_snapshot(config_path):
             raise ValueError(
                 "Published graph failed UI/flow retrieval verification; committed receipt not written"
             )
-    receipt = {
-        **prepared,
-        "status": "PUBLISHED_AND_VERIFIED",
-        "publication": publication,
-        "retrieval": result.model_dump(mode="json"),
-    }
+    receipt = as_json_object(
+        {
+            **prepared,
+            "status": "PUBLISHED_AND_VERIFIED",
+            "publication": publication,
+            "retrieval": result.model_dump(mode="json"),
+        }
+    )
     saved = save_artifact(
         Path(config.output_directory), "committed", canonical(receipt).encode(), ".publication.json"
     )
@@ -201,7 +243,7 @@ class KnowledgeTool:
     allowed_agents = frozenset({"coordinator"})
     input_model = QueryInput
 
-    def __init__(self, name, application, artifact_root):
+    def __init__(self, name: str, application: ApplicationConfig, artifact_root: Path) -> None:
         self.name, self.app, self.artifact_root = name, application, artifact_root
         self.description = (
             "Retrieve code dependency paths for the pinned PR. Missing UI links are reported explicitly."
@@ -223,7 +265,7 @@ class KnowledgeTool:
             }
         )
 
-    def execute(self, arguments, context):
+    def execute(self, arguments: BaseModel, context: ToolContext) -> ToolResult:
         from trace_impact import Settings, create_pipeline
 
         if context.project_id != self.app.project_id or context.changes is None:
@@ -234,41 +276,42 @@ class KnowledgeTool:
         with create_pipeline(settings) as pipeline:
             if self.name == "knowledge.graph":
                 return self.graph(pipeline, context)
-            return self.documents(pipeline, arguments, context)
+            return self.documents(pipeline, QueryInput.model_validate(arguments), context)
 
-    def graph(self, pipeline, context):
+    def graph(self, pipeline: Any, context: ToolContext) -> ToolResult:
         from trace_impact.shared.graph_models import GraphSnapshot, ImpactQuery
 
+        changes = context.changes
+        if changes is None:
+            raise ToolFailure("Graph retrieval requires a validated change set")
         snapshot = GraphSnapshot.model_validate_json(
             Path(self.app.graph_snapshot_file).read_text(encoding="utf-8")
         )
         if any(
-            n.project_id != context.project_id or n.revision != context.changes.analysis_base
-            for n in snapshot.nodes
+            n.project_id != context.project_id or n.revision != changes.analysis_base for n in snapshot.nodes
         ):
             raise ToolFailure("Code graph does not match the project's baseline deployment revision")
-        baseline_files = [f.path for f in context.changes.files if f.status != "A"]
+        baseline_files = [f.path for f in changes.files if f.status != "A"]
         gaps = []
         results = []
-        sources = [{"graph_id": snapshot.id, "revision": context.changes.analysis_base}]
+        sources = [{"graph_id": snapshot.id, "revision": changes.analysis_base}]
         if baseline_files:
             query = ImpactQuery(
                 changed_files=tuple(baseline_files),
-                scope={"project_id": context.project_id, "revision": context.changes.analysis_base},
+                scope={"project_id": context.project_id, "revision": changes.analysis_base},
             )
             results.append(pipeline.retrieve_impact(snapshot.id, query).model_dump(mode="json"))
-        added = [f.path for f in context.changes.files if f.status == "A"]
+        added = [f.path for f in changes.files if f.status == "A"]
         if self.app.head_graph_snapshot_file:
             head = GraphSnapshot.model_validate_json(
                 Path(self.app.head_graph_snapshot_file).read_text(encoding="utf-8")
             )
             if any(
-                n.project_id != context.project_id or n.revision != context.changes.analysis_head
-                for n in head.nodes
+                n.project_id != context.project_id or n.revision != changes.analysis_head for n in head.nodes
             ):
                 raise ToolFailure("Head graph does not match the patched deployment revision")
-            sources.append({"graph_id": head.id, "revision": context.changes.analysis_head})
-            head_files = tuple(f.path for f in context.changes.files if f.status != "D")
+            sources.append({"graph_id": head.id, "revision": changes.analysis_head})
+            head_files = tuple(f.path for f in changes.files if f.status != "D")
             if head_files:
                 results.append(
                     pipeline.retrieve_impact(
@@ -277,7 +320,7 @@ class KnowledgeTool:
                             changed_files=head_files,
                             scope={
                                 "project_id": context.project_id,
-                                "revision": context.changes.analysis_head,
+                                "revision": changes.analysis_head,
                             },
                         ),
                     ).model_dump(mode="json")
@@ -288,8 +331,9 @@ class KnowledgeTool:
                 gaps.append("Added files have no baseline symbols: " + ", ".join(added))
         summary = []
         any_mapped = any(result["ui_ids"] or result["flow_ids"] for result in results)
-        attested_head = (
-            context.runtime_attestations.get("patched", {}).get("revision") == context.changes.analysis_head
+        patched_attestation = context.runtime_attestations.get("patched", {})
+        attested_head = isinstance(patched_attestation, dict) and (
+            patched_attestation.get("revision") == changes.analysis_head
         )
         for result_index, result in enumerate(results):
             summary.append(
@@ -340,7 +384,7 @@ class KnowledgeTool:
             gaps=tuple(gaps),
         )
 
-    def documents(self, pipeline, arguments, context):
+    def documents(self, pipeline: Any, arguments: QueryInput, context: ToolContext) -> ToolResult:
         run = Path(self.app.ingestion_run_directory)
         corpus = json.loads((run / "corpus.json").read_text(encoding="utf-8"))
         if corpus["project"]["project_id"] != context.project_id:

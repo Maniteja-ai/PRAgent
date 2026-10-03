@@ -9,6 +9,12 @@ from typing import Literal
 
 from pydantic import Field
 
+from trace_coordinator.domain.contracts import (
+    GuardrailAuditPayload,
+    JsonObject,
+    as_json_object,
+    as_json_value,
+)
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
 from trace_coordinator.domain.models import Decision, Record
 
@@ -102,9 +108,9 @@ class GuardrailEngine:
             categories = ", ".join(blocked)
             raise ToolFailure(f"Guardrail blocked {field}: {categories}", code=FailureCode.GUARDRAIL_BLOCKED)
 
-    def prepare_model_input(self, payload: dict[str, object]) -> tuple[dict[str, object], dict[str, object]]:
+    def prepare_model_input(self, payload: Mapping[str, object]) -> tuple[JsonObject, GuardrailAuditPayload]:
         if not self.policy.enabled:
-            return payload, {"status": "DISABLED", "counts": {}}
+            return as_json_object(payload), {"status": "DISABLED", "counts": {}}
         request = payload.get("request")
         if isinstance(request, Mapping):
             question = request.get("question")
@@ -141,14 +147,15 @@ class GuardrailEngine:
             if isinstance(value, list):
                 return [clean(child) for child in value]
             if isinstance(value, tuple):
-                return tuple(clean(child) for child in value)
+                return [clean(child) for child in value]
             return value
 
-        safe = dict(payload)
-        safe["evidence"] = clean(payload.get("evidence", {}))
+        safe = as_json_object(payload)
+        safe["evidence"] = as_json_value(clean(payload.get("evidence", {})))
         if sum(counts.values()) > self.policy.max_findings_per_call:
             raise ToolFailure("Guardrail finding limit exceeded", code=FailureCode.GUARDRAIL_BLOCKED)
-        audit: dict[str, object] = {
+        safe = as_json_object(safe)
+        audit: GuardrailAuditPayload = {
             "status": "SANITIZED" if counts else "PASSED",
             "counts": dict(sorted(counts.items())),
         }
@@ -156,7 +163,7 @@ class GuardrailEngine:
 
     def validate_model_output(
         self, decision: Decision | Mapping[str, object]
-    ) -> tuple[Decision, dict[str, object]]:
+    ) -> tuple[Decision, GuardrailAuditPayload]:
         parsed = Decision.model_validate(decision)
         if not self.policy.enabled:
             return parsed, {"status": "DISABLED", "counts": {}}

@@ -5,6 +5,7 @@ from typing import Annotated, Literal, Self
 
 from pydantic import Field, StrictInt, model_validator
 
+from trace_coordinator.domain.contracts import JsonObject, as_json_object
 from trace_coordinator.domain.models import Record
 from trace_coordinator.security.artifact_security import ArtifactSecurityConfig
 from trace_coordinator.security.guardrails import GuardrailPolicy
@@ -233,9 +234,11 @@ def load_config(path: Path) -> CoordinatorConfig:
     return config
 
 
-def schema() -> dict[str, object]:
-    return {
-        **CoordinatorConfig.model_json_schema(),
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "title": "PR impact coordinator",
-    }
+def schema() -> JsonObject:
+    return as_json_object(
+        {
+            **CoordinatorConfig.model_json_schema(),
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "title": "PR impact coordinator",
+        }
+    )

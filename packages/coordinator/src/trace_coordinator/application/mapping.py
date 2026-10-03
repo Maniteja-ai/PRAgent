@@ -8,13 +8,26 @@ import hashlib
 import json
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Literal, Protocol
+from typing import Literal, Protocol, cast
 from urllib.parse import urlsplit
 
-from pydantic import Field
+from pydantic import Field, TypeAdapter
 
 from trace_coordinator.application.ui_evidence import ui_index
-from trace_coordinator.domain.models import Record
+from trace_coordinator.domain.contracts import (
+    AnalysisReportPayload,
+    CodeSnapshotPayload,
+    EvidencePayload,
+    JsonObject,
+    ObservedElementPayload,
+    ScreenPayload,
+    SourceInspectionCandidatePayload,
+    SourceProvenancePayload,
+    ValidatedMappingPayload,
+    as_json_object,
+)
+from trace_coordinator.domain.models import Evidence, Record
+from trace_coordinator.domain.project import ApplicationConfig
 from trace_coordinator.infrastructure.ledger import digest
 
 
@@ -42,7 +55,9 @@ class MappingConfig(Record):
 
 
 class SourceInspector(Protocol):
-    def inspect(self, candidate: Mapping[str, object], element: Mapping[str, object]) -> dict[str, object]:
+    def inspect(
+        self, candidate: SourceInspectionCandidatePayload, element: ObservedElementPayload
+    ) -> SourceProvenancePayload:
         """Return owner identity and static JSX provenance, or raise ValueError."""
         ...
 
@@ -60,31 +75,32 @@ def verified_bytes(reference: object) -> bytes:
 
 
 def validate_mappings(
-    report: Any,
+    report: AnalysisReportPayload,
     config: MappingConfig,
-    application: Any,
+    application: ApplicationConfig,
     inspector: SourceInspector,
-) -> list[dict[str, Any]]:
+) -> list[ValidatedMappingPayload]:
     """Fail the whole batch closed; no partial confirmation after a rejected link."""
-    from trace_coordinator.domain.models import Evidence
-
     evidence = {key: Evidence.model_validate(value) for key, value in report["evidence"].items()}
     if any(key != value.id or value.project_id != application.project_id for key, value in evidence.items()):
         raise ValueError("Evidence identity or project mismatch")
-    rebuilt = ui_index({key: value.model_dump(mode="json") for key, value in evidence.items()})
+    rebuilt = ui_index(
+        {key: cast(EvidencePayload, value.model_dump(mode="json")) for key, value in evidence.items()}
+    )
     if rebuilt != report["ui_knowledge"]:
         raise ValueError("UI index does not match its underlying evidence")
     candidates = [c for c in rebuilt["code_ui_candidates"] if c["environment"] == config.environment]
     if not candidates or len(candidates) > config.max_candidates or rebuilt["candidates_truncated"]:
         raise ValueError("No complete, bounded candidate batch")
     deployment = getattr(application, config.environment)
-    observations = {}
+    observations: dict[str, ScreenPayload] = {}
+    screen_adapter = TypeAdapter(ScreenPayload)
     for item in evidence.values():
         if item.kind != "browser" or item.metadata["environment"] != config.environment:
             continue
         for key in ("observation", "dom", "screenshot"):
             verified_bytes(item.metadata[key])
-        observation = json.loads(verified_bytes(item.metadata["observation"]))
+        observation = screen_adapter.validate_json(verified_bytes(item.metadata["observation"]))
         if observation != json.loads(item.summary):
             raise ValueError("Observation summary differs from saved capture")
         url = urlsplit(observation["url"])
@@ -99,7 +115,8 @@ def validate_mappings(
                 raise ValueError("Transition differs from saved artifact")
         observations[item.id] = observation
     paths = [p for p in rebuilt["discovered_paths"] if p["environment"] == config.environment]
-    validated, seen = [], set()
+    validated: list[ValidatedMappingPayload] = []
+    seen: set[tuple[str, str]] = set()
     for candidate in candidates:
         if candidate["configured_revision"] != deployment.revision:
             raise ValueError("Candidate revision mismatch")
@@ -115,7 +132,10 @@ def validate_mappings(
         if len(flow_matches) != 1:
             raise ValueError("Mapped control must belong to one observed terminal flow state")
         for transition in flow_matches[0]["transitions"]:
-            before = observations[transition["from"]]
+            previous = transition.get("from")
+            if not isinstance(previous, str):
+                raise ValueError("Flow transition is missing its source observation")
+            before = observations[previous]
             if transition["action"] != "click" or not any(
                 e["id"] == transition["element_id"] and e["name"] == transition["element_name"]
                 for e in before["elements"]
@@ -123,7 +143,11 @@ def validate_mappings(
                 raise ValueError("Flow action is not supported by its source observation")
         diff = evidence[candidate["diff_evidence_id"]]
         patch = verified_bytes(diff.metadata["artifact"])
-        provenance = inspector.inspect({**candidate, "patch": patch.decode()}, matches[0])
+        inspection_candidate: SourceInspectionCandidatePayload = {
+            **candidate,
+            "patch": patch.decode(),
+        }
+        provenance = inspector.inspect(inspection_candidate, matches[0])
         validated.append(
             {
                 "candidate": candidate,
@@ -139,8 +163,15 @@ def validate_mappings(
     return validated
 
 
-def project_snapshot(code, mappings, config, project_id, revision):
+def project_snapshot(
+    code: object,
+    mappings: list[ValidatedMappingPayload],
+    config: MappingConfig,
+    project_id: str,
+    revision: str,
+) -> JsonObject:
     """Existing code snapshot stays untouched; only structural edges are confirmed."""
+    code = TypeAdapter(CodeSnapshotPayload).validate_python(code)
     if not code["nodes"] or any(
         n["project_id"] != project_id
         or n["revision"] != revision
@@ -148,9 +179,9 @@ def project_snapshot(code, mappings, config, project_id, revision):
         for n in code["nodes"]
     ):
         raise ValueError("Expected a pure code snapshot for the selected revision")
-    nodes = {n["id"]: n for n in code["nodes"]}
+    nodes = {n["id"]: as_json_object(n) for n in code["nodes"]}
     edges = list(code["edges"])
-    scope = {"project_id": project_id, "revision": revision}
+    scope: JsonObject = {"project_id": project_id, "revision": revision}
     for mapping in mappings:
         candidate, source = mapping["candidate"], mapping["source"]
         owners = [
@@ -171,45 +202,51 @@ def project_snapshot(code, mappings, config, project_id, revision):
             )[:28]
         )
         flow_id = "flow:" + digest([scope, config.report_sha256, mapping["flow"]])[:28]
-        provenance = {
+        provenance: JsonObject = {
             "report_sha256": config.report_sha256,
             "validation": mapping["validation"],
             "runtime_attribution_verified": False,
             "behavior_verification": "NOT_RUN",
         }
-        nodes[ui_id] = dict(
-            id=ui_id,
-            kind="UIElement",
-            name=candidate["label"],
-            **scope,
-            properties={
-                **provenance,
-                "url": mapping["url"],
-                "source": source,
-                "browser_evidence_id": candidate["browser_evidence_id"],
-                "element": mapping["observed_element"],
-            },
+        nodes[ui_id] = as_json_object(
+            dict(
+                id=ui_id,
+                kind="UIElement",
+                name=candidate["label"],
+                **scope,
+                properties={
+                    **provenance,
+                    "url": mapping["url"],
+                    "source": as_json_object(source),
+                    "browser_evidence_id": candidate["browser_evidence_id"],
+                    "element": as_json_object(mapping["observed_element"]),
+                },
+            )
         )
-        nodes[flow_id] = dict(
-            id=flow_id,
-            kind="UserFlow",
-            name=config.flow_name,
-            **scope,
-            properties={
-                **provenance,
-                "transitions": mapping["flow"]["transitions"],
-                "coverage": "OBSERVED_PATH_ONLY",
-            },
+        nodes[flow_id] = as_json_object(
+            dict(
+                id=flow_id,
+                kind="UserFlow",
+                name=config.flow_name,
+                **scope,
+                properties={
+                    **provenance,
+                    "transitions": [as_json_object(item) for item in mapping["flow"]["transitions"]],
+                    "coverage": "OBSERVED_PATH_ONLY",
+                },
+            )
         )
         for edge_type, start in (("RENDERS", owners[0]["id"]), ("CONTAINS", flow_id)):
             edges.append(
-                dict(
-                    id=digest([edge_type, start, ui_id])[:28],
-                    type=edge_type,
-                    source=start,
-                    target=ui_id,
-                    status="CONFIRMED",
-                    properties=provenance,
+                as_json_object(
+                    dict(
+                        id=digest([edge_type, start, ui_id])[:28],
+                        type=edge_type,
+                        source=start,
+                        target=ui_id,
+                        status="CONFIRMED",
+                        properties=provenance,
+                    )
                 )
             )
     payload = dict(
@@ -218,4 +255,4 @@ def project_snapshot(code, mappings, config, project_id, revision):
         edges=edges,
         diagnostics=[*code["diagnostics"], "No requirement CHECKS links; behavior not tested."],
     )
-    return {"id": digest(payload)[:28], **payload}
+    return as_json_object({"id": digest(payload)[:28], **payload})

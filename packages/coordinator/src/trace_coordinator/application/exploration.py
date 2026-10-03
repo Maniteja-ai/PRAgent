@@ -1,23 +1,50 @@
 """Deterministic bounds around observation-driven model choices; no hidden tool calls."""
 
 import json
+from collections.abc import Mapping
+from typing import Literal, TypeAlias
+
+from pydantic import TypeAdapter, ValidationError
+
+from trace_coordinator.config import CallLimits, ExplorationConfig
+from trace_coordinator.domain.contracts import EvidencePayload, ScreenPayload
+from trace_coordinator.domain.state import AnalysisState
+
+ExplorationStatus: TypeAlias = Literal[
+    "DISABLED",
+    "NO_OBSERVATION",
+    "TARGET_OBSERVED",
+    "REPEATED_STATE",
+    "STEP_LIMIT",
+    "REPORT_BUDGET_RESERVED",
+    "NO_BROWSER",
+    "ACTIVE",
+]
+_SCREEN_ADAPTER: TypeAdapter[ScreenPayload] = TypeAdapter(ScreenPayload)
 
 
-def screens(evidence, environment):
-    found = []
+def screens(
+    evidence: Mapping[str, EvidencePayload], environment: Literal["baseline", "patched"]
+) -> list[tuple[str, ScreenPayload]]:
+    found: list[tuple[str, ScreenPayload]] = []
     for item in evidence.values():
         if item["kind"] != "browser":
             continue
         try:
-            data = json.loads(item["summary"])
-        except (TypeError, ValueError):
+            data = _SCREEN_ADAPTER.validate_python(json.loads(item["summary"]))
+        except (TypeError, ValueError, ValidationError):
             continue
-        if isinstance(data, dict) and data.get("environment") == environment:
+        if data.get("environment") == environment:
             found.append((item["id"], data))
     return found
 
 
-def exploration_status(state, policy, limits, agent):
+def exploration_status(
+    state: AnalysisState,
+    policy: ExplorationConfig,
+    limits: CallLimits,
+    agent: str,
+) -> ExplorationStatus:
     if not policy.enabled:
         return "DISABLED"
     observed = screens(state.get("evidence", {}), policy.environment)

@@ -1,13 +1,26 @@
 """Coordinator verification policy and crash boundary, independent of providers."""
 
 import json
+from collections.abc import Sequence
 from fnmatch import fnmatchcase
+from pathlib import Path
 from typing import Protocol
 
+from pydantic import TypeAdapter
+
 from trace_coordinator.application.mapping import verified_bytes
-from trace_coordinator.domain.contracts import JsonObject
+from trace_coordinator.application.runtime import ToolRuntime
+from trace_coordinator.config import VerificationPolicy
+from trace_coordinator.domain.contracts import (
+    JsonObject,
+    VerificationPlanPayload,
+    VerificationResultPayload,
+    VerificationStatus,
+    as_json_object,
+)
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import Evidence, ToolContext
+from trace_coordinator.domain.state import AnalysisState
 from trace_coordinator.infrastructure.artifacts import save_artifact
 from trace_coordinator.infrastructure.ledger import canonical, digest
 
@@ -19,15 +32,20 @@ class ApprovedScenario(Protocol):
     changed_paths: tuple[str, ...]
     required_calls: dict[str, int]
 
-    def execute(self, runtime: object, context: ToolContext) -> JsonObject: ...
+    def execute(self, runtime: ToolRuntime, context: ToolContext) -> VerificationResultPayload: ...
 
 
-def skipped(reason, *, status="NOT_RUN"):
+def skipped(reason: str, *, status: VerificationStatus = "NOT_RUN") -> VerificationResultPayload:
     return {"status": status, "checks": [], "evidence": {}, "reason": reason}
 
 
 class VerificationStage:
-    def __init__(self, policy, scenarios, artifact_root):
+    def __init__(
+        self,
+        policy: VerificationPolicy,
+        scenarios: Sequence[ApprovedScenario],
+        artifact_root: Path,
+    ) -> None:
         self.policy, self.root = policy, artifact_root
         self.scenarios = {scenario.id: scenario for scenario in scenarios}
         if len(self.scenarios) != len(scenarios):
@@ -41,16 +59,22 @@ class VerificationStage:
                 raise ValueError("Scenario budget must contain bounded positive canonical tool counts")
 
     @property
-    def fingerprint(self):
-        return {
-            "policy": self.policy.model_dump(mode="json"),
-            "catalog": {
-                key: {"version": value.version, "paths": value.changed_paths, "calls": value.required_calls}
-                for key, value in sorted(self.scenarios.items())
-            },
-        }
+    def fingerprint(self) -> JsonObject:
+        return as_json_object(
+            {
+                "policy": self.policy.model_dump(mode="json"),
+                "catalog": {
+                    key: {
+                        "version": value.version,
+                        "paths": list(value.changed_paths),
+                        "calls": value.required_calls,
+                    }
+                    for key, value in sorted(self.scenarios.items())
+                },
+            }
+        )
 
-    def select(self, state, context):
+    def select(self, state: AnalysisState, context: ToolContext) -> VerificationPlanPayload:
         if not self.policy.enabled:
             return {"status": "NOT_RUN", "reason": "Verification is disabled"}
         if not state.get("findings") or context.changes is None:
@@ -86,33 +110,46 @@ class VerificationStage:
             "approval": self.policy.approval,
         }
 
-    def budget_gap(self, runtime, context, plan):
+    def budget_gap(
+        self,
+        runtime: ToolRuntime,
+        context: ToolContext,
+        plan: VerificationPlanPayload,
+    ) -> str | None:
         usage = runtime.ledger.usage(context.run_id)
         counts = {row["tool"]: row["attempts"] for row in usage if row["agent"] == context.agent_id}
-        for tool, count in plan["required_calls"].items():
+        required_calls = plan.get("required_calls", {})
+        for tool, count in required_calls.items():
             if counts.get(tool, 0) + count > runtime.limits.limit_for(context.agent_id, tool):
                 return f"Insufficient remaining {tool} attempts; verification has no separate allowance"
-        if (
-            sum(row["attempts"] for row in usage) + sum(plan["required_calls"].values())
-            > runtime.limits.total_calls
-        ):
+        if sum(row["attempts"] for row in usage) + sum(required_calls.values()) > runtime.limits.total_calls:
             return "Insufficient remaining total call budget"
         if runtime.ledger.active_elapsed(context.run_id) >= runtime.limits.max_run_seconds:
             return "Run deadline exceeded before verification"
         return None
 
-    def execute(self, runtime, context, plan):
-        scenario = self.scenarios[plan["scenario_id"]]
+    def execute(
+        self,
+        runtime: ToolRuntime,
+        context: ToolContext,
+        plan: VerificationPlanPayload,
+    ) -> VerificationResultPayload:
+        scenario_id = plan.get("scenario_id")
+        if scenario_id is None:
+            raise ValueError("Selected verification plan has no scenario ID")
+        scenario = self.scenarios[scenario_id]
         identity = digest({"scenario": scenario.id, "version": scenario.version, "plan": plan})
         started = False
         for event in runtime.ledger.events(context.run_id):
             if event["kind"] not in {"VERIFICATION_STARTED", "VERIFICATION_SAVED"}:
                 continue
-            record = json.loads(event["detail"])
+            record = as_json_object(json.loads(event["detail"]))
             if record["identity"] != identity:
                 return skipped("A different verification was already started in this run", status="BLOCKED")
             if event["kind"] == "VERIFICATION_SAVED":
-                return json.loads(verified_bytes(record["artifact"]))
+                return TypeAdapter(VerificationResultPayload).validate_json(
+                    verified_bytes(record["artifact"])
+                )
             started = True
         if started:
             return skipped(

@@ -6,12 +6,14 @@ import os
 import threading
 import time
 from collections import Counter
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol
 
 from pydantic import Field
 
+from trace_coordinator.domain.contracts import JsonObject, as_json_object
 from trace_coordinator.domain.models import Record
 from trace_coordinator.security.guardrails import findings
 
@@ -86,7 +88,7 @@ class ArtifactScanner(Protocol):
 class BaselineArtifactScanner:
     version = "baseline-regex-v1"
 
-    def inspect(self, data, suffix, config):
+    def inspect(self, data: bytes, suffix: str, config: ArtifactSecurityConfig) -> ArtifactScan:
         if not any(suffix.endswith(item) for item in config.text_suffixes):
             return ArtifactScan(status="UNSUPPORTED", provider=self.version)
         try:
@@ -102,7 +104,7 @@ class BaselineArtifactScanner:
 
 
 class GoogleArtifactScanner:
-    def __init__(self, provider, client=None, module=None):
+    def __init__(self, provider: GoogleDlp, client: Any | None = None, module: Any | None = None) -> None:
         project = os.environ.get(provider.project_id_env)
         if not project:
             raise ValueError(f"Missing Google DLP project environment variable: {provider.project_id_env}")
@@ -121,11 +123,12 @@ class GoogleArtifactScanner:
             ).hexdigest()
         )
 
-    def inspect(self, data, suffix, config):
+    def inspect(self, data: bytes, suffix: str, config: ArtifactSecurityConfig) -> ArtifactScan:
         is_text = any(suffix.endswith(item) for item in config.text_suffixes)
         is_image = any(suffix.endswith(item) for item in config.image_suffixes)
         if not is_text and not is_image:
             return ArtifactScan(status="UNSUPPORTED", provider=self.version)
+        item: dict[str, object]
         if is_text:
             try:
                 item = {"value": data.decode("utf-8")}
@@ -161,10 +164,12 @@ class GoogleArtifactScanner:
 
 
 _LOCK = threading.RLock()
-_POLICIES = {}
+_POLICIES: dict[Path, tuple[ArtifactSecurityConfig, ArtifactScanner]] = {}
 
 
-def build_scanner(config, *, client=None, module=None):
+def build_scanner(
+    config: ArtifactSecurityConfig, *, client: Any | None = None, module: Any | None = None
+) -> ArtifactScanner | None:
     provider = config.provider
     if provider.provider == "disabled":
         return None
@@ -174,7 +179,12 @@ def build_scanner(config, *, client=None, module=None):
 
 
 @contextmanager
-def artifact_security(root, config, *, scanner=None):
+def artifact_security(
+    root: str | Path,
+    config: ArtifactSecurityConfig,
+    *,
+    scanner: ArtifactScanner | None = None,
+) -> Iterator[None]:
     root = Path(root).resolve()
     scanner = scanner if scanner is not None else build_scanner(config)
     if scanner is None:
@@ -191,27 +201,29 @@ def artifact_security(root, config, *, scanner=None):
             _POLICIES.pop(root, None)
 
 
-def _audit(root, event):
+def _audit(root: Path, event: JsonObject) -> None:
     directory = root / "security"
     directory.mkdir(parents=True, exist_ok=True)
     with (directory / "artifact-dlp.jsonl").open("a", encoding="utf-8") as stream:
         stream.write(json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n")
 
 
-def enforce_artifact_policy(root, data, suffix):
+def enforce_artifact_policy(root: str | Path, data: bytes, suffix: str) -> None:
     root = Path(root).resolve()
     with _LOCK:
         selected = _POLICIES.get(root)
     if selected is None:
         return
     config, scanner = selected
-    event = {
-        "at": time.time(),
-        "bytes": len(data),
-        "suffix": suffix,
-        "sha256": hashlib.sha256(data).hexdigest(),
-        "scanner": scanner.version,
-    }
+    event = as_json_object(
+        {
+            "at": time.time(),
+            "bytes": len(data),
+            "suffix": suffix,
+            "sha256": hashlib.sha256(data).hexdigest(),
+            "scanner": scanner.version,
+        }
+    )
     if len(data) > config.max_bytes:
         event.update(status="BLOCKED", reason="size_limit")
         _audit(root, event)
@@ -224,7 +236,7 @@ def enforce_artifact_policy(root, data, suffix):
         if config.scanner_error_action == "block":
             raise ValueError("Artifact blocked because DLP scanning failed") from exc
         return
-    event.update(status=result.status, findings=result.findings)
+    event.update(status=result.status, findings=as_json_object(result.findings))
     _audit(root, event)
     if result.status == "SENSITIVE":
         raise ValueError("Artifact blocked by DLP policy: " + ", ".join(result.findings))

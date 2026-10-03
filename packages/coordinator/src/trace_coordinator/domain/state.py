@@ -9,8 +9,9 @@ from trace_coordinator.domain.contracts import (
     DecisionPayload,
     EvidencePayload,
     FindingPayload,
-    JsonObject,
     ReviewRequestPayload,
+    VerificationPlanPayload,
+    VerificationResultPayload,
 )
 from trace_coordinator.domain.models import Evidence
 
@@ -34,8 +35,8 @@ class AnalysisState(TypedDict, total=False):
     phase: str
     exploration_steps: int
     exploration_status: str
-    verification_plan: JsonObject
-    verification_result: JsonObject
+    verification_plan: VerificationPlanPayload
+    verification_result: VerificationResultPayload
     verification_approved: bool
 
 

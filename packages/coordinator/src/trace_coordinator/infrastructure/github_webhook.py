@@ -7,14 +7,50 @@ import os
 import re
 import sqlite3
 import time
+from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, Protocol, TypedDict
 
 import httpx
-from pydantic import Field, field_validator
+from pydantic import Field, TypeAdapter, field_validator
 
+from trace_coordinator.domain.contracts import AnalysisReportPayload, JsonObject, as_json_object
 from trace_coordinator.domain.models import AnalysisRequest, Record
+
+
+class WebhookJobPayload(TypedDict):
+    delivery_id: str
+    payload_sha256: str
+    repository: str
+    pull_request: int
+    base_sha: str
+    head_sha: str
+    installation_id: int
+    action: str
+    run_id: str
+
+
+class ClaimedJobPayload(TypedDict):
+    delivery_id: str
+    repository: str
+    pull_request: int
+    base_sha: str
+    head_sha: str
+    installation_id: int
+    action: str
+    run_id: str
+
+
+class TokenProvider(Protocol):
+    def token(self, installation_id: int) -> str: ...
+
+
+class CommentPublisher(Protocol):
+    def publish(self, job: ClaimedJobPayload, body: str) -> JsonObject: ...
+
+
+_REPORT_ADAPTER = TypeAdapter(AnalysisReportPayload)
 
 
 class GitHubAppAuth(Record):
@@ -48,7 +84,7 @@ class WebhookConfig(Record):
 
     @field_validator("allowed_repositories")
     @classmethod
-    def valid_repositories(cls, values):
+    def valid_repositories(cls, values: tuple[str, ...]) -> tuple[str, ...]:
         pattern = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
         if len(set(value.casefold() for value in values)) != len(values) or any(
             not pattern.fullmatch(value) for value in values
@@ -57,7 +93,7 @@ class WebhookConfig(Record):
         return values
 
 
-def load_webhook_config(path):
+def load_webhook_config(path: str | Path) -> WebhookConfig:
     path = Path(path).resolve()
     config = WebhookConfig.model_validate_json(path.read_text(encoding="utf-8-sig"))
     return config.model_copy(
@@ -69,13 +105,13 @@ def load_webhook_config(path):
 
 
 class WebhookRejected(ValueError):
-    def __init__(self, message, status_code=400):
+    def __init__(self, message: str, status_code: int = 400) -> None:
         super().__init__(message)
         self.status_code = status_code
 
 
 class WebhookStore:
-    def __init__(self, path):
+    def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:
@@ -97,14 +133,14 @@ class WebhookStore:
             )
 
     @contextmanager
-    def connect(self):
+    def connect(self) -> Iterator[sqlite3.Connection]:
         database = sqlite3.connect(self.path, timeout=30, isolation_level=None)
         try:
             yield database
         finally:
             database.close()
 
-    def enqueue(self, job):
+    def enqueue(self, job: WebhookJobPayload) -> bool:
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             existing = db.execute(
@@ -142,7 +178,7 @@ class WebhookStore:
             db.commit()
             return True
 
-    def claim(self):
+    def claim(self) -> ClaimedJobPayload | None:
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             row = db.execute(
@@ -156,19 +192,25 @@ class WebhookStore:
                 (time.time(), row[0]),
             )
             db.commit()
-            keys = (
-                "delivery_id",
-                "repository",
-                "pull_request",
-                "base_sha",
-                "head_sha",
-                "installation_id",
-                "action",
-                "run_id",
-            )
-            return dict(zip(keys, row, strict=True))
+            return {
+                "delivery_id": str(row[0]),
+                "repository": str(row[1]),
+                "pull_request": int(row[2]),
+                "base_sha": str(row[3]),
+                "head_sha": str(row[4]),
+                "installation_id": int(row[5]),
+                "action": str(row[6]),
+                "run_id": str(row[7]),
+            }
 
-    def finish(self, delivery_id, status, *, result_path=None, error_code=None):
+    def finish(
+        self,
+        delivery_id: str,
+        status: Literal["COMPLETED", "FAILED", "SUPERSEDED"],
+        *,
+        result_path: str | None = None,
+        error_code: str | None = None,
+    ) -> None:
         if status not in {"COMPLETED", "FAILED", "SUPERSEDED"}:
             raise ValueError("Invalid terminal job status")
         with self.connect() as db:
@@ -181,7 +223,13 @@ class WebhookStore:
 
 
 class WebhookService:
-    def __init__(self, config, *, secret=None, store=None):
+    def __init__(
+        self,
+        config: WebhookConfig,
+        *,
+        secret: str | None = None,
+        store: WebhookStore | None = None,
+    ) -> None:
         self.config = config
         resolved_secret = secret or os.environ.get(config.webhook_secret_env)
         if not resolved_secret:
@@ -189,7 +237,7 @@ class WebhookService:
         self.secret: str = resolved_secret
         self.store = store or WebhookStore(config.database_file)
 
-    def accept(self, headers, body):
+    def accept(self, headers: Mapping[str, str], body: bytes) -> JsonObject:
         headers = {key.casefold(): value for key, value in headers.items()}
         if len(body) > self.config.max_payload_bytes:
             raise WebhookRejected("Webhook payload exceeds the configured limit", 413)
@@ -219,7 +267,7 @@ class WebhookService:
             raise WebhookRejected("Repository is not allowed", 403)
         if not re.fullmatch(r"[a-f0-9]{40}", base_sha) or not re.fullmatch(r"[a-f0-9]{40}", head_sha):
             raise WebhookRejected("Webhook contains invalid commit identities")
-        job = {
+        job: WebhookJobPayload = {
             "delivery_id": delivery,
             "payload_sha256": hashlib.sha256(body).hexdigest(),
             "repository": repository,
@@ -239,11 +287,11 @@ class WebhookService:
 
 
 class GitHubAppTokenProvider:
-    def __init__(self, config, client=None):
+    def __init__(self, config: GitHubAppAuth, client: Any | None = None) -> None:
         self.config = config
         self.client = client or httpx.Client(timeout=30, follow_redirects=False)
 
-    def token(self, installation_id):
+    def token(self, installation_id: int) -> str:
         app_id = os.environ.get(self.config.app_id_env)
         private_key = self._private_key()
         if not app_id or not private_key:
@@ -266,9 +314,13 @@ class GitHubAppTokenProvider:
             json={"permissions": {"issues": "write", "pull_requests": "write", "contents": "read"}},
         )
         response.raise_for_status()
-        return response.json()["token"]
+        payload = as_json_object(response.json())
+        token = payload.get("token")
+        if not isinstance(token, str):
+            raise ValueError("GitHub App token response is invalid")
+        return token
 
-    def _private_key(self):
+    def _private_key(self) -> str | None:
         inline_key = os.environ.get(self.config.private_key_env)
         if inline_key:
             return inline_key
@@ -287,11 +339,16 @@ class GitHubAppTokenProvider:
 class GitHubCommentPublisher:
     marker = "<!-- trace-impact-report -->"
 
-    def __init__(self, auth, api_version="2026-03-10", client=None):
+    def __init__(
+        self,
+        auth: TokenProvider,
+        api_version: str = "2026-03-10",
+        client: Any | None = None,
+    ) -> None:
         self.auth, self.api_version = auth, api_version
         self.client = client or httpx.Client(timeout=30, follow_redirects=False)
 
-    def publish(self, job, body):
+    def publish(self, job: ClaimedJobPayload, body: str) -> JsonObject:
         if len(body) > 60_000:
             raise ValueError("PR report is too large for a comment")
         token = self.auth.token(job["installation_id"])
@@ -320,7 +377,8 @@ class GitHubCommentPublisher:
             )
             operation = "created"
         result.raise_for_status()
-        return {"status": operation.upper(), "comment_id": result.json()["id"]}
+        response_payload = as_json_object(result.json())
+        return {"status": operation.upper(), "comment_id": response_payload["id"]}
 
 
 def create_webhook_app(config_path: Path) -> Any:
@@ -345,7 +403,13 @@ def create_webhook_app(config_path: Path) -> Any:
     return app
 
 
-def run_next_job(config_path, *, publisher=None, auth=None, github_client=None):
+def run_next_job(
+    config_path: str | Path,
+    *,
+    publisher: CommentPublisher | None = None,
+    auth: TokenProvider | None = None,
+    github_client: Any | None = None,
+) -> JsonObject:
     from trace_coordinator.bootstrap import create_coordinator
     from trace_coordinator.presentation.report_formatter import markdown
 
@@ -368,11 +432,13 @@ def run_next_job(config_path, *, publisher=None, auth=None, github_client=None):
             headers=headers,
         )
         current.raise_for_status()
-        metadata = current.json()
+        metadata = as_json_object(current.json())
+        base = as_json_object(metadata.get("base", {}))
+        head = as_json_object(metadata.get("head", {}))
         if (
             metadata.get("number") != job["pull_request"]
-            or metadata.get("base", {}).get("sha") != job["base_sha"]
-            or metadata.get("head", {}).get("sha") != job["head_sha"]
+            or base.get("sha") != job["base_sha"]
+            or head.get("sha") != job["head_sha"]
         ):
             store.finish(job["delivery_id"], "SUPERSEDED", error_code="PR_REVISION_CHANGED")
             return {"status": "SUPERSEDED", "run_id": job["run_id"]}
@@ -392,7 +458,7 @@ def run_next_job(config_path, *, publisher=None, auth=None, github_client=None):
     output.mkdir(parents=True, exist_ok=True)
     try:
         with create_coordinator(Path(config.coordinator_config_file)) as coordinator:
-            report = coordinator.run(request, job["run_id"])
+            report = _REPORT_ADAPTER.validate_python(coordinator.run(request, job["run_id"]))
         report_path = output / "report.json"
         report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         rendered = markdown(report)
@@ -408,9 +474,11 @@ def run_next_job(config_path, *, publisher=None, auth=None, github_client=None):
         raise
 
 
-def webhook_schema():
-    return {
-        **WebhookConfig.model_json_schema(),
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "title": "GitHub webhook integration",
-    }
+def webhook_schema() -> JsonObject:
+    return as_json_object(
+        {
+            **WebhookConfig.model_json_schema(),
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "title": "GitHub webhook integration",
+        }
+    )

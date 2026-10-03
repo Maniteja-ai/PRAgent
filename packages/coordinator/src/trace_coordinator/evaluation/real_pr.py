@@ -2,12 +2,28 @@
 
 import hashlib
 import json
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self, TypedDict
 
 from pydantic import Field, model_validator
 
+from trace_coordinator.domain.contracts import JsonObject, as_json_object
 from trace_coordinator.domain.models import Record
+
+
+class Metric(TypedDict):
+    tp: int
+    fp: int
+    fn: int
+    precision: float
+    recall: float
+
+
+def _number(value: object) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError("Evaluation metric is not numeric")
+    return float(value)
 
 
 class ReviewProvenance(Record):
@@ -18,7 +34,7 @@ class ReviewProvenance(Record):
     notes: str = Field(min_length=1, max_length=1000)
 
     @model_validator(mode="after")
-    def independent_approval(self):
+    def independent_approval(self) -> Self:
         if self.status == "APPROVED" and (
             not self.independent_reviewer
             or self.independent_reviewer.casefold() == self.label_author.casefold()
@@ -64,7 +80,7 @@ class RealPrDataset(Record):
     cases: tuple[RealPrCase, ...] = Field(min_length=1, max_length=100)
 
     @model_validator(mode="after")
-    def unique_cases(self):
+    def unique_cases(self) -> Self:
         ids = [case.id for case in self.cases]
         prs = [(case.repository.casefold(), case.pull_request) for case in self.cases]
         if len(ids) != len(set(ids)) or len(prs) != len(set(prs)):
@@ -101,7 +117,7 @@ class PredictionSet(Record):
     cases: tuple[PredictedImpact, ...] = Field(min_length=1, max_length=100)
 
 
-def _metric(expected, predicted):
+def _metric(expected: Iterable[str], predicted: Iterable[str]) -> Metric:
     expected, predicted = set(expected), set(predicted)
     tp, fp, fn = len(expected & predicted), len(predicted - expected), len(expected - predicted)
     precision = tp / (tp + fp) if tp + fp else 1.0
@@ -109,7 +125,7 @@ def _metric(expected, predicted):
     return {"tp": tp, "fp": fp, "fn": fn, "precision": precision, "recall": recall}
 
 
-def _merge_metrics(rows):
+def _merge_metrics(rows: Sequence[Metric]) -> Metric:
     tp = sum(row["tp"] for row in rows)
     fp = sum(row["fp"] for row in rows)
     fn = sum(row["fn"] for row in rows)
@@ -122,7 +138,7 @@ def _merge_metrics(rows):
     }
 
 
-def evaluate_real_prs(dataset_path, predictions_path):
+def evaluate_real_prs(dataset_path: str | Path, predictions_path: str | Path) -> JsonObject:
     dataset_file = Path(dataset_path).resolve()
     predictions_file = Path(predictions_path).resolve()
     dataset = RealPrDataset.model_validate_json(dataset_file.read_text(encoding="utf-8-sig"))
@@ -133,10 +149,8 @@ def evaluate_real_prs(dataset_path, predictions_path):
     if set(by_id) != {case.id for case in dataset.cases}:
         raise ValueError("Predictions must contain every dataset case exactly once")
 
-    dimensions: dict[str, list[dict[str, float]]] = {
-        name: [] for name in ("ui_elements", "flows", "requirements")
-    }
-    case_results = []
+    dimensions: dict[str, list[Metric]] = {name: [] for name in ("ui_elements", "flows", "requirements")}
+    case_results: list[JsonObject] = []
     supported_claims = predicted_claims = expected_claims_found = expected_claims = 0
     valid_citations = total_citations = 0
     for case in dataset.cases:
@@ -144,16 +158,23 @@ def evaluate_real_prs(dataset_path, predictions_path):
         raw = source.read_bytes()
         if hashlib.sha256(raw).hexdigest() != case.source_sha256:
             raise ValueError(f"Source hash mismatch for {case.id}")
-        source_value = json.loads(raw)
-        evidence_ids = {item["id"] for item in source_value["evidence"]}
+        source_value = as_json_object(json.loads(raw))
+        source_evidence = source_value.get("evidence")
+        if not isinstance(source_evidence, list):
+            raise ValueError(f"Source evidence is invalid for {case.id}")
+        evidence_ids = {
+            item["id"]
+            for value in source_evidence
+            if isinstance((item := as_json_object(value)).get("id"), str)
+        }
         predicted = by_id[case.id]
-        scores = {}
+        scores: dict[str, Metric] = {}
         for dimension in dimensions:
             score = _metric(getattr(case.expected, dimension), getattr(predicted, dimension))
             dimensions[dimension].append(score)
             scores[dimension] = score
         found = set()
-        finding_results = []
+        finding_results: list[JsonObject] = []
         for finding in predicted.findings:
             predicted_claims += 1
             total_citations += len(finding.evidence_ids)
@@ -167,21 +188,25 @@ def evaluate_real_prs(dataset_path, predictions_path):
                 supported_claims += 1
                 found.add(finding.claim_id)
             finding_results.append(
-                {
-                    "claim_id": finding.claim_id,
-                    "citations_valid": valid,
-                    "faithful": faithful,
-                }
+                as_json_object(
+                    {
+                        "claim_id": finding.claim_id,
+                        "citations_valid": valid,
+                        "faithful": faithful,
+                    }
+                )
             )
         expected_claims += len(case.expected.claims)
         expected_claims_found += len(found)
         case_results.append(
-            {
-                "id": case.id,
-                "split": case.split,
-                "relevance": scores,
-                "findings": finding_results,
-            }
+            as_json_object(
+                {
+                    "id": case.id,
+                    "split": case.split,
+                    "relevance": scores,
+                    "findings": finding_results,
+                }
+            )
         )
 
     relevance = {name: _merge_metrics(rows) for name, rows in dimensions.items()}
@@ -200,50 +225,57 @@ def evaluate_real_prs(dataset_path, predictions_path):
     blind_system_run = (
         predictions.provenance.kind == "system_run" and not predictions.provenance.labels_visible
     )
-    return {
-        "schema_version": 1,
-        "status": "PASSED"
-        if thresholds_pass and approved and blind_system_run
-        else "DRAFT_EVALUATED"
-        if thresholds_pass
-        else "FAILED",
-        "release_eligible": bool(thresholds_pass and approved and blind_system_run),
-        "prediction_provenance": predictions.provenance.model_dump(mode="json"),
-        "dataset": {
-            "id": dataset.id,
-            "cases": len(dataset.cases),
-            "development_cases": sum(case.split == "development" for case in dataset.cases),
-            "held_out_cases": sum(case.split == "held_out" for case in dataset.cases),
-            "review": dataset.review.model_dump(mode="json"),
-            "path": str(dataset_file),
-            "sha256": hashlib.sha256(dataset_file.read_bytes()).hexdigest(),
-        },
-        "metrics": {
-            "relevance": {**relevance, "combined": combined},
-            "faithfulness": faithfulness,
-            "claim_recall": claim_recall,
-            "citation_validity": citation_validity,
-            "predicted_claims": predicted_claims,
-            "supported_claims": supported_claims,
-        },
-        "thresholds": {
-            "relevance_precision": dataset.minimum_relevance_precision,
-            "relevance_recall": dataset.minimum_relevance_recall,
-            "faithfulness": dataset.minimum_faithfulness,
-            "claim_recall": dataset.minimum_claim_recall,
-            "citation_validity": 1.0,
-        },
-        "cases": case_results,
-        "limits": [
-            "DRAFT_EVALUATED is development feedback, not independently approved ground truth.",
-            "Predictions produced with labels visible are scorer smoke tests, not model accuracy.",
-            "Faithfulness is reference-based evidence support; it does not use an LLM-as-judge.",
-        ],
-    }
+    return as_json_object(
+        {
+            "schema_version": 1,
+            "status": "PASSED"
+            if thresholds_pass and approved and blind_system_run
+            else "DRAFT_EVALUATED"
+            if thresholds_pass
+            else "FAILED",
+            "release_eligible": bool(thresholds_pass and approved and blind_system_run),
+            "prediction_provenance": predictions.provenance.model_dump(mode="json"),
+            "dataset": {
+                "id": dataset.id,
+                "cases": len(dataset.cases),
+                "development_cases": sum(case.split == "development" for case in dataset.cases),
+                "held_out_cases": sum(case.split == "held_out" for case in dataset.cases),
+                "review": dataset.review.model_dump(mode="json"),
+                "path": str(dataset_file),
+                "sha256": hashlib.sha256(dataset_file.read_bytes()).hexdigest(),
+            },
+            "metrics": {
+                "relevance": {**relevance, "combined": combined},
+                "faithfulness": faithfulness,
+                "claim_recall": claim_recall,
+                "citation_validity": citation_validity,
+                "predicted_claims": predicted_claims,
+                "supported_claims": supported_claims,
+            },
+            "thresholds": {
+                "relevance_precision": dataset.minimum_relevance_precision,
+                "relevance_recall": dataset.minimum_relevance_recall,
+                "faithfulness": dataset.minimum_faithfulness,
+                "claim_recall": dataset.minimum_claim_recall,
+                "citation_validity": 1.0,
+            },
+            "cases": case_results,
+            "limits": [
+                "DRAFT_EVALUATED is development feedback, not independently approved ground truth.",
+                "Predictions produced with labels visible are scorer smoke tests, not model accuracy.",
+                "Faithfulness is reference-based evidence support; it does not use an LLM-as-judge.",
+            ],
+        }
+    )
 
 
-def real_pr_markdown(report):
-    metrics = report["metrics"]
+def real_pr_markdown(report: JsonObject) -> str:
+    metrics = as_json_object(report["metrics"])
+    relevance = as_json_object(metrics["relevance"])
+    combined = as_json_object(relevance["combined"])
+    dataset = as_json_object(report["dataset"])
+    review = as_json_object(dataset["review"])
+    provenance = as_json_object(report["prediction_provenance"])
     lines = [
         "# Real-PR relevance and faithfulness evaluation",
         "",
@@ -251,34 +283,37 @@ def real_pr_markdown(report):
         "",
         f"Release eligible: **{str(report['release_eligible']).lower()}**",
         "",
-        f"Dataset: `{report['dataset']['id']}` with {report['dataset']['cases']} cases "
-        f"({report['dataset']['held_out_cases']} held out).",
+        f"Dataset: `{dataset['id']}` with {dataset['cases']} cases ({dataset['held_out_cases']} held out).",
         "",
-        f"Prediction source: `{report['prediction_provenance']['kind']}`; labels visible: "
-        f"**{str(report['prediction_provenance']['labels_visible']).lower()}**.",
+        f"Prediction source: `{provenance['kind']}`; labels visible: "
+        f"**{str(provenance['labels_visible']).lower()}**.",
         "",
         "| Metric | Result |",
         "| --- | ---: |",
-        f"| Combined relevance precision | {metrics['relevance']['combined']['precision']:.3f} |",
-        f"| Combined relevance recall | {metrics['relevance']['combined']['recall']:.3f} |",
-        f"| Faithfulness | {metrics['faithfulness']:.3f} |",
-        f"| Claim recall | {metrics['claim_recall']:.3f} |",
-        f"| Citation validity | {metrics['citation_validity']:.3f} |",
+        f"| Combined relevance precision | {_number(combined['precision']):.3f} |",
+        f"| Combined relevance recall | {_number(combined['recall']):.3f} |",
+        f"| Faithfulness | {_number(metrics['faithfulness']):.3f} |",
+        f"| Claim recall | {_number(metrics['claim_recall']):.3f} |",
+        f"| Citation validity | {_number(metrics['citation_validity']):.3f} |",
         "",
         "## Review status",
         "",
-        f"Label author: {report['dataset']['review']['label_author']}",
+        f"Label author: {review['label_author']}",
         "",
-        f"Independent reviewer: {report['dataset']['review']['independent_reviewer'] or 'PENDING'}",
+        f"Independent reviewer: {review['independent_reviewer'] or 'PENDING'}",
         "",
     ]
-    lines.extend(f"- {item}" for item in report["limits"])
+    limits = report.get("limits")
+    if isinstance(limits, list):
+        lines.extend(f"- {item}" for item in limits)
     return "\n".join(lines) + "\n"
 
 
-def real_pr_dataset_schema():
-    return {
-        **RealPrDataset.model_json_schema(),
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "title": "Real PR relevance and faithfulness dataset",
-    }
+def real_pr_dataset_schema() -> JsonObject:
+    return as_json_object(
+        {
+            **RealPrDataset.model_json_schema(),
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "title": "Real PR relevance and faithfulness dataset",
+        }
+    )

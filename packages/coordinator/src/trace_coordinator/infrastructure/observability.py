@@ -7,7 +7,10 @@ import os
 from dataclasses import dataclass
 from typing import Any
 
+from langchain_core.runnables.config import RunnableConfig
+
 from trace_coordinator.config import DisabledObservability, LangSmithObservability
+from trace_coordinator.domain.contracts import JsonObject, as_json_object
 from trace_coordinator.domain.models import AnalysisRequest
 from trace_coordinator.infrastructure.ledger import CallLedger, canonical
 
@@ -16,15 +19,15 @@ from trace_coordinator.infrastructure.ledger import CallLedger, canonical
 class TraceSession:
     """One best-effort trace attachment for one immutable coordinator run."""
 
-    annotation: dict[str, Any] | None = None
+    annotation: JsonObject | None = None
     callback: Any = None
     client: Any = None
     flush_timeout_seconds: float = 0
 
-    def graph_options(self) -> dict[str, Any]:
+    def graph_options(self) -> RunnableConfig:
         return {"callbacks": [self.callback]} if self.callback is not None else {}
 
-    def finish(self) -> dict[str, Any] | None:
+    def finish(self) -> JsonObject | None:
         if self.annotation is None:
             return None
         result = dict(self.annotation)
@@ -48,18 +51,18 @@ class TraceSession:
                 self.client.close(timeout=0)
             except Exception:
                 pass
-        return result
+        return as_json_object(result)
 
 
 class CoordinatorObservability:
     """Builds per-run callbacks and persists only safe trace coordinates in the local ledger."""
 
-    def __init__(self, config: DisabledObservability | LangSmithObservability | None = None):
+    def __init__(self, config: DisabledObservability | LangSmithObservability | None = None) -> None:
         self.config = config or DisabledObservability()
 
     @property
-    def fingerprint(self) -> dict[str, Any]:
-        return self.config.model_dump(mode="json")
+    def fingerprint(self) -> JsonObject:
+        return as_json_object(self.config.model_dump(mode="json"))
 
     def start(
         self,
@@ -71,14 +74,16 @@ class CoordinatorObservability:
     ) -> TraceSession:
         if self.config.provider == "disabled":
             return TraceSession()
-        base = {
-            "provider": "langsmith",
-            "status": "INITIALIZED",
-            "project": self.config.project,
-            "dashboard_url": self.config.dashboard_url,
-            "trace_id": None,
-            "content_captured": False,
-        }
+        base = as_json_object(
+            {
+                "provider": "langsmith",
+                "status": "INITIALIZED",
+                "project": self.config.project,
+                "dashboard_url": self.config.dashboard_url,
+                "trace_id": None,
+                "content_captured": False,
+            }
+        )
         api_key = os.getenv(self.config.api_key_env)
         if not api_key:
             return TraceSession(
@@ -155,13 +160,13 @@ class CoordinatorObservability:
     def attach(
         ledger: CallLedger,
         run_id: str,
-        result: dict[str, object],
+        result: object,
         session: TraceSession,
-    ) -> dict[str, object]:
+    ) -> JsonObject:
         previous = ledger.latest_event(run_id, "OBSERVABILITY")
         annotation = session.finish()
         if annotation is None:
-            return result
+            return as_json_object(result)
         if (
             previous
             and annotation.get("trace_id") is None
@@ -169,9 +174,9 @@ class CoordinatorObservability:
         ):
             annotation = json.loads(previous["detail"])
         ledger.event_once(run_id, "OBSERVABILITY", canonical(annotation))
-        enriched = dict(result)
+        enriched = as_json_object(result)
         enriched["observability"] = annotation
         enriched["observability_events"] = [
-            event for event in ledger.events(run_id) if event["kind"] == "OBSERVABILITY"
+            as_json_object(event) for event in ledger.events(run_id) if event["kind"] == "OBSERVABILITY"
         ]
-        return enriched
+        return as_json_object(enriched)

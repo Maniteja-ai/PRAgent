@@ -1,17 +1,32 @@
 """Build observed paths and reviewable code/UI candidates without publishing graph edges."""
 
 import re
-from typing import Any
+from collections.abc import Iterator, Mapping
+from typing import Literal
+
+from pydantic import TypeAdapter, ValidationError
 
 from trace_coordinator.application.exploration import screens
+from trace_coordinator.domain.contracts import (
+    EvidencePayload,
+    ObservedPathPayload,
+    UICandidateChangePayload,
+    UICandidatePayload,
+    UIKnowledgePayload,
+    UISummaryPayload,
+    UITransitionPayload,
+)
+
+_CHANGE_SET_ADAPTER: TypeAdapter[UICandidateChangePayload] = TypeAdapter(UICandidateChangePayload)
+_TRANSITION_ADAPTER: TypeAdapter[UITransitionPayload] = TypeAdapter(UITransitionPayload)
 
 
-def label_in_source(name, text):
+def label_in_source(name: str, text: str) -> bool:
     value = re.escape(name)
     return bool(re.search(rf"([\"\x27`]){value}\1|>\s*{value}\s*<|^\s*{value}\s*$", text, re.IGNORECASE))
 
 
-def source_lines(patch, environment):
+def source_lines(patch: str, environment: Literal["baseline", "patched"]) -> Iterator[tuple[str, int, str]]:
     """Yield actual baseline/head line numbers from unified diff hunks, never inferred files."""
     path, before, after = None, None, None
     for line in patch.splitlines():
@@ -25,7 +40,7 @@ def source_lines(patch, environment):
             match = re.match(r"@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@", line)
             if match:
                 before, after = map(int, match.groups())
-        elif path and before is not None and line[:1] in {" ", "+", "-"}:
+        elif path and before is not None and after is not None and line[:1] in {" ", "+", "-"}:
             marker, text = line[0], line[1:]
             if environment == "baseline" and marker != "+":
                 yield path, before, text
@@ -35,11 +50,19 @@ def source_lines(patch, environment):
             after += marker != "-"
 
 
-def ui_index(evidence, max_candidates=50):
-    states: list[dict[str, Any]] = []
-    flows: list[dict[str, Any]] = []
-    candidates: list[dict[str, Any]] = []
-    diffs = [e for e in evidence.values() if e["kind"] == "diff" and "changes" in e.get("metadata", {})]
+def ui_index(evidence: Mapping[str, EvidencePayload], max_candidates: int = 50) -> UIKnowledgePayload:
+    states: list[UISummaryPayload] = []
+    flows: list[ObservedPathPayload] = []
+    candidates: list[UICandidatePayload] = []
+    diffs: list[tuple[EvidencePayload, UICandidateChangePayload]] = []
+    for item in evidence.values():
+        if item["kind"] != "diff" or "changes" not in item["metadata"]:
+            continue
+        try:
+            changes = _CHANGE_SET_ADAPTER.validate_python(item["metadata"]["changes"])
+        except ValidationError:
+            continue
+        diffs.append((item, changes))
     for environment in ("baseline", "patched"):
         observed = screens(evidence, environment)
         ids = {ref for ref, _ in observed}
@@ -54,11 +77,15 @@ def ui_index(evidence, max_candidates=50):
                     "element_count": len(screen.get("elements", [])),
                 }
             )
-            transition = evidence[ref].get("metadata", {}).get("transition_record", {})
-            if transition.get("to") == ref and transition.get("from") in ids:
-                transitions.append(transition)
-            for diff in diffs:
-                changes = diff["metadata"]["changes"]
+            transition_value = evidence[ref]["metadata"].get("transition_record")
+            if transition_value is not None:
+                try:
+                    transition = _TRANSITION_ADAPTER.validate_python(transition_value)
+                except ValidationError:
+                    transition = None
+                if transition and transition.get("to") == ref and transition.get("from") in ids:
+                    transitions.append(transition)
+            for diff, changes in diffs:
                 revision = changes["analysis_base" if environment == "baseline" else "analysis_head"]
                 allowed_files = {f["path"] for f in changes["files"]}
                 for element in screen.get("elements", []):
@@ -87,7 +114,7 @@ def ui_index(evidence, max_candidates=50):
         if transitions:
             # A restart can create disconnected paths. Group by predecessor links,
             # rather than inventing a transition between independent sessions.
-            paths: list[list[dict[str, Any]]] = []
+            paths: list[list[UITransitionPayload]] = []
             for transition in transitions:
                 prior = next((p for p in paths if p[-1]["to"] == transition["from"]), None)
                 if prior is None:
