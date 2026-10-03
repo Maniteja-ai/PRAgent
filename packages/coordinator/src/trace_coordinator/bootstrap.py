@@ -96,6 +96,7 @@ def create_coordinator(config_path: Path):
             model,
             exploration=config.exploration,
             verification=config.verification,
+            human_review=config.human_review,
             scenarios=scenarios,
             guardrails=config.guardrails,
         )

@@ -10,7 +10,7 @@ from pydantic import Field
 
 from trace_coordinator.adapters.fixtures import FixtureModel, FixtureTool
 from trace_coordinator.api import Coordinator
-from trace_coordinator.config import CallLimits
+from trace_coordinator.config import CallLimits, HumanReviewPolicy
 from trace_coordinator.models import AnalysisRequest, Record
 
 
@@ -20,9 +20,11 @@ class GoldenFinding(Record):
 
 
 class GoldenExpected(Record):
-    status: Literal["COMPLETED", "STOPPED", "FAILED"]
+    status: Literal["COMPLETED", "COMPLETED_WITH_GAPS", "STOPPED", "FAILED"]
     stop_reason: str
     verification: str = "NOT_RUN"
+    review_status: Literal["NOT_REQUESTED", "NOT_ANSWERED", "ANSWERED"] = "NOT_REQUESTED"
+    review_question: str | None = None
     findings: tuple[GoldenFinding, ...] = ()
     max_total_calls: int = Field(default=30, ge=1, le=1000)
 
@@ -32,6 +34,7 @@ class GoldenCase(Record):
     request: AnalysisRequest
     tools: dict[str, dict]
     decisions: tuple[dict, ...] = Field(min_length=1, max_length=20)
+    human_review: HumanReviewPolicy = Field(default_factory=HumanReviewPolicy)
     expected: GoldenExpected
 
 
@@ -69,9 +72,13 @@ def evaluate_dataset(path, output_directory):
     for case in dataset.cases:
         case_root = output / "state" / case.id
         tools = [FixtureTool(name, value) for name, value in case.tools.items()]
-        report = Coordinator(case_root, dataset.limits, tools, FixtureModel(case.decisions)).run(
-            case.request, "evaluation"
-        )
+        report = Coordinator(
+            case_root,
+            dataset.limits,
+            tools,
+            FixtureModel(case.decisions),
+            human_review=case.human_review,
+        ).run(case.request, "evaluation")
         report_bytes = (json.dumps(report, indent=2) + "\n").encode()
         report_path = output / "cases" / case.id / "report.json"
         report_path.parent.mkdir(parents=True, exist_ok=True)
@@ -92,6 +99,14 @@ def evaluate_dataset(path, output_directory):
             report["status"] == case.expected.status
             and report["stop_reason"] == case.expected.stop_reason
             and report["verification"] == case.expected.verification
+            and report["human_review"]["status"] == case.expected.review_status
+            and (
+                case.expected.review_question is None
+                or any(
+                    item["question"] == case.expected.review_question
+                    for item in report["human_review"]["requests"]
+                )
+            )
             and set(predicted) == set(expected)
             and matched == set(expected)
             and citations_valid
@@ -105,6 +120,7 @@ def evaluate_dataset(path, output_directory):
                 "expected_findings": sorted(expected),
                 "predicted_findings": sorted(predicted),
                 "citations_valid": citations_valid,
+                "review_status": report["human_review"]["status"],
                 "total_calls": total_calls,
                 "report": {
                     "path": str(report_path),
@@ -161,6 +177,7 @@ def _stable_evaluation_view(report):
                 "expected_findings": item["expected_findings"],
                 "predicted_findings": item["predicted_findings"],
                 "citations_valid": item["citations_valid"],
+                "review_status": item["review_status"],
                 "total_calls": item["total_calls"],
             }
             for item in report["cases"]

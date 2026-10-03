@@ -63,9 +63,13 @@
   },
   "tools": {"provider": "live", "application_file": "saleor-application.json"},
   "state_directory": "../runs-google-dlp",
+  "human_review": {
+    "policy": "non_blocking",
+    "allow_follow_up_verification": true
+  },
   "verification": {
     "enabled": true,
-    "approval": "preapproved",
+    "approval": "human_review",
     "scenarios": [
       {
         "id": "checkout-voucher",

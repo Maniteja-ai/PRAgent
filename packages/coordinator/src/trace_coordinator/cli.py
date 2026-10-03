@@ -11,6 +11,25 @@ from trace_coordinator.models import AnalysisRequest, ReviewResponse
 
 def markdown(report):
     lines = ["# PR impact report", "", f"Status: {report['status']}", ""]
+    review = report.get("human_review", {})
+    if review.get("requests"):
+        lines.extend(["## Human review", "", f"Outcome: {review['status']}", ""])
+        for item in review["requests"]:
+            lines.extend(
+                [
+                    f"- Question: {item['question']}",
+                    f"- Status: {item['status']}",
+                    *([f"- Answer: {item['answer']}"] if item.get("answer") else []),
+                    "",
+                ]
+            )
+        if report.get("follow_up"):
+            lines.extend(
+                [
+                    f"Linked parent run: {report['follow_up']['parent_run_id']}",
+                    "",
+                ]
+            )
     behavior = report.get("behavior_verification")
     if behavior and behavior["status"] != "NOT_RUN":
         lines.extend(

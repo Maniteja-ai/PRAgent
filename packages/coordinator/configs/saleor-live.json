@@ -37,5 +37,9 @@
     "max_input_chars": 120000
   },
   "tools": {"provider": "live", "application_file": "saleor-application.json"},
+  "human_review": {
+    "policy": "non_blocking",
+    "allow_follow_up_verification": true
+  },
   "state_directory": "../runs"
 }

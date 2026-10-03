@@ -71,6 +71,23 @@ Run IDs are immutable. Reusing the same run ID with the same request and configu
 the saved result without external calls. A different request, provider fingerprint, policy, or
 configuration under that ID is rejected.
 
+Human review behavior is explicit JSON configuration:
+
+```json
+"human_review": {
+  "policy": "non_blocking",
+  "allow_follow_up_verification": true
+}
+```
+
+`blocking` uses a durable LangGraph interrupt and returns `WAITING_FOR_REVIEW`. `non_blocking`
+records the exact question, marks approval-dependent checks `NOT_EXECUTED`, and returns
+`COMPLETED_WITH_GAPS` immediately. A later `--review` response against the original run ID creates
+a deterministic linked verification run. It starts from the saved verification boundary, retains
+the original evidence and hashes, and charges every new verification call to the original ledger.
+It cannot replenish per-tool, total-call, review, retry, or active-execution time limits; only the
+offline human-response interval is excluded from elapsed execution time.
+
 The verified Saleor profile uses local Git objects. It does not need a GitHub token or API call.
 The PR number and historical replay flag are labels; the adapter proves that the selected
 upstream patch is byte-identical to the source difference between the two deployed revisions.
@@ -149,9 +166,12 @@ It checks the voucher in the backend, then verifies browser-visible behavior aga
 oracle. Mutation retries are disabled. An interrupted mutation remains uncertain and requires
 reconciliation; it is never repeated silently.
 
-The supplied scenario is explicitly `preapproved`. The report binds approval to the selected
-scenario and a SHA-256 policy fingerprint. For a human-reviewed scenario, set
-`"approval": "human_review"`, inspect the saved plan, and resume with `--review` and a JSON reply.
+The supplied scenario requires `human_review` and uses the non-blocking policy. The first run saves
+the question and verification plan without executing it. To approve later, create a file such as
+`review.json` containing `{"answer":"approve"}` and rerun the same command and run ID with
+`--review review.json`. Only an exact `approve` authorizes the configured scenario. Any other answer
+creates a linked `COMPLETED_WITH_GAPS` run with verification still `NOT_EXECUTED`. The report binds
+the answer, parent run, original evidence hash, scenario and policy fingerprint in the audit trail.
 
 Requirement contracts are data, not hard-coded workflow logic:
 
@@ -211,10 +231,10 @@ uv run --no-sync trace-coordinator release-check `
 ```
 
 The golden evaluator executes the complete coordinator contract with deterministic adapters.
-Its four reviewed cases cover a cited impact, citation repair, absence of a supported finding,
-and a bounded retrieval loop. Latest metrics are 2 true positives, 0 false positives, 0 false
-negatives, precision 1.0, recall 1.0, and 4/4 cases passed. These figures describe this reviewed
-dataset, not arbitrary repositories.
+Its five reviewed cases cover a cited impact, citation repair, absence of a supported finding,
+a bounded retrieval loop, and non-blocking human review. Latest metrics are 2 true positives,
+0 false positives, 0 false negatives, precision 1.0, recall 1.0, and 5/5 cases passed. These
+figures describe this reviewed dataset, not arbitrary repositories.
 
 The [six-case real-PR dataset](evaluation/real-pr-v2/README.md) scores exact UI/flow/requirement
 relevance, citation validity, evidence-based faithfulness and claim recall. Its current labels and

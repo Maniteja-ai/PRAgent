@@ -4,7 +4,13 @@ from pathlib import Path
 import pytest
 from filelock import FileLock, Timeout
 
-from trace_coordinator import AnalysisRequest, CallLimits, Coordinator, ReviewResponse
+from trace_coordinator import (
+    AnalysisRequest,
+    CallLimits,
+    Coordinator,
+    HumanReviewPolicy,
+    ReviewResponse,
+)
 from trace_coordinator.adapters.attestation import AttestationInput
 from trace_coordinator.adapters.fixtures import FixtureModel, FixtureTool
 from trace_coordinator.bootstrap import create_coordinator
@@ -16,12 +22,13 @@ FIXTURE = json.loads((ROOT / "examples/voucher-fixture.json").read_text(encoding
 REQUEST = AnalysisRequest.model_validate_json((ROOT / "examples/request.json").read_text(encoding="utf-8"))
 
 
-def coordinator(path, decisions=None, limits=None, tools=None):
+def coordinator(path, decisions=None, limits=None, tools=None, human_review=None):
     return Coordinator(
         path,
         limits or CallLimits(retry_delay_seconds=0),
         tools or [FixtureTool(name, data) for name, data in FIXTURE["tools"].items()],
         FixtureModel(decisions or FIXTURE["decisions"]),
+        human_review=human_review,
     )
 
 
@@ -78,6 +85,37 @@ def test_human_review_survives_restart_without_resetting_usage(tmp_path):
     usage = {r["tool"]: r["attempts"] for r in result["tool_usage"]}
     assert usage["github.diff"] == 1
     assert usage["model.decide"] == 3
+
+
+def test_non_blocking_analysis_review_finalizes_with_question_and_gap(tmp_path):
+    choices = [{"action": "review", "question": "Which voucher control should be analyzed?"}]
+    policy = HumanReviewPolicy(policy="non_blocking")
+    app = coordinator(tmp_path, choices, human_review=policy)
+    result = app.run(REQUEST, "non-blocking")
+
+    assert result["status"] == "COMPLETED_WITH_GAPS"
+    assert result["completeness"] == "PARTIAL"
+    assert result["human_review"] == {
+        "policy": "non_blocking",
+        "status": "NOT_ANSWERED",
+        "requests": [
+            {
+                "kind": "analysis",
+                "question": "Which voucher control should be analyzed?",
+                "status": "NOT_ANSWERED",
+                "answer": None,
+            }
+        ],
+        "follow_up_verification_allowed": False,
+    }
+    assert any("not answered" in gap for gap in result["gaps"])
+    assert app.run(REQUEST, "non-blocking") == result
+    with pytest.raises(RunMismatch, match="no unanswered verification approval"):
+        app.run(
+            REQUEST,
+            "non-blocking",
+            review=ReviewResponse(answer="Use the checkout voucher control"),
+        )
 
 
 def test_review_cannot_grant_extra_calls(tmp_path):

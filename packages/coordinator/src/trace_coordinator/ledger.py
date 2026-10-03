@@ -108,7 +108,7 @@ class CallLedger:
                 denial = f"{agent}/{tool} reached its {limits.limit_for(agent, tool)}-attempt limit"
             elif total >= limits.total_calls:
                 denial = f"Run reached its {limits.total_calls}-attempt total limit"
-            elif time.time() - owner[0] >= limits.max_run_seconds:
+            elif self._active_elapsed(db, run, owner[0], time.time()) >= limits.max_run_seconds:
                 denial = "Run deadline exceeded"
             if denial:
                 db.execute(
@@ -124,6 +124,29 @@ class CallLedger:
         if denial:
             raise LimitReached(denial)
         return None
+
+    @staticmethod
+    def _active_elapsed(db, run, started, now):
+        paused = db.execute(
+            "SELECT created FROM events WHERE run=? AND kind='REVIEW_WINDOW_OPENED' ORDER BY id LIMIT 1",
+            (run,),
+        ).fetchone()
+        if not paused:
+            return now - started
+        resumed = db.execute(
+            "SELECT created FROM events WHERE run=? AND kind='FOLLOW_UP_VERIFICATION_CREATED' "
+            "ORDER BY id LIMIT 1",
+            (run,),
+        ).fetchone()
+        pause_ended = resumed[0] if resumed else now
+        return now - started - max(0, pause_ended - paused[0])
+
+    def active_elapsed(self, run):
+        with self.connect() as db:
+            owner = db.execute("SELECT started FROM runs WHERE id=?", (run,)).fetchone()
+            if not owner:
+                raise RunMismatch("Run has not been registered")
+            return self._active_elapsed(db, run, owner[0], time.time())
 
     def finish(self, run, operation, attempt, status, result, retryable=False):
         with self.connect() as db:

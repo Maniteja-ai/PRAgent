@@ -46,6 +46,10 @@
     "application_file": "saleor-webhook-application.json"
   },
   "state_directory": "../runs",
+  "human_review": {
+    "policy": "non_blocking",
+    "allow_follow_up_verification": true
+  },
   "verification": {
     "enabled": false,
     "approval": "human_review",

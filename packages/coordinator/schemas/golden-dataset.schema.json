@@ -184,6 +184,9 @@
           "title": "Decisions",
           "type": "array"
         },
+        "human_review": {
+          "$ref": "#/$defs/HumanReviewPolicy"
+        },
         "expected": {
           "$ref": "#/$defs/GoldenExpected"
         }
@@ -204,6 +207,7 @@
         "status": {
           "enum": [
             "COMPLETED",
+            "COMPLETED_WITH_GAPS",
             "STOPPED",
             "FAILED"
           ],
@@ -218,6 +222,28 @@
           "default": "NOT_RUN",
           "title": "Verification",
           "type": "string"
+        },
+        "review_status": {
+          "default": "NOT_REQUESTED",
+          "enum": [
+            "NOT_REQUESTED",
+            "NOT_ANSWERED",
+            "ANSWERED"
+          ],
+          "title": "Review Status",
+          "type": "string"
+        },
+        "review_question": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Review Question"
         },
         "findings": {
           "default": [],
@@ -266,6 +292,29 @@
         "evidence_ids"
       ],
       "title": "GoldenFinding",
+      "type": "object"
+    },
+    "HumanReviewPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "policy": {
+          "default": "blocking",
+          "description": "blocking checkpoints the graph until an answer arrives; non_blocking finalizes with explicit gaps and permits a linked later verification run.",
+          "enum": [
+            "blocking",
+            "non_blocking"
+          ],
+          "title": "Policy",
+          "type": "string"
+        },
+        "allow_follow_up_verification": {
+          "default": true,
+          "description": "Allow a later answer to an unanswered verification-approval question to create one linked run without resetting the original call ledger.",
+          "title": "Allow Follow Up Verification",
+          "type": "boolean"
+        }
+      },
+      "title": "HumanReviewPolicy",
       "type": "object"
     }
   },

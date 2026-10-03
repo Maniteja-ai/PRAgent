@@ -75,7 +75,10 @@ flowchart TD
     validateClaims -->|"Comparable UI checks enabled"| verifyFlows["Run selected baseline and patched checks"]
     validateClaims -->|"Enough evidence or budget exhausted"| writeReport
     validateClaims -->|"Human decision required"| review["Checkpoint and request review"]
-    review -->|"Resume with validated response"| validateClaims
+    review -->|"Blocking: resume with validated response"| validateClaims
+    review -->|"Non-blocking: preserve question"| writeReport
+    writeReport -->|"Later approval"| linkedVerification["Linked verification run from saved boundary"]
+    linkedVerification --> verifyFlows
     verifyFlows --> writeReport
 ```
 
@@ -136,7 +139,7 @@ Boundary records use Pydantic validation and versioned JSON schemas. Unknown maj
 
 Use separate fields for:
 
-- execution: `RUNNING`, `WAITING_FOR_REVIEW`, `COMPLETED`, `FAILED`, `CANCELLED`;
+- execution: `RUNNING`, `WAITING_FOR_REVIEW`, `COMPLETED`, `COMPLETED_WITH_GAPS`, `FAILED`, `CANCELLED`;
 - completeness: `COMPLETE_WITHIN_SCOPE`, `PARTIAL`, `INSUFFICIENT_EVIDENCE`;
 - verification: `NOT_RUN`, `PASS`, `FAIL`, `INCONCLUSIVE`.
 
@@ -269,7 +272,14 @@ Use `StateGraph` for the main workflows and a bounded browser subgraph. Use cond
 
 Compile with a persistent checkpointer. Each analysis run gets its own opaque `thread_id`, retained on resume; project authorization is checked separately. SQLite is the local single-process option; Postgres is the proposed multi-worker deployment option. Neo4j and Qdrant remain knowledge stores, not workflow checkpoint databases. [LangGraph persistence](https://docs.langchain.com/oss/python/langgraph/persistence).
 
-Human review uses a dedicated `interrupt` node and validated resume payload. An interrupted node restarts from its beginning, so review nodes must not perform irreversible work before pausing, and the interrupt exception must not be swallowed by broad error handlers. [LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts).
+Human review has explicit `blocking` and `non_blocking` policies. Blocking review uses a dedicated
+`interrupt` node and validated resume payload. Non-blocking review records the exact question,
+routes directly to finalization, marks approval-dependent work `NOT_EXECUTED`, and returns
+`COMPLETED_WITH_GAPS`. A later answer creates a linked checkpoint from the saved verification
+boundary. It preserves the original evidence, hashes, audit events and call ledger; the elapsed
+human-response interval is excluded from the active-execution deadline. An interrupted node
+restarts from its beginning, so blocking review nodes must not perform irreversible work before
+pausing, and the interrupt exception must not be swallowed by broad error handlers. [LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts).
 
 Checkpointing is not exactly-once browser execution. Maintain an action ledger and use stable idempotency keys for artifact/publication operations. If a process dies after a click but before recording its result, re-observe and reconcile state; do not blindly repeat a cart mutation. A lost browser session is reconstructed from safe setup steps or marked inconclusive. On incompatible workflow/config versions, resume is rejected or explicitly migrated; never silently change the meaning of an old run.
 

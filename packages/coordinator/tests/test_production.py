@@ -27,8 +27,8 @@ def test_reviewed_golden_dataset_runs_full_coordinator_contract(tmp_path):
         "precision": 1.0,
         "recall": 1.0,
         "case_pass_rate": 1.0,
-        "cases_passed": 4,
-        "cases_total": 4,
+        "cases_passed": 5,
+        "cases_total": 5,
     }
     assert all(item["citations_valid"] and item["passed"] for item in report["cases"])
 

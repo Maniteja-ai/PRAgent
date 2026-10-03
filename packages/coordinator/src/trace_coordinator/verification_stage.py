@@ -1,7 +1,6 @@
 """Coordinator verification policy and crash boundary, independent of providers."""
 
 import json
-import time
 from fnmatch import fnmatchcase
 from typing import Protocol
 
@@ -97,9 +96,7 @@ class VerificationStage:
             > runtime.limits.total_calls
         ):
             return "Insufficient remaining total call budget"
-        with runtime.ledger.connect() as db:
-            started = db.execute("SELECT started FROM runs WHERE id=?", (context.run_id,)).fetchone()[0]
-        if time.time() - started >= runtime.limits.max_run_seconds:
+        if runtime.ledger.active_elapsed(context.run_id) >= runtime.limits.max_run_seconds:
             return "Run deadline exceeded before verification"
         return None
 

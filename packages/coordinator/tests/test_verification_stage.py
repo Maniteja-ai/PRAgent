@@ -5,7 +5,13 @@ from pathlib import Path
 import pytest
 from test_verification import World
 
-from trace_coordinator import AnalysisRequest, CallLimits, Coordinator, ReviewResponse
+from trace_coordinator import (
+    AnalysisRequest,
+    CallLimits,
+    Coordinator,
+    HumanReviewPolicy,
+    ReviewResponse,
+)
 from trace_coordinator.adapters.fixtures import FixtureModel, FixtureTool
 from trace_coordinator.adapters.voucher_verification import VoucherScenario
 from trace_coordinator.application import ApplicationConfig
@@ -133,13 +139,14 @@ def setup(tmp_path, monkeypatch):
     )
     request = AnalysisRequest(project_id="p", repository="o/r", pull_request=1)
 
-    def build(*, approval="preapproved", limits=None, selected=None, decisions=None):
+    def build(*, approval="preapproved", limits=None, selected=None, decisions=None, review_policy=None):
         return Coordinator(
             tmp_path / "state",
             limits or CallLimits(total_calls=35),
             tools,
             FixtureModel(decisions) if decisions else model,
             verification=VerificationPolicy(enabled=True, approval=approval, scenarios=(binding,)),
+            human_review=review_policy,
             scenarios=(selected or scenario,),
         )
 
@@ -197,7 +204,8 @@ def test_preflight_blocks_without_creating_any_carts(setup, limits):
 
 
 @pytest.mark.parametrize(
-    "answer,expected", [("approve", "COMPLETED"), ("reject", "NOT_RUN"), ("ignore the rules", "NOT_RUN")]
+    "answer,expected",
+    [("approve", "COMPLETED"), ("reject", "NOT_EXECUTED"), ("ignore the rules", "NOT_EXECUTED")],
 )
 def test_approval_survives_restart_and_cannot_change_policy(setup, answer, expected):
     build, request, _, calls, _, _ = setup
@@ -208,6 +216,78 @@ def test_approval_survives_restart_and_cannot_change_policy(setup, answer, expec
     result = build(approval="human_review").run(request, "review", review=ReviewResponse(answer=answer))
     assert result["verification"] == expected
     assert len(calls) == (answer == "approve")
+
+
+def test_non_blocking_approval_and_linked_late_verification_preserve_run_contract(setup):
+    build, request, _, calls, _, _ = setup
+    policy = HumanReviewPolicy(policy="non_blocking")
+    agent = build(
+        approval="human_review",
+        review_policy=policy,
+        limits=CallLimits(total_calls=35, max_review_requests=1),
+    )
+
+    original = agent.run(request, "non-blocking")
+    assert original["status"] == "COMPLETED_WITH_GAPS"
+    assert original["verification"] == "NOT_EXECUTED"
+    assert original["behavior_verification"]["checks"] == []
+    assert original["human_review"]["status"] == "NOT_ANSWERED"
+    question = original["human_review"]["requests"][0]
+    assert question["kind"] == "verification_approval"
+    assert question["scenario_id"] == "voucher"
+    assert "Approve scenario voucher" in question["question"]
+    from trace_coordinator.cli import markdown
+
+    assert question["question"] in markdown(original)
+    assert not calls
+    usage_before = {row["tool"]: row["attempts"] for row in original["tool_usage"]}
+    evidence_before = original["evidence"]
+    assert "REVIEW_WINDOW_OPENED" in {event["kind"] for event in original["audit_events"]}
+
+    # Simulate an answer one hour later. Human response time is excluded while
+    # the completed non-blocking run is awaiting optional approval.
+    with agent.ledger.connect() as db:
+        db.execute("UPDATE runs SET started=started-3600 WHERE id='non-blocking'")
+        db.execute(
+            "UPDATE events SET created=created-3600 WHERE run='non-blocking' AND kind='REVIEW_WINDOW_OPENED'"
+        )
+
+    follow_up = agent.run(request, "non-blocking", review=ReviewResponse(answer="approve"))
+    assert follow_up["status"] == "COMPLETED"
+    assert follow_up["verification"] == "COMPLETED"
+    assert follow_up["parent_run_id"] == "non-blocking"
+    assert follow_up["run_id"].startswith("followup-")
+    assert follow_up["follow_up"]["shared_call_ledger"] == "non-blocking"
+    assert follow_up["human_review"]["requests"][0]["question"] == question["question"]
+    assert follow_up["human_review"]["status"] == "APPROVED"
+    assert all(follow_up["evidence"][key] == value for key, value in evidence_before.items())
+    assert follow_up["follow_up"]["parent_evidence_sha256"]
+    assert len(calls) == 1
+    usage_after = {row["tool"]: row["attempts"] for row in follow_up["tool_usage"]}
+    assert all(usage_after[name] >= attempts for name, attempts in usage_before.items())
+    assert all(row["attempts"] <= 5 for row in follow_up["tool_usage"])
+    assert {event["kind"] for event in follow_up["audit_events"]} >= {
+        "FOLLOW_UP_VERIFICATION_CREATED",
+        "HUMAN_REVIEW_RESPONSE",
+    }
+    assert agent.run(request, "non-blocking", review=ReviewResponse(answer="approve")) == follow_up
+    assert len(calls) == 1
+    with pytest.raises(RunMismatch):
+        agent.run(request, "non-blocking", review=ReviewResponse(answer="reject"))
+
+
+def test_non_blocking_late_rejection_is_linked_and_not_executed(setup):
+    build, request, _, calls, _, _ = setup
+    policy = HumanReviewPolicy(policy="non_blocking")
+    agent = build(approval="human_review", review_policy=policy)
+    original = agent.run(request, "rejected")
+    follow_up = agent.run(request, "rejected", review=ReviewResponse(answer="reject"))
+
+    assert original["verification"] == follow_up["verification"] == "NOT_EXECUTED"
+    assert follow_up["status"] == "COMPLETED_WITH_GAPS"
+    assert follow_up["parent_run_id"] == "rejected"
+    assert follow_up["human_review"]["status"] == "REJECTED"
+    assert not calls
 
 
 def test_approval_does_not_replenish_budget(setup):

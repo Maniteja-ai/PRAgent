@@ -131,12 +131,30 @@ class VerificationPolicy(Record):
         return self
 
 
+class HumanReviewPolicy(Record):
+    policy: Literal["blocking", "non_blocking"] = Field(
+        default="blocking",
+        description=(
+            "blocking checkpoints the graph until an answer arrives; non_blocking finalizes with "
+            "explicit gaps and permits a linked later verification run."
+        ),
+    )
+    allow_follow_up_verification: bool = Field(
+        default=True,
+        description=(
+            "Allow a later answer to an unanswered verification-approval question to create one "
+            "linked run without resetting the original call ledger."
+        ),
+    )
+
+
 class CoordinatorConfig(Record):
     schema_reference: str | None = Field(default=None, alias="$schema", exclude=True)
     schema_version: Literal[1] = 1
     limits: CallLimits = Field(default_factory=CallLimits)
     exploration: ExplorationConfig = Field(default_factory=ExplorationConfig)
     verification: VerificationPolicy = Field(default_factory=VerificationPolicy)
+    human_review: HumanReviewPolicy = Field(default_factory=HumanReviewPolicy)
     guardrails: GuardrailPolicy = Field(default_factory=GuardrailPolicy)
     artifact_security: ArtifactSecurityConfig = Field(default_factory=ArtifactSecurityConfig)
     model: FixtureProvider | GeminiProvider | OpenAIProvider = Field(discriminator="provider")

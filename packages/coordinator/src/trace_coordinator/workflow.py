@@ -8,16 +8,16 @@ from pydantic import ValidationError
 
 from trace_coordinator.errors import LimitReached, ToolFailure, UncertainExecution
 from trace_coordinator.exploration import exploration_status, screens
-from trace_coordinator.ledger import digest
+from trace_coordinator.ledger import canonical, digest
 from trace_coordinator.models import ChangeSet, Decision, Evidence, ReviewResponse
 from trace_coordinator.state import AnalysisState, merge_evidence
 from trace_coordinator.ui_evidence import ui_index
 from trace_coordinator.verification_stage import skipped
 
-WORKFLOW_VERSION = "pr-impact-production-v4"
+WORKFLOW_VERSION = "pr-impact-production-v5"
 
 
-def build_workflow(runtime, context, checkpointer, exploration, verification):
+def build_workflow(runtime, context, checkpointer, exploration, verification, human_review_policy):
     limits = runtime.limits
 
     def stopped(state, exc):
@@ -284,10 +284,27 @@ def build_workflow(runtime, context, checkpointer, exploration, verification):
     def human_review(state):
         if state["review_count"] >= limits.max_review_requests:
             return stopped(state, LimitReached("Human review request limit reached"))
+        question = state["decision"]["question"]
+        request = {"kind": "analysis", "question": question}
+        if human_review_policy.policy == "non_blocking":
+            return {
+                "review_requests": [
+                    *state.get("review_requests", []),
+                    {**request, "status": "NOT_ANSWERED", "answer": None},
+                ],
+                "review_count": state["review_count"] + 1,
+                "review_outcome": "NOT_ANSWERED",
+                "gaps": [
+                    *state.get("gaps", []),
+                    "Human clarification was requested but not answered; analysis finalized at the current evidence boundary.",
+                ],
+                "stop_reason": "ANALYSIS_FINISHED",
+                "usage": runtime.ledger.usage(context.run_id),
+            }
         # This dedicated node performs no side effects before interrupt.
         response = interrupt(
             {
-                "question": state["decision"]["question"],
+                "question": question,
                 "run_id": context.run_id,
                 "instruction": "Resume with an answer; limits are not reset.",
             }
@@ -298,7 +315,12 @@ def build_workflow(runtime, context, checkpointer, exploration, verification):
             return stopped(state, ToolFailure("Invalid human review response"))
         return {
             "reviews": [*state["reviews"], answer.answer],
+            "review_requests": [
+                *state.get("review_requests", []),
+                {**request, "status": "ANSWERED", "answer": answer.answer},
+            ],
             "review_count": state["review_count"] + 1,
+            "review_outcome": "ANSWERED",
             "usage": runtime.ledger.usage(context.run_id),
         }
 
@@ -311,6 +333,27 @@ def build_workflow(runtime, context, checkpointer, exploration, verification):
             if stop_reason == "LimitReached"
             else "FAILED"
         )
+        if status == "COMPLETED" and state.get("review_outcome") == "NOT_ANSWERED":
+            status = "COMPLETED_WITH_GAPS"
+        pending_verification = next(
+            (
+                item
+                for item in state.get("review_requests", [])
+                if item.get("kind") == "verification_approval" and item.get("status") == "NOT_ANSWERED"
+            ),
+            None,
+        )
+        if pending_verification and human_review_policy.allow_follow_up_verification:
+            runtime.ledger.event_once(
+                context.run_id,
+                "REVIEW_WINDOW_OPENED",
+                canonical(
+                    {
+                        "question_sha256": digest(pending_verification["question"]),
+                        "scenario_id": pending_verification["scenario_id"],
+                    }
+                ),
+            )
         gaps = list(dict.fromkeys(state.get("gaps", [])))
         if exploration.enabled:
             gaps.append(
@@ -396,6 +439,20 @@ def build_workflow(runtime, context, checkpointer, exploration, verification):
                     "scenario_id": state.get("verification_plan", {}).get("scenario_id"),
                     "policy_fingerprint": digest(verification.fingerprint),
                 },
+                "human_review": {
+                    "policy": human_review_policy.policy,
+                    "status": state.get("review_outcome", "NOT_REQUESTED"),
+                    "requests": state.get("review_requests", []),
+                    "follow_up_verification_allowed": (
+                        human_review_policy.policy == "non_blocking"
+                        and human_review_policy.allow_follow_up_verification
+                        and any(
+                            item.get("kind") == "verification_approval"
+                            and item.get("status") == "NOT_ANSWERED"
+                            for item in state.get("review_requests", [])
+                        )
+                    ),
+                },
                 "behavior_verification": behavior,
                 "runtime_attestation": runtime_attestation,
                 "stop_reason": stop_reason,
@@ -448,9 +505,30 @@ def build_workflow(runtime, context, checkpointer, exploration, verification):
                 "verification_result": skipped("Human review request limit reached", status="BLOCKED_BUDGET"),
             }
         plan = state["verification_plan"]
+        question = f"Approve scenario {plan['scenario_id']}: {plan['description']}? Reply approve or reject."
+        request = {
+            "kind": "verification_approval",
+            "question": question,
+            "scenario_id": plan["scenario_id"],
+            "scenario": plan,
+        }
+        if human_review_policy.policy == "non_blocking":
+            return {
+                "verification_approved": False,
+                "verification_result": skipped(
+                    "Human approval was not received; approval-dependent verification was not executed",
+                    status="NOT_EXECUTED",
+                ),
+                "review_requests": [
+                    *state.get("review_requests", []),
+                    {**request, "status": "NOT_ANSWERED", "answer": None},
+                ],
+                "review_count": state["review_count"] + 1,
+                "review_outcome": "NOT_ANSWERED",
+            }
         response = interrupt(
             {
-                "question": f"Approve scenario {plan['scenario_id']}: {plan['description']}? Reply approve or reject.",
+                "question": question,
                 "run_id": context.run_id,
                 "scenario": plan,
                 "instruction": "Only an exact approve response authorizes this scenario. Budgets and configured scope remain unchanged.",
@@ -464,13 +542,26 @@ def build_workflow(runtime, context, checkpointer, exploration, verification):
         return {
             "verification_approved": approved,
             "reviews": [*state["reviews"], answer],
+            "review_requests": [
+                *state.get("review_requests", []),
+                {
+                    **request,
+                    "status": "APPROVED" if approved else "REJECTED",
+                    "answer": answer,
+                },
+            ],
             "review_count": state["review_count"] + 1,
-            **({} if approved else {"verification_result": skipped("Scenario was not approved")}),
+            "review_outcome": "APPROVED" if approved else "REJECTED",
+            **(
+                {}
+                if approved
+                else {"verification_result": skipped("Scenario was not approved", status="NOT_EXECUTED")}
+            ),
         }
 
     def verify_behavior(state):
         if not state.get("verification_approved"):
-            return {"verification_result": skipped("Scenario was not approved")}
+            return {"verification_result": skipped("Scenario was not approved", status="NOT_EXECUTED")}
         try:
             result = verification.execute(runtime, scoped_context(state), state["verification_plan"])
             evidence = merge_evidence(
@@ -514,6 +605,11 @@ def build_workflow(runtime, context, checkpointer, exploration, verification):
             return "finalize"
         return "prepare_exploration" if state.get("phase") == "exploration" else "reason"
 
+    def after_review(state):
+        if human_review_policy.policy == "non_blocking":
+            return "finalize"
+        return after_action(state)
+
     def route_decision(state):
         if state.get("stop_reason"):
             return "finalize"
@@ -550,7 +646,7 @@ def build_workflow(runtime, context, checkpointer, exploration, verification):
     builder.add_edge("finish_exploration", "reason")
     builder.add_conditional_edges("reason", route_decision)
     builder.add_conditional_edges("execute_tool", after_action)
-    builder.add_conditional_edges("human_review", after_action)
+    builder.add_conditional_edges("human_review", after_review)
     builder.add_conditional_edges(
         "validate_findings",
         lambda state: (

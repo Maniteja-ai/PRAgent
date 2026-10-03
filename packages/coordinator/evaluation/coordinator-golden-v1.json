@@ -12,7 +12,7 @@
     "per_agent_tool": 5,
     "total_calls": 30,
     "max_rounds": 4,
-    "max_review_requests": 0,
+    "max_review_requests": 1,
     "max_validation_repairs": 1,
     "max_run_seconds": 120,
     "retry_attempts": 1,
@@ -92,6 +92,37 @@
       },
       "decisions": [{"action": "tool", "tool": "knowledge.documents", "arguments": {"query": "again"}}],
       "expected": {"status": "STOPPED", "stop_reason": "LimitReached", "findings": [], "max_total_calls": 11}
+    },
+    {
+      "id": "non-blocking-human-review",
+      "request": {
+        "schema_version": 1,
+        "project_id": "golden-saleor",
+        "repository": "saleor/storefront",
+        "pull_request": 1199,
+        "question": "Which checkout control needs clarification?"
+      },
+      "tools": {
+        "github.diff": {"evidence": [{"id": "diff-golden", "project_id": "golden-saleor", "kind": "diff", "summary": "Voucher handlers changed in OrderSummary.", "source": "golden:diff", "metadata": {"synthetic": true}}]},
+        "knowledge.graph": {"evidence": [{"id": "graph-golden", "project_id": "golden-saleor", "kind": "graph", "summary": "Two checkout controls are plausible.", "source": "golden:graph", "metadata": {"synthetic": true}}]},
+        "knowledge.documents": {"evidence": [{"id": "requirement-golden", "project_id": "golden-saleor", "kind": "document", "summary": "The requirement does not disambiguate the control.", "source": "golden:requirement", "metadata": {"synthetic": true}}]}
+      },
+      "decisions": [
+        {"action": "review", "question": "Should the analysis target Discount code or Apply?"}
+      ],
+      "human_review": {
+        "policy": "non_blocking",
+        "allow_follow_up_verification": true
+      },
+      "expected": {
+        "status": "COMPLETED_WITH_GAPS",
+        "stop_reason": "ANALYSIS_FINISHED",
+        "verification": "NOT_RUN",
+        "review_status": "NOT_ANSWERED",
+        "review_question": "Should the analysis target Discount code or Apply?",
+        "findings": [],
+        "max_total_calls": 4
+      }
     }
   ]
 }

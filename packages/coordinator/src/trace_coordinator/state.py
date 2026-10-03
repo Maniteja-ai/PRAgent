@@ -10,6 +10,8 @@ class AnalysisState(TypedDict, total=False):
     rounds: int
     review_count: int
     reviews: list[str]
+    review_requests: list[dict]
+    review_outcome: str
     decision: dict
     findings: list[dict]
     stop_reason: str
