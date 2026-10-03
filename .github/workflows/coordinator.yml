@@ -15,7 +15,9 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           version: "0.12.10"
-      - run: uv sync --locked --python 3.12 --extra knowledge --extra browser
+      # Static analysis imports every optional adapter, so install every
+      # coordinator extra while keeping provider calls disabled in tests.
+      - run: uv sync --locked --python 3.12 --all-extras
       - run: uv run --no-sync playwright install --with-deps chromium
       - uses: actions/setup-node@v4
         with:

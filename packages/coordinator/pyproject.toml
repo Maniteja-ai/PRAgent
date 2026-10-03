@@ -76,3 +76,9 @@ pretty = true
 # PEP 561 marker of its own.
 module = ["trace_impact", "trace_impact.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# google-cloud-dlp does not publish PEP 561 metadata. Runtime values are
+# validated into ArtifactScan immediately inside the DLP adapter.
+module = ["google.cloud", "google.cloud.*"]
+ignore_missing_imports = true
