@@ -76,16 +76,19 @@ def test_live_composition_routes_entry_captures_and_cleans_up(
     monkeypatch.setattr(knowledge, "KnowledgeTool", Knowledge)
     monkeypatch.setattr(browser, "BrowserSession", Browser)
     monkeypatch.setattr(langchain_model, "LangChainModel", Model)
-    app = json.loads((ROOT / "configs/saleor-application.json").read_text())
+    app = json.loads((ROOT / "configs/application/saleor.json").read_text())
     # This composition test replaces all live adapters except attestation; keep it offline.
-    app["production_mode"] = False
-    app["baseline"].pop("attestation", None)
-    app["patched"].pop("attestation", None)
+    app["require_exact_revisions"] = False
+    app["repository_path"] = str(ROOT.parents[3] / "work/saleor-storefront-upstream")
+    app["graph_config_file"] = str(ROOT / "configs/graph/saleor.json")
+    app["retrieval_config_file"] = str(ROOT / "configs/retrieval/saleor.json")
+    app["ui_config_file"] = str(ROOT / "configs/ui/saleor.json")
     if change_provider == "github":
         app["change_source"] = {"provider": "github"}
     (tmp_path / "app.json").write_text(json.dumps(app))
     config = json.loads((ROOT / "configs/saleor-live.json").read_text())
-    config["tool_provider"]["application_config_file"] = "app.json"
+    config["application_config_file"] = "app.json"
+    config.pop("runtime_config_file", None)
     config["env_file"] = "local.env"
     config["state_directory"] = "state"
     if verification_enabled:
@@ -93,7 +96,7 @@ def test_live_composition_routes_entry_captures_and_cleans_up(
         selected["application_file"] = "app.json"
         selected["state_directory"] = "unused"
         (tmp_path / "scenario.json").write_text(json.dumps(selected))
-        config["verification"] = {
+        policy = {
             "enabled": True,
             "approval": "preapproved",
             "scenarios": [
@@ -105,6 +108,8 @@ def test_live_composition_routes_entry_captures_and_cleans_up(
                 }
             ],
         }
+        (tmp_path / "policy.json").write_text(json.dumps(policy))
+        config["verification_config_file"] = "policy.json"
     (tmp_path / "local.env").write_text("TRACE_TEST_BOOTSTRAP=loaded\n")
     path = tmp_path / "config.json"
     path.write_text(json.dumps(config))

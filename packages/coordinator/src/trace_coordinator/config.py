@@ -123,6 +123,8 @@ class ScenarioBinding(Record):
 
 
 class VerificationPolicy(Record):
+    schema_reference: str | None = Field(default=None, alias="$schema", exclude=True)
+    schema_version: Literal[1] = 1
     enabled: bool = False
     approval: Literal["human_review", "preapproved"] = Field(
         default="human_review",
@@ -210,38 +212,201 @@ class LangSmithObservability(Record):
     )
 
 
-class CoordinatorConfig(Record):
+class CallPolicy(Record):
+    per_tool: int = Field(default=5, ge=1, le=5)
+    total: int = Field(default=30, ge=1, le=1000)
+    reasoning_rounds: int = Field(default=10, ge=1, le=100)
+    review_requests: int = Field(default=2, ge=0, le=10)
+    citation_repairs: int = Field(default=1, ge=0, le=2)
+    overrides: dict[str, dict[str, Annotated[StrictInt, Field(ge=1, le=5)]]] = Field(default_factory=dict)
+
+
+class RetryPolicy(Record):
+    attempts: int = Field(default=2, ge=1, le=5)
+    delay_seconds: float = Field(default=1, ge=0, le=30)
+    invalid_model_response: bool = False
+
+
+class TimeoutPolicy(Record):
+    run_seconds: int = Field(default=900, ge=1, le=86400)
+    model_seconds: float = Field(default=45, gt=0, le=120)
+
+
+class RuntimeConfig(Record):
+    """Optional operational overrides; safe defaults apply when omitted."""
+
     schema_reference: str | None = Field(default=None, alias="$schema", exclude=True)
     schema_version: Literal[1] = 1
-    limits: CallLimits = Field(default_factory=CallLimits)
-    ui_exploration: UIExplorationConfig = Field(default_factory=UIExplorationConfig)
-    verification: VerificationPolicy = Field(default_factory=VerificationPolicy)
-    human_review: HumanReviewPolicy = Field(default_factory=HumanReviewPolicy)
+    calls: CallPolicy = Field(default_factory=CallPolicy)
+    retries: RetryPolicy = Field(default_factory=RetryPolicy)
+    timeouts: TimeoutPolicy = Field(default_factory=TimeoutPolicy)
     guardrails: GuardrailPolicy = Field(default_factory=GuardrailPolicy)
     artifact_security: ArtifactSecurityConfig = Field(default_factory=ArtifactSecurityConfig)
     observability: DisabledObservability | LangSmithObservability = Field(
         default_factory=DisabledObservability,
         discriminator="provider",
-        description="Optional fail-open execution tracing. SQLite remains the audit source of truth.",
     )
+
+    def call_limits(self) -> CallLimits:
+        return CallLimits(
+            per_agent_tool=self.calls.per_tool,
+            overrides=self.calls.overrides,
+            total_calls=self.calls.total,
+            max_rounds=self.calls.reasoning_rounds,
+            max_review_requests=self.calls.review_requests,
+            max_validation_repairs=self.calls.citation_repairs,
+            max_run_seconds=self.timeouts.run_seconds,
+            retry_attempts=self.retries.attempts,
+            retry_delay_seconds=self.retries.delay_seconds,
+        )
+
+
+class CoordinatorFile(Record):
+    """Small user-facing coordinator file."""
+
+    schema_reference: str | None = Field(default=None, alias="$schema", exclude=True)
+    schema_version: Literal[1] = 1
+    application_config_file: str | None = Field(
+        default=None, min_length=1, description="Live application configuration."
+    )
+    tool_fixture_file: str | None = Field(
+        default=None, min_length=1, description="Offline tool fixture used by tests and demos."
+    )
+    runtime_config_file: str | None = Field(
+        default=None,
+        min_length=1,
+        description="Optional calls, retries, timeouts and safety overrides.",
+    )
+    ui_exploration: UIExplorationConfig = Field(default_factory=UIExplorationConfig)
+    verification_config_file: str | None = Field(
+        default=None,
+        min_length=1,
+        description="Optional approved verification catalog.",
+    )
+    human_review: HumanReviewPolicy = Field(default_factory=HumanReviewPolicy)
     model: FixtureProvider | GeminiProvider | OpenAIProvider = Field(discriminator="provider")
-    tool_provider: FixtureProvider | LiveToolProvider = Field(discriminator="provider")
     env_file: str | None = Field(
         default=None, description="Optional dotenv path relative to this config; never copied to reports."
     )
     state_directory: str = Field(default="../runs", min_length=1)
 
+    @model_validator(mode="after")
+    def one_tool_source(self) -> Self:
+        if (self.application_config_file is None) == (self.tool_fixture_file is None):
+            raise ValueError("Set exactly one of application_config_file or tool_fixture_file")
+        return self
+
+
+class CoordinatorConfig(Record):
+    """Fully resolved coordinator configuration used by the composition root."""
+
+    schema_version: Literal[1] = 1
+    limits: CallLimits
+    ui_exploration: UIExplorationConfig
+    verification: VerificationPolicy
+    human_review: HumanReviewPolicy
+    guardrails: GuardrailPolicy
+    artifact_security: ArtifactSecurityConfig
+    observability: DisabledObservability | LangSmithObservability = Field(discriminator="provider")
+    model: FixtureProvider | GeminiProvider | OpenAIProvider = Field(discriminator="provider")
+    tool_provider: FixtureProvider | LiveToolProvider = Field(discriminator="provider")
+    env_file: str | None
+    state_directory: str
+
 
 def load_config(path: Path) -> CoordinatorConfig:
-    config = CoordinatorConfig.model_validate_json(path.read_text(encoding="utf-8-sig"))
-    return config
+    resolved = path.resolve()
+    selected = CoordinatorFile.model_validate_json(resolved.read_text(encoding="utf-8-sig"))
+    runtime = (
+        RuntimeConfig.model_validate_json(
+            (resolved.parent / selected.runtime_config_file).resolve().read_text(encoding="utf-8-sig")
+        )
+        if selected.runtime_config_file
+        else RuntimeConfig()
+    )
+    if selected.verification_config_file:
+        verification_path = (resolved.parent / selected.verification_config_file).resolve()
+        parsed_verification = VerificationPolicy.model_validate_json(
+            verification_path.read_text(encoding="utf-8-sig")
+        )
+        verification = parsed_verification.model_copy(
+            update={
+                "scenarios": tuple(
+                    scenario.model_copy(
+                        update={
+                            "config_file": str((verification_path.parent / scenario.config_file).resolve())
+                        }
+                    )
+                    for scenario in parsed_verification.scenarios
+                )
+            }
+        )
+    else:
+        verification = VerificationPolicy()
+    tools: FixtureProvider | LiveToolProvider
+    if selected.application_config_file:
+        tools = LiveToolProvider(provider="live", application_config_file=selected.application_config_file)
+    else:
+        tools = FixtureProvider(provider="fixture", file=selected.tool_fixture_file or "")
+    model = selected.model
+    if model.provider != "fixture":
+        model = model.model_copy(
+            update={
+                "timeout_seconds": runtime.timeouts.model_seconds,
+                "retry_invalid_response": runtime.retries.invalid_model_response,
+            }
+        )
+    return CoordinatorConfig(
+        limits=runtime.call_limits(),
+        ui_exploration=selected.ui_exploration,
+        verification=verification,
+        human_review=selected.human_review,
+        guardrails=runtime.guardrails,
+        artifact_security=runtime.artifact_security,
+        observability=runtime.observability,
+        model=model,
+        tool_provider=tools,
+        env_file=selected.env_file,
+        state_directory=selected.state_directory,
+    )
 
 
 def schema() -> JsonObject:
+    document = CoordinatorFile.model_json_schema()
+    document["oneOf"] = [
+        {
+            "required": ["application_config_file"],
+            "not": {"required": ["tool_fixture_file"]},
+        },
+        {
+            "required": ["tool_fixture_file"],
+            "not": {"required": ["application_config_file"]},
+        },
+    ]
     return as_json_object(
         {
-            **CoordinatorConfig.model_json_schema(),
+            **document,
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "title": "PR impact coordinator",
+        }
+    )
+
+
+def runtime_schema() -> JsonObject:
+    return as_json_object(
+        {
+            **RuntimeConfig.model_json_schema(),
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "title": "Coordinator runtime policy",
+        }
+    )
+
+
+def verification_policy_schema() -> JsonObject:
+    return as_json_object(
+        {
+            **VerificationPolicy.model_json_schema(),
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "title": "Verification policy",
         }
     )

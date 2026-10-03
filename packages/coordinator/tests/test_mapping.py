@@ -360,7 +360,41 @@ def prepare_fixture(batch, monkeypatch):
     from trace_impact.shared.graph_models import GraphSnapshot
 
     report, config, app, code = batch
-    Path(config.application_file).write_text(app.model_dump_json())
+    application_path = Path(config.application_file)
+    application_path.with_name("graph-config.json").write_text(
+        json.dumps(
+            {
+                "provider": "neo4j",
+                "baseline_snapshot_file": app.graph_snapshot_file,
+            }
+        )
+    )
+    application_path.with_name("retrieval-config.json").write_text(
+        json.dumps(
+            {
+                "provider": "qdrant",
+                "ingestion_run_directory": app.ingestion_run_directory,
+                "vector_directory": app.vector_directory,
+            }
+        )
+    )
+    application_path.with_name("ui-config.json").write_text('{"provider":"disabled"}')
+    application_path.write_text(
+        json.dumps(
+            {
+                "project_id": app.project_id,
+                "repository": app.repository,
+                "repository_path": app.repository_path,
+                "change_source": app.change_source.model_dump(mode="json"),
+                "graph_config_file": "graph-config.json",
+                "retrieval_config_file": "retrieval-config.json",
+                "ui_config_file": "ui-config.json",
+                "baseline": {"url": app.baseline.url, "revision": app.baseline.revision},
+                "patched": {"url": app.patched.url, "revision": app.patched.revision},
+                "require_exact_revisions": False,
+            }
+        )
+    )
     Path(config.report_file).write_text(json.dumps(report))
     Path(config.code_config_file).write_text(
         json.dumps(dict(project_id=app.project_id, repository_path=app.repository_path, revision=REV))

@@ -1,0 +1,161 @@
+{
+  "$defs": {
+    "DisabledUIConfigFile": {
+      "additionalProperties": false,
+      "properties": {
+        "$schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "$Schema"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "provider": {
+          "const": "disabled",
+          "default": "disabled",
+          "title": "Provider",
+          "type": "string"
+        }
+      },
+      "title": "DisabledUIConfigFile",
+      "type": "object"
+    },
+    "PlaywrightUIConfigFile": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "headless": {
+          "default": true,
+          "title": "Headless",
+          "type": "boolean"
+        },
+        "timeout_seconds": {
+          "default": 30,
+          "maximum": 120,
+          "minimum": 1,
+          "title": "Timeout Seconds",
+          "type": "integer"
+        },
+        "settle_ms": {
+          "default": 500,
+          "maximum": 3000,
+          "minimum": 0,
+          "title": "Settle Ms",
+          "type": "integer"
+        },
+        "max_elements": {
+          "default": 80,
+          "maximum": 200,
+          "minimum": 1,
+          "title": "Max Elements",
+          "type": "integer"
+        },
+        "max_text_chars": {
+          "default": 16000,
+          "maximum": 30000,
+          "minimum": 1000,
+          "title": "Max Text Chars",
+          "type": "integer"
+        },
+        "max_dom_chars": {
+          "default": 300000,
+          "maximum": 1000000,
+          "minimum": 1000,
+          "title": "Max Dom Chars",
+          "type": "integer"
+        },
+        "allowed_button_names": {
+          "default": [],
+          "description": "Exact visible/accessible names authorized for button clicks.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Button Names",
+          "type": "array"
+        },
+        "allowed_button_test_ids": {
+          "default": [],
+          "description": "Exact observed data-testid values allowed for buttons whose accessible name changes (for example cart item counts).",
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Button Test Ids",
+          "type": "array"
+        },
+        "allowed_field_names": {
+          "default": [],
+          "description": "Exact labels or placeholders permitted for fill/select actions.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Field Names",
+          "type": "array"
+        },
+        "readiness_checks": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional route-prefix -> visible Playwright locator. Wait before capture; longest matching prefix wins. Uses the browser timeout, never clicks or fills.",
+          "title": "Readiness Checks",
+          "type": "object"
+        },
+        "$schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "$Schema"
+        },
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "provider": {
+          "const": "playwright",
+          "default": "playwright",
+          "title": "Provider",
+          "type": "string"
+        },
+        "entry_path": {
+          "default": "/",
+          "title": "Entry Path",
+          "type": "string"
+        }
+      },
+      "title": "PlaywrightUIConfigFile",
+      "type": "object"
+    }
+  },
+  "anyOf": [
+    {
+      "$ref": "#/$defs/DisabledUIConfigFile"
+    },
+    {
+      "$ref": "#/$defs/PlaywrightUIConfigFile"
+    }
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UI evidence"
+}

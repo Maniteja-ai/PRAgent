@@ -1,93 +1,6 @@
 {
   "$defs": {
-    "BrowserOptions": {
-      "additionalProperties": false,
-      "properties": {
-        "enabled": {
-          "default": true,
-          "title": "Enabled",
-          "type": "boolean"
-        },
-        "headless": {
-          "default": true,
-          "title": "Headless",
-          "type": "boolean"
-        },
-        "timeout_seconds": {
-          "default": 30,
-          "maximum": 120,
-          "minimum": 1,
-          "title": "Timeout Seconds",
-          "type": "integer"
-        },
-        "settle_ms": {
-          "default": 500,
-          "maximum": 3000,
-          "minimum": 0,
-          "title": "Settle Ms",
-          "type": "integer"
-        },
-        "max_elements": {
-          "default": 80,
-          "maximum": 200,
-          "minimum": 1,
-          "title": "Max Elements",
-          "type": "integer"
-        },
-        "max_text_chars": {
-          "default": 16000,
-          "maximum": 30000,
-          "minimum": 1000,
-          "title": "Max Text Chars",
-          "type": "integer"
-        },
-        "max_dom_chars": {
-          "default": 300000,
-          "maximum": 1000000,
-          "minimum": 1000,
-          "title": "Max Dom Chars",
-          "type": "integer"
-        },
-        "allowed_button_names": {
-          "default": [],
-          "description": "Exact visible/accessible names authorized for button clicks.",
-          "items": {
-            "type": "string"
-          },
-          "title": "Allowed Button Names",
-          "type": "array"
-        },
-        "allowed_button_test_ids": {
-          "default": [],
-          "description": "Exact observed data-testid values allowed for buttons whose accessible name changes (for example cart item counts).",
-          "items": {
-            "type": "string"
-          },
-          "title": "Allowed Button Test Ids",
-          "type": "array"
-        },
-        "allowed_field_names": {
-          "default": [],
-          "description": "Exact labels or placeholders permitted for fill/select actions.",
-          "items": {
-            "type": "string"
-          },
-          "title": "Allowed Field Names",
-          "type": "array"
-        },
-        "readiness_checks": {
-          "additionalProperties": {
-            "type": "string"
-          },
-          "description": "Optional route-prefix -> visible Playwright locator. Wait before capture; longest matching prefix wins. Uses the browser timeout, never clicks or fills.",
-          "title": "Readiness Checks",
-          "type": "object"
-        }
-      },
-      "title": "BrowserOptions",
-      "type": "object"
-    },
-    "Deployment": {
+    "DeploymentFile": {
       "additionalProperties": false,
       "properties": {
         "url": {
@@ -99,28 +12,17 @@
           "title": "Revision",
           "type": "string"
         },
-        "entry_path": {
-          "default": "/",
-          "title": "Entry Path",
+        "attestation_path": {
+          "default": "/api/trace-build",
+          "title": "Attestation Path",
           "type": "string"
-        },
-        "attestation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/RuntimeAttestation"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
         }
       },
       "required": [
         "url",
         "revision"
       ],
-      "title": "Deployment",
+      "title": "DeploymentFile",
       "type": "object"
     },
     "GitHubSource": {
@@ -177,22 +79,10 @@
       ],
       "title": "LocalGitSource",
       "type": "object"
-    },
-    "RuntimeAttestation": {
-      "additionalProperties": false,
-      "properties": {
-        "path": {
-          "default": "/api/trace-build",
-          "description": "Same-origin JSON endpoint that reports the running build and backend identity.",
-          "title": "Path",
-          "type": "string"
-        }
-      },
-      "title": "RuntimeAttestation",
-      "type": "object"
     }
   },
   "additionalProperties": false,
+  "description": "The only application document a user edits directly.",
   "properties": {
     "$schema": {
       "anyOf": [
@@ -207,13 +97,13 @@
       "title": "$Schema"
     },
     "schema_version": {
+      "const": 1,
       "default": 1,
-      "maximum": 1,
-      "minimum": 1,
       "title": "Schema Version",
       "type": "integer"
     },
     "project_id": {
+      "minLength": 1,
       "title": "Project Id",
       "type": "string"
     },
@@ -223,11 +113,11 @@
       "type": "string"
     },
     "repository_path": {
+      "minLength": 1,
       "title": "Repository Path",
       "type": "string"
     },
     "change_source": {
-      "description": "Where revision identities come from. local_git makes no GitHub requests or automatic fetches.",
       "discriminator": {
         "mapping": {
           "github": "#/$defs/GitHubSource",
@@ -245,102 +135,44 @@
       ],
       "title": "Change Source"
     },
-    "graph_snapshot_file": {
-      "title": "Graph Snapshot File",
-      "type": "string"
-    },
-    "head_graph_snapshot_file": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Head Graph Snapshot File"
-    },
-    "ingestion_run_directory": {
-      "title": "Ingestion Run Directory",
+    "graph_config_file": {
+      "minLength": 1,
+      "title": "Graph Config File",
       "type": "string"
     },
     "retrieval_config_file": {
+      "minLength": 1,
       "title": "Retrieval Config File",
       "type": "string"
     },
-    "vector_directory": {
-      "title": "Vector Directory",
+    "ui_config_file": {
+      "minLength": 1,
+      "title": "Ui Config File",
       "type": "string"
     },
     "baseline": {
-      "$ref": "#/$defs/Deployment"
+      "$ref": "#/$defs/DeploymentFile"
     },
     "patched": {
-      "$ref": "#/$defs/Deployment"
+      "$ref": "#/$defs/DeploymentFile"
     },
-    "github_token_env": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Github Token Env"
-    },
-    "github_timeout_seconds": {
-      "default": 30,
-      "maximum": 120,
-      "minimum": 1,
-      "title": "Github Timeout Seconds",
-      "type": "integer"
-    },
-    "git_timeout_seconds": {
-      "default": 45,
-      "maximum": 120,
-      "minimum": 1,
-      "title": "Git Timeout Seconds",
-      "type": "integer"
-    },
-    "max_changed_files": {
-      "default": 100,
-      "maximum": 100,
-      "minimum": 1,
-      "title": "Max Changed Files",
-      "type": "integer"
-    },
-    "max_patch_chars": {
-      "default": 50000,
-      "maximum": 55000,
-      "minimum": 1000,
-      "title": "Max Patch Chars",
-      "type": "integer"
-    },
-    "production_mode": {
-      "default": false,
-      "description": "Fail before analysis unless both HTTPS deployments attest their exact revisions.",
-      "title": "Production Mode",
+    "require_exact_revisions": {
+      "default": true,
+      "title": "Require Exact Revisions",
       "type": "boolean"
-    },
-    "browser": {
-      "$ref": "#/$defs/BrowserOptions"
     }
   },
   "required": [
     "project_id",
     "repository",
     "repository_path",
-    "graph_snapshot_file",
-    "ingestion_run_directory",
+    "graph_config_file",
     "retrieval_config_file",
-    "vector_directory",
+    "ui_config_file",
     "baseline",
     "patched"
   ],
-  "title": "ApplicationConfig",
+  "title": "Application",
   "type": "object",
-  "": "https://json-schema.org/draft/2020-12/schema"
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
 }

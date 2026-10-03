@@ -1,0 +1,18 @@
+{
+  "$schema": "../../schemas/retrieval.schema.json",
+  "schema_version": 1,
+  "provider": "qdrant",
+  "ingestion_run_directory": "../../../../runs/saleor-storefront/44dd49dc16a84d2e82153ebd7d65c6ee",
+  "vector_directory": "../../../../.vector-store",
+  "candidate_limit": 5,
+  "reranker": {
+    "provider": "identity",
+    "options": {}
+  },
+  "selector": {
+    "provider": "top_k",
+    "options": {
+      "max_results": 5
+    }
+  }
+}

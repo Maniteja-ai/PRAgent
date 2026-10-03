@@ -33,8 +33,13 @@ builds attest successfully, and configured behavior verification completes.
 
 | File | Purpose |
 | --- | --- |
-| [saleor-verified.json](configs/saleor-verified.json) | Execution limits, model, checkpoint directory, approval and scenario selection |
-| [saleor-application.json](configs/saleor-application.json) | Repository, pinned commits, graph/vector inputs, deployments and browser permissions |
+| [saleor-verified.json](configs/saleor-verified.json) | Model, application, runtime policy, review and verification selection |
+| [application/saleor.json](configs/application/saleor.json) | Repository and baseline/patched deployments |
+| [graph/saleor.json](configs/graph/saleor.json) | Neo4j graph snapshots |
+| [retrieval/saleor.json](configs/retrieval/saleor.json) | Ingestion run, vector store and ranking stages |
+| [ui/saleor.json](configs/ui/saleor.json) | Playwright startup and allowed UI actions |
+| [standard.json](configs/runtime/standard.json) | Only the operational values this deployment overrides |
+| [saleor-policy.json](configs/verification/saleor-policy.json) | Approved verification scenarios |
 | [saleor-voucher.json](configs/verification/saleor-voucher.json) | Voucher fixtures, UI controls, assertions and requirement contracts |
 | [real-pr-v2](evaluation/real-pr-v2/README.md) | Frozen real-PR ground truth, review process and metric definitions |
 | [saleor.json](configs/webhook/saleor.json) | Signed webhook intake, durable queue and optional PR comment |
@@ -47,9 +52,15 @@ Schema, so an editor can provide completion, allowed values, descriptions and va
 Credentials are read from named environment variables through the referenced `.env`; they are
 never stored in these files or reports.
 
-`ui_exploration` configures bounded browser discovery before analysis. `tool_provider` chooses
-fixture or live tool adapters; a live provider reads repository, retrieval and browser settings
-from `application_config_file`.
+`application_config_file` selects the application. That file points to the graph, retrieval and UI
+files. `runtime_config_file` contains optional operational overrides; omitting it applies the same
+safe typed defaults. `ui_exploration` controls bounded UI discovery before analysis.
+
+The built-in runtime defaults are 5 calls per tool, 30 calls total, 10 reasoning rounds, 2 review
+requests, 1 citation repair, 2 attempts with a 1-second delay, a 15-minute run timeout and a
+45-second model timeout. PII and prompt-injection guardrails are enabled. Invalid model output is
+not retried unless explicitly enabled. These defaults are also published in
+`runtime.schema.json`, so JSON-aware editors show them without copying them into every config.
 
 ## Optional LangSmith observability
 

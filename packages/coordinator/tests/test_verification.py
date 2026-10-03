@@ -230,7 +230,35 @@ def test_saved_run_replays_report_not_side_effects_and_rejects_changed_config(in
     from trace_coordinator.infrastructure.adapters import voucher_verification
 
     config, app = inputs
-    Path(config.application_file).write_text(app.model_dump_json())
+    Path(tmp_path / "graph-config.json").write_text(
+        json.dumps({"provider": "neo4j", "baseline_snapshot_file": app.graph_snapshot_file})
+    )
+    Path(tmp_path / "retrieval-config.json").write_text(
+        json.dumps(
+            {
+                "provider": "qdrant",
+                "ingestion_run_directory": app.ingestion_run_directory,
+                "vector_directory": app.vector_directory,
+            }
+        )
+    )
+    Path(tmp_path / "ui-config.json").write_text('{"provider":"disabled"}')
+    Path(config.application_file).write_text(
+        json.dumps(
+            {
+                "project_id": app.project_id,
+                "repository": app.repository,
+                "repository_path": app.repository_path,
+                "change_source": app.change_source.model_dump(mode="json"),
+                "graph_config_file": "graph-config.json",
+                "retrieval_config_file": "retrieval-config.json",
+                "ui_config_file": "ui-config.json",
+                "baseline": {"url": app.baseline.url, "revision": app.baseline.revision},
+                "patched": {"url": app.patched.url, "revision": app.patched.revision},
+                "require_exact_revisions": False,
+            }
+        )
+    )
     path = tmp_path / "config.json"
     path.write_text(config.model_dump_json())
     calls = []

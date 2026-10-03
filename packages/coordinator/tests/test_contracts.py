@@ -6,7 +6,14 @@ import jsonschema
 import pytest
 from pydantic import ValidationError
 
-from trace_coordinator.config import CallLimits, CoordinatorConfig, schema
+from trace_coordinator.config import (
+    CallLimits,
+    CoordinatorFile,
+    RuntimeConfig,
+    VerificationPolicy,
+    load_config,
+    schema,
+)
 from trace_coordinator.domain.models import Decision
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,8 +43,50 @@ def test_json_schema_matches_runtime_and_example():
         if path.name.endswith("application.json"):
             continue
         jsonschema.validate(example, schema())
-        CoordinatorConfig.model_validate(example)
+        CoordinatorFile.model_validate(example)
     assert json.loads((ROOT / "schemas/coordinator.schema.json").read_text(encoding="utf-8")) == schema()
+
+
+def test_runtime_file_resolves_calls_retries_and_timeouts():
+    config = load_config(ROOT / "configs/saleor-verified.json")
+    assert config.limits.total_calls == 35
+    assert config.limits.max_rounds == 5
+    assert config.limits.retry_attempts == 2
+    assert config.limits.retry_delay_seconds == 2
+    assert config.limits.max_run_seconds == 900
+    assert config.model.provider == "gemini"
+    assert config.model.timeout_seconds == 45
+    assert config.model.retry_invalid_response is True
+
+
+def test_omitting_runtime_file_applies_safe_defaults():
+    config = load_config(ROOT / "configs/demo.json")
+    assert config.limits.per_agent_tool == 5
+    assert config.limits.total_calls == 30
+    assert config.limits.max_rounds == 10
+    assert config.limits.max_review_requests == 2
+    assert config.limits.max_validation_repairs == 1
+    assert config.limits.retry_attempts == 2
+    assert config.limits.retry_delay_seconds == 1
+    assert config.limits.max_run_seconds == 900
+    assert config.guardrails.enabled is True
+    assert config.observability.provider == "disabled"
+
+
+def test_runtime_schema_and_standard_example_match():
+    schema_document = json.loads((ROOT / "schemas/runtime.schema.json").read_text(encoding="utf-8"))
+    example = json.loads((ROOT / "configs/runtime/standard.json").read_text(encoding="utf-8"))
+    jsonschema.validate(example, schema_document)
+    RuntimeConfig.model_validate(example)
+
+
+def test_verification_policy_schema_and_example_match():
+    schema_document = json.loads(
+        (ROOT / "schemas/verification-policy.schema.json").read_text(encoding="utf-8")
+    )
+    example = json.loads((ROOT / "configs/verification/saleor-policy.json").read_text(encoding="utf-8"))
+    jsonschema.validate(example, schema_document)
+    VerificationPolicy.model_validate(example)
 
 
 def test_unknown_options_are_not_ignored():

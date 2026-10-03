@@ -1,216 +1,5 @@
 {
   "$defs": {
-    "ArtifactSecurityConfig": {
-      "additionalProperties": false,
-      "properties": {
-        "provider": {
-          "discriminator": {
-            "mapping": {
-              "baseline": "#/$defs/BaselineDlp",
-              "disabled": "#/$defs/DisabledDlp",
-              "google_dlp": "#/$defs/GoogleDlp"
-            },
-            "propertyName": "provider"
-          },
-          "oneOf": [
-            {
-              "$ref": "#/$defs/DisabledDlp"
-            },
-            {
-              "$ref": "#/$defs/BaselineDlp"
-            },
-            {
-              "$ref": "#/$defs/GoogleDlp"
-            }
-          ],
-          "title": "Provider"
-        },
-        "sensitive_action": {
-          "const": "block",
-          "default": "block",
-          "title": "Sensitive Action",
-          "type": "string"
-        },
-        "scanner_error_action": {
-          "default": "block",
-          "enum": [
-            "block",
-            "allow"
-          ],
-          "title": "Scanner Error Action",
-          "type": "string"
-        },
-        "unsupported_action": {
-          "default": "block",
-          "enum": [
-            "block",
-            "allow"
-          ],
-          "title": "Unsupported Action",
-          "type": "string"
-        },
-        "max_bytes": {
-          "default": 1000000,
-          "maximum": 10000000,
-          "minimum": 1000,
-          "title": "Max Bytes",
-          "type": "integer"
-        },
-        "text_suffixes": {
-          "default": [
-            ".json",
-            ".html",
-            ".txt",
-            ".md",
-            ".diff",
-            ".observation.json",
-            ".transition.json",
-            ".assertion.json",
-            ".fixture.json",
-            ".behavior.json",
-            ".graph.json"
-          ],
-          "items": {
-            "type": "string"
-          },
-          "title": "Text Suffixes",
-          "type": "array"
-        },
-        "image_suffixes": {
-          "default": [
-            ".png",
-            ".jpg",
-            ".jpeg"
-          ],
-          "items": {
-            "type": "string"
-          },
-          "title": "Image Suffixes",
-          "type": "array"
-        }
-      },
-      "title": "ArtifactSecurityConfig",
-      "type": "object"
-    },
-    "BaselineDlp": {
-      "additionalProperties": false,
-      "properties": {
-        "provider": {
-          "const": "baseline",
-          "default": "baseline",
-          "title": "Provider",
-          "type": "string"
-        }
-      },
-      "title": "BaselineDlp",
-      "type": "object"
-    },
-    "CallLimits": {
-      "additionalProperties": false,
-      "properties": {
-        "per_agent_tool": {
-          "default": 5,
-          "description": "Maximum executed attempts per run, stable agent identity and canonical tool. Includes failures and retries; resume never resets it.",
-          "maximum": 5,
-          "minimum": 1,
-          "title": "Per Agent Tool",
-          "type": "integer"
-        },
-        "overrides": {
-          "additionalProperties": {
-            "additionalProperties": {
-              "maximum": 5,
-              "minimum": 1,
-              "type": "integer"
-            },
-            "type": "object"
-          },
-          "description": "Optional lower limits: agent ID -> canonical tool ID -> limit (1 to default).",
-          "title": "Overrides",
-          "type": "object"
-        },
-        "total_calls": {
-          "default": 30,
-          "description": "Combined tool and model attempts per run.",
-          "maximum": 1000,
-          "minimum": 1,
-          "title": "Total Calls",
-          "type": "integer"
-        },
-        "max_rounds": {
-          "default": 10,
-          "maximum": 100,
-          "minimum": 1,
-          "title": "Max Rounds",
-          "type": "integer"
-        },
-        "max_review_requests": {
-          "default": 2,
-          "maximum": 10,
-          "minimum": 0,
-          "title": "Max Review Requests",
-          "type": "integer"
-        },
-        "max_validation_repairs": {
-          "default": 1,
-          "description": "Bounded citation correction turns; each consumes model.decide and round budgets.",
-          "maximum": 2,
-          "minimum": 0,
-          "title": "Max Validation Repairs",
-          "type": "integer"
-        },
-        "max_run_seconds": {
-          "default": 900,
-          "maximum": 86400,
-          "minimum": 1,
-          "title": "Max Run Seconds",
-          "type": "integer"
-        },
-        "retry_attempts": {
-          "default": 2,
-          "description": "Total attempts, including the first.",
-          "maximum": 5,
-          "minimum": 1,
-          "title": "Retry Attempts",
-          "type": "integer"
-        },
-        "retry_delay_seconds": {
-          "default": 1,
-          "maximum": 30,
-          "minimum": 0,
-          "title": "Retry Delay Seconds",
-          "type": "number"
-        }
-      },
-      "title": "CallLimits",
-      "type": "object"
-    },
-    "DisabledDlp": {
-      "additionalProperties": false,
-      "properties": {
-        "provider": {
-          "const": "disabled",
-          "default": "disabled",
-          "title": "Provider",
-          "type": "string"
-        }
-      },
-      "title": "DisabledDlp",
-      "type": "object"
-    },
-    "DisabledObservability": {
-      "additionalProperties": false,
-      "properties": {
-        "provider": {
-          "const": "disabled",
-          "default": "disabled",
-          "title": "Provider",
-          "type": "string"
-        }
-      },
-      "title": "DisabledObservability",
-      "type": "object"
-    },
     "FixtureProvider": {
       "additionalProperties": false,
       "properties": {
@@ -287,126 +76,6 @@
       "title": "GeminiProvider",
       "type": "object"
     },
-    "GoogleDlp": {
-      "additionalProperties": false,
-      "properties": {
-        "provider": {
-          "const": "google_dlp",
-          "default": "google_dlp",
-          "title": "Provider",
-          "type": "string"
-        },
-        "project_id_env": {
-          "default": "GOOGLE_CLOUD_PROJECT",
-          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
-          "title": "Project Id Env",
-          "type": "string"
-        },
-        "location": {
-          "default": "global",
-          "pattern": "^[A-Za-z0-9-]{1,63}$",
-          "title": "Location",
-          "type": "string"
-        },
-        "info_types": {
-          "default": [
-            "PERSON_NAME",
-            "EMAIL_ADDRESS",
-            "PHONE_NUMBER",
-            "STREET_ADDRESS",
-            "CREDIT_CARD_NUMBER",
-            "US_SOCIAL_SECURITY_NUMBER",
-            "AUTH_TOKEN",
-            "JSON_WEB_TOKEN"
-          ],
-          "items": {
-            "type": "string"
-          },
-          "maxItems": 100,
-          "minItems": 1,
-          "title": "Info Types",
-          "type": "array"
-        },
-        "min_likelihood": {
-          "default": "POSSIBLE",
-          "enum": [
-            "POSSIBLE",
-            "LIKELY",
-            "VERY_LIKELY"
-          ],
-          "title": "Min Likelihood",
-          "type": "string"
-        },
-        "max_findings": {
-          "default": 100,
-          "maximum": 1000,
-          "minimum": 1,
-          "title": "Max Findings",
-          "type": "integer"
-        },
-        "timeout_seconds": {
-          "default": 15,
-          "exclusiveMinimum": 0,
-          "maximum": 60,
-          "title": "Timeout Seconds",
-          "type": "number"
-        }
-      },
-      "title": "GoogleDlp",
-      "type": "object"
-    },
-    "GuardrailPolicy": {
-      "additionalProperties": false,
-      "properties": {
-        "enabled": {
-          "default": true,
-          "title": "Enabled",
-          "type": "boolean"
-        },
-        "request_sensitive_action": {
-          "default": "block",
-          "enum": [
-            "block",
-            "allow"
-          ],
-          "title": "Request Sensitive Action",
-          "type": "string"
-        },
-        "evidence_sensitive_action": {
-          "default": "redact",
-          "enum": [
-            "redact",
-            "block"
-          ],
-          "title": "Evidence Sensitive Action",
-          "type": "string"
-        },
-        "prompt_injection_action": {
-          "default": "quarantine",
-          "enum": [
-            "quarantine",
-            "block"
-          ],
-          "title": "Prompt Injection Action",
-          "type": "string"
-        },
-        "output_sensitive_action": {
-          "const": "block",
-          "default": "block",
-          "title": "Output Sensitive Action",
-          "type": "string"
-        },
-        "max_findings_per_call": {
-          "default": 100,
-          "maximum": 1000,
-          "minimum": 1,
-          "title": "Max Findings Per Call",
-          "type": "integer"
-        }
-      },
-      "title": "GuardrailPolicy",
-      "type": "object"
-    },
     "HumanReviewPolicy": {
       "additionalProperties": false,
       "properties": {
@@ -428,124 +97,6 @@
         }
       },
       "title": "HumanReviewPolicy",
-      "type": "object"
-    },
-    "LangSmithObservability": {
-      "additionalProperties": false,
-      "properties": {
-        "provider": {
-          "const": "langsmith",
-          "title": "Provider",
-          "type": "string"
-        },
-        "project": {
-          "default": "testsigma-impact-agent-demo",
-          "description": "LangSmith project receiving the coordinator trace.",
-          "maxLength": 200,
-          "minLength": 1,
-          "title": "Project",
-          "type": "string"
-        },
-        "api_key_env": {
-          "default": "LANGSMITH_API_KEY",
-          "description": "Environment variable containing the LangSmith API key.",
-          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
-          "title": "Api Key Env",
-          "type": "string"
-        },
-        "endpoint_env": {
-          "anyOf": [
-            {
-              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "description": "Optional environment variable containing a self-hosted or regional API URL.",
-          "title": "Endpoint Env"
-        },
-        "workspace_id_env": {
-          "anyOf": [
-            {
-              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "description": "Optional workspace ID environment variable for multi-workspace API keys.",
-          "title": "Workspace Id Env"
-        },
-        "dashboard_url": {
-          "default": "https://smith.langchain.com",
-          "description": "Safe user-facing dashboard link written to reports; no credential is appended.",
-          "maxLength": 500,
-          "pattern": "^https://[^\\s]+$",
-          "title": "Dashboard Url",
-          "type": "string"
-        },
-        "capture_content": {
-          "const": false,
-          "default": false,
-          "description": "Coordinator traces always hide graph inputs and outputs so code, retrieved text, DOM, review answers and credentials are not uploaded.",
-          "title": "Capture Content",
-          "type": "boolean"
-        },
-        "sampling_rate": {
-          "default": 1.0,
-          "exclusiveMinimum": 0,
-          "maximum": 1,
-          "title": "Sampling Rate",
-          "type": "number"
-        },
-        "flush_timeout_seconds": {
-          "default": 2.0,
-          "description": "Best-effort shutdown wait; tracing failures never change workflow status.",
-          "maximum": 10,
-          "minimum": 0,
-          "title": "Flush Timeout Seconds",
-          "type": "number"
-        },
-        "request_timeout_seconds": {
-          "default": 1.0,
-          "description": "Short provider connect/read timeout so telemetry cannot materially delay analysis.",
-          "maximum": 5,
-          "minimum": 0.1,
-          "title": "Request Timeout Seconds",
-          "type": "number"
-        }
-      },
-      "required": [
-        "provider"
-      ],
-      "title": "LangSmithObservability",
-      "type": "object"
-    },
-    "LiveToolProvider": {
-      "additionalProperties": false,
-      "properties": {
-        "provider": {
-          "const": "live",
-          "title": "Provider",
-          "type": "string"
-        },
-        "application_config_file": {
-          "description": "Application configuration file relative to this coordinator configuration.",
-          "minLength": 1,
-          "title": "Application Config File",
-          "type": "string"
-        }
-      },
-      "required": [
-        "provider",
-        "application_config_file"
-      ],
-      "title": "LiveToolProvider",
       "type": "object"
     },
     "OpenAIProvider": {
@@ -602,46 +153,6 @@
       "title": "OpenAIProvider",
       "type": "object"
     },
-    "ScenarioBinding": {
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "pattern": "^[a-z][a-z0-9_-]{0,39}$",
-          "title": "Id",
-          "type": "string"
-        },
-        "description": {
-          "maxLength": 500,
-          "minLength": 1,
-          "title": "Description",
-          "type": "string"
-        },
-        "config_file": {
-          "description": "Approved scenario JSON, relative to coordinator JSON.",
-          "minLength": 1,
-          "title": "Config File",
-          "type": "string"
-        },
-        "changed_paths": {
-          "description": "Repository-relative glob patterns selecting this scenario.",
-          "items": {
-            "type": "string"
-          },
-          "maxItems": 20,
-          "minItems": 1,
-          "title": "Changed Paths",
-          "type": "array"
-        }
-      },
-      "required": [
-        "id",
-        "description",
-        "config_file",
-        "changed_paths"
-      ],
-      "title": "ScenarioBinding",
-      "type": "object"
-    },
     "UIExplorationConfig": {
       "additionalProperties": false,
       "properties": {
@@ -695,40 +206,10 @@
       },
       "title": "UIExplorationConfig",
       "type": "object"
-    },
-    "VerificationPolicy": {
-      "additionalProperties": false,
-      "properties": {
-        "enabled": {
-          "default": false,
-          "title": "Enabled",
-          "type": "boolean"
-        },
-        "approval": {
-          "default": "human_review",
-          "description": "Preapproved authorizes only configured scenarios; models cannot introduce new test actions.",
-          "enum": [
-            "human_review",
-            "preapproved"
-          ],
-          "title": "Approval",
-          "type": "string"
-        },
-        "scenarios": {
-          "default": [],
-          "items": {
-            "$ref": "#/$defs/ScenarioBinding"
-          },
-          "maxItems": 10,
-          "title": "Scenarios",
-          "type": "array"
-        }
-      },
-      "title": "VerificationPolicy",
-      "type": "object"
     }
   },
   "additionalProperties": false,
+  "description": "Small user-facing coordinator file.",
   "properties": {
     "$schema": {
       "anyOf": [
@@ -748,42 +229,67 @@
       "title": "Schema Version",
       "type": "integer"
     },
-    "limits": {
-      "$ref": "#/$defs/CallLimits"
+    "application_config_file": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Live application configuration.",
+      "title": "Application Config File"
+    },
+    "tool_fixture_file": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Offline tool fixture used by tests and demos.",
+      "title": "Tool Fixture File"
+    },
+    "runtime_config_file": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional calls, retries, timeouts and safety overrides.",
+      "title": "Runtime Config File"
     },
     "ui_exploration": {
       "$ref": "#/$defs/UIExplorationConfig"
     },
-    "verification": {
-      "$ref": "#/$defs/VerificationPolicy"
+    "verification_config_file": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional approved verification catalog.",
+      "title": "Verification Config File"
     },
     "human_review": {
       "$ref": "#/$defs/HumanReviewPolicy"
-    },
-    "guardrails": {
-      "$ref": "#/$defs/GuardrailPolicy"
-    },
-    "artifact_security": {
-      "$ref": "#/$defs/ArtifactSecurityConfig"
-    },
-    "observability": {
-      "description": "Optional fail-open execution tracing. SQLite remains the audit source of truth.",
-      "discriminator": {
-        "mapping": {
-          "disabled": "#/$defs/DisabledObservability",
-          "langsmith": "#/$defs/LangSmithObservability"
-        },
-        "propertyName": "provider"
-      },
-      "oneOf": [
-        {
-          "$ref": "#/$defs/DisabledObservability"
-        },
-        {
-          "$ref": "#/$defs/LangSmithObservability"
-        }
-      ],
-      "title": "Observability"
     },
     "model": {
       "discriminator": {
@@ -807,24 +313,6 @@
       ],
       "title": "Model"
     },
-    "tool_provider": {
-      "discriminator": {
-        "mapping": {
-          "fixture": "#/$defs/FixtureProvider",
-          "live": "#/$defs/LiveToolProvider"
-        },
-        "propertyName": "provider"
-      },
-      "oneOf": [
-        {
-          "$ref": "#/$defs/FixtureProvider"
-        },
-        {
-          "$ref": "#/$defs/LiveToolProvider"
-        }
-      ],
-      "title": "Tool Provider"
-    },
     "env_file": {
       "anyOf": [
         {
@@ -846,10 +334,31 @@
     }
   },
   "required": [
-    "model",
-    "tool_provider"
+    "model"
   ],
   "title": "PR impact coordinator",
   "type": "object",
+  "oneOf": [
+    {
+      "required": [
+        "application_config_file"
+      ],
+      "not": {
+        "required": [
+          "tool_fixture_file"
+        ]
+      }
+    },
+    {
+      "required": [
+        "tool_fixture_file"
+      ],
+      "not": {
+        "required": [
+          "application_config_file"
+        ]
+      }
+    }
+  ],
   "$schema": "https://json-schema.org/draft/2020-12/schema"
 }

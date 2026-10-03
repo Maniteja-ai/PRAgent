@@ -1,0 +1,92 @@
+{
+  "$defs": {
+    "ScenarioBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,39}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "config_file": {
+          "description": "Approved scenario JSON, relative to coordinator JSON.",
+          "minLength": 1,
+          "title": "Config File",
+          "type": "string"
+        },
+        "changed_paths": {
+          "description": "Repository-relative glob patterns selecting this scenario.",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Changed Paths",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "description",
+        "config_file",
+        "changed_paths"
+      ],
+      "title": "ScenarioBinding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "enabled": {
+      "default": false,
+      "title": "Enabled",
+      "type": "boolean"
+    },
+    "approval": {
+      "default": "human_review",
+      "description": "Preapproved authorizes only configured scenarios; models cannot introduce new test actions.",
+      "enum": [
+        "human_review",
+        "preapproved"
+      ],
+      "title": "Approval",
+      "type": "string"
+    },
+    "scenarios": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ScenarioBinding"
+      },
+      "maxItems": 10,
+      "title": "Scenarios",
+      "type": "array"
+    }
+  },
+  "title": "Verification policy",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

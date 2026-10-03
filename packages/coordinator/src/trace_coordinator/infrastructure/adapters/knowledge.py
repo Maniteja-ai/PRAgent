@@ -385,11 +385,21 @@ class KnowledgeTool:
         )
 
     def documents(self, pipeline: Any, arguments: QueryInput, context: ToolContext) -> ToolResult:
+        from trace_impact.retrieval import RetrievalConfig
+
         run = Path(self.app.ingestion_run_directory)
         corpus = json.loads((run / "corpus.json").read_text(encoding="utf-8"))
         if corpus["project"]["project_id"] != context.project_id:
             raise ToolFailure("Document corpus belongs to another project")
-        result = pipeline.retrieve(run, arguments.query, Path(self.app.retrieval_config_file))
+        configured = json.loads(Path(self.app.retrieval_config_file).read_text(encoding="utf-8"))
+        retrieval = RetrievalConfig.model_validate(
+            {
+                key: configured[key]
+                for key in ("schema_version", "candidate_limit", "reranker", "selector")
+                if key in configured
+            }
+        )
+        result = pipeline.retrieve(run, arguments.query, retrieval)
         payload = result.model_dump(mode="json")
         saved = save_artifact(
             self.artifact_root, context.run_id, canonical(payload).encode(), ".retrieval.json"

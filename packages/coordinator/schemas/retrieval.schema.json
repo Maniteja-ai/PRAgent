@@ -1,0 +1,83 @@
+{
+  "$defs": {
+    "RetrievalStageConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Provider",
+          "type": "string"
+        },
+        "options": {
+          "additionalProperties": true,
+          "title": "Options",
+          "type": "object"
+        }
+      },
+      "required": [
+        "provider"
+      ],
+      "title": "RetrievalStageConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Document store and ranking settings kept together in one file.",
+  "properties": {
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "provider": {
+      "const": "qdrant",
+      "default": "qdrant",
+      "title": "Provider",
+      "type": "string"
+    },
+    "ingestion_run_directory": {
+      "minLength": 1,
+      "title": "Ingestion Run Directory",
+      "type": "string"
+    },
+    "vector_directory": {
+      "minLength": 1,
+      "title": "Vector Directory",
+      "type": "string"
+    },
+    "candidate_limit": {
+      "default": 5,
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Candidate Limit",
+      "type": "integer"
+    },
+    "reranker": {
+      "$ref": "#/$defs/RetrievalStageConfig"
+    },
+    "selector": {
+      "$ref": "#/$defs/RetrievalStageConfig"
+    }
+  },
+  "required": [
+    "ingestion_run_directory",
+    "vector_directory"
+  ],
+  "title": "Document retrieval",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

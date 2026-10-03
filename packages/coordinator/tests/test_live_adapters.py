@@ -7,7 +7,15 @@ import pytest
 
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import ToolContext
-from trace_coordinator.domain.project import ApplicationConfig, LocalGitSource, load_application
+from trace_coordinator.domain.project import (
+    ApplicationConfig,
+    ApplicationFile,
+    GraphConfigFile,
+    LocalGitSource,
+    PlaywrightUIConfigFile,
+    RetrievalConfigFile,
+    load_application,
+)
 from trace_coordinator.infrastructure.adapters.fixtures import PRInput
 from trace_coordinator.infrastructure.adapters.github import GitHubDiffTool
 from trace_coordinator.infrastructure.adapters.local_git import LocalGitDiffTool
@@ -126,7 +134,7 @@ def test_diff_budget_does_not_silently_truncate(git_repo, tmp_path):
 
 
 def test_application_paths_resolve_against_own_file():
-    config = load_application(ROOT / "configs/saleor-application.json")
+    config = load_application(ROOT / "configs/application/saleor.json")
     assert Path(config.graph_snapshot_file).is_absolute()
     assert Path(config.repository_path).name == "saleor-storefront-upstream"
 
@@ -148,9 +156,26 @@ def test_application_schema_and_example_match():
     import jsonschema
 
     schema = json.loads((ROOT / "schemas/application.schema.json").read_text(encoding="utf-8"))
-    example = json.loads((ROOT / "configs/saleor-application.json").read_text(encoding="utf-8"))
+    example = json.loads((ROOT / "configs/application/saleor.json").read_text(encoding="utf-8"))
     jsonschema.validate(example, schema)
-    ApplicationConfig.model_validate(example)
+    ApplicationFile.model_validate(example)
+
+
+@pytest.mark.parametrize(
+    ("schema_name", "config_name", "model"),
+    [
+        ("graph.schema.json", "graph/saleor.json", GraphConfigFile),
+        ("retrieval.schema.json", "retrieval/saleor.json", RetrievalConfigFile),
+        ("ui.schema.json", "ui/saleor.json", PlaywrightUIConfigFile),
+    ],
+)
+def test_component_schema_and_example_match(schema_name, config_name, model):
+    import jsonschema
+
+    schema = json.loads((ROOT / "schemas" / schema_name).read_text(encoding="utf-8"))
+    example = json.loads((ROOT / "configs" / config_name).read_text(encoding="utf-8"))
+    jsonschema.validate(example, schema)
+    model.model_validate(example)
 
 
 def local_application(app):

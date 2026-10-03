@@ -1,6 +1,6 @@
 {
   "$schema": "../../schemas/voucher-verification.schema.json",
-  "application_file": "../saleor-application.json",
+  "application_file": "../application/saleor.json",
   "state_directory": "../../runs/verification",
   "graphql_url": "https://store-vlrmbn6z.saleor.cloud/graphql/",
   "channel": "default-channel",

@@ -152,7 +152,8 @@ def test_document_translation_uses_selected_passages_only(knowledge, tmp_path):
     translated = tool.documents(SimpleNamespace(retrieve=retrieve), QueryInput(query="voucher"), context)
     assert len(translated.evidence) == 1
     assert translated.evidence[0].metadata["chunk_id"] == "1"
-    assert seen[0][2] == Path(app.retrieval_config_file)
+    assert seen[0][2].candidate_limit == 5
+    assert seen[0][2].reranker.provider == "identity"
 
 
 def test_corpus_project_mismatch_fails_before_retrieval(knowledge, tmp_path):

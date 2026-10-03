@@ -326,8 +326,9 @@ def test_attestation_failure_stops_before_retrieval_or_model(tmp_path, tool):
 def test_bootstrap_resolves_paths_against_config(tmp_path, monkeypatch):
     config = json.loads((ROOT / "configs/demo.json").read_text(encoding="utf-8"))
     config["state_directory"] = str(tmp_path / "state")
-    for key in ("model", "tool_provider"):
-        config[key]["file"] = str(ROOT / "examples/voucher-fixture.json")
+    config.pop("runtime_config_file", None)
+    config["tool_fixture_file"] = str(ROOT / "examples/voucher-fixture.json")
+    config["model"]["file"] = str(ROOT / "examples/voucher-fixture.json")
     path = tmp_path / "config.json"
     path.write_text(json.dumps(config), encoding="utf-8")
     monkeypatch.chdir(tmp_path.parent)

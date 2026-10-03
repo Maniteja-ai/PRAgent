@@ -78,6 +78,13 @@ def main() -> None:
     args = parser.parse_args()
     if args.command == "production-schema":
         from trace_coordinator.application.additional_behavior import additional_behavior_schema
+        from trace_coordinator.config import runtime_schema, verification_policy_schema
+        from trace_coordinator.domain.project import (
+            application_schema,
+            graph_schema,
+            retrieval_schema,
+            ui_schema,
+        )
         from trace_coordinator.evaluation.campaign import campaign_schema
         from trace_coordinator.evaluation.coordinator import dataset_schema
         from trace_coordinator.evaluation.llm import live_llm_schema
@@ -86,6 +93,15 @@ def main() -> None:
         from trace_coordinator.infrastructure.github_webhook import webhook_schema
 
         args.output_directory.mkdir(parents=True, exist_ok=True)
+        for name, document in {
+            "application.schema.json": application_schema(),
+            "graph.schema.json": graph_schema(),
+            "retrieval.schema.json": retrieval_schema(),
+            "runtime.schema.json": runtime_schema(),
+            "ui.schema.json": ui_schema(),
+            "verification-policy.schema.json": verification_policy_schema(),
+        }.items():
+            (args.output_directory / name).write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
         (args.output_directory / "golden-dataset.schema.json").write_text(
             json.dumps(dataset_schema(), indent=2) + "\n", encoding="utf-8"
         )

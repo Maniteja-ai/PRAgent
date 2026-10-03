@@ -1,0 +1,16 @@
+{
+  "$schema": "../../schemas/ui.schema.json",
+  "schema_version": 1,
+  "provider": "playwright",
+  "enabled": true,
+  "headless": true,
+  "timeout_seconds": 30,
+  "entry_path": "/default-channel/products",
+  "readiness_checks": {
+    "/default-channel/products/": "button:has-text('Add to bag'), button:has-text('Select options'), button:has-text('Out of stock')",
+    "/checkout": "input[type='email']"
+  },
+  "allowed_button_names": ["S", "M", "L", "Add to bag", "Add to Bag", "Apply", "Remove"],
+  "allowed_button_test_ids": ["CartNavItem"],
+  "allowed_field_names": ["Promo code", "Discount code", "Voucher code"]
+}

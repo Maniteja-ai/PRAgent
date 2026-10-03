@@ -1,88 +1,19 @@
 {
   "$schema": "../schemas/coordinator.schema.json",
   "schema_version": 1,
-  "limits": {
-    "per_agent_tool": 5,
-    "total_calls": 35,
-    "max_rounds": 5,
-    "max_review_requests": 2,
-    "max_validation_repairs": 1,
-    "max_run_seconds": 900,
-    "retry_attempts": 2,
-    "retry_delay_seconds": 2
-  },
+  "application_config_file": "application/saleor.json",
+  "runtime_config_file": "runtime/google-dlp.json",
   "env_file": "../../../.env",
-  "guardrails": {
-    "enabled": true,
-    "request_sensitive_action": "block",
-    "evidence_sensitive_action": "redact",
-    "prompt_injection_action": "quarantine",
-    "output_sensitive_action": "block",
-    "max_findings_per_call": 100
-  },
-  "artifact_security": {
-    "provider": {
-      "provider": "google_dlp",
-      "project_id_env": "GOOGLE_CLOUD_PROJECT",
-      "location": "global",
-      "info_types": [
-        "PERSON_NAME",
-        "EMAIL_ADDRESS",
-        "PHONE_NUMBER",
-        "STREET_ADDRESS",
-        "CREDIT_CARD_NUMBER",
-        "US_SOCIAL_SECURITY_NUMBER",
-        "AUTH_TOKEN",
-        "JSON_WEB_TOKEN"
-      ],
-      "min_likelihood": "POSSIBLE",
-      "max_findings": 100,
-      "timeout_seconds": 15
-    },
-    "sensitive_action": "block",
-    "scanner_error_action": "block",
-    "unsupported_action": "block",
-    "max_bytes": 1000000
-  },
-  "ui_exploration": {
-    "enabled": false,
-    "environment": "patched",
-    "goal": "Discover a product-to-cart-to-checkout journey and observe the voucher controls. Prefer a product without variant choices when possible. Do not submit an order.",
-    "target_controls": ["Promo code", "Discount code", "Voucher code"],
-    "max_steps": 4,
-    "max_state_visits": 2
-  },
   "model": {
     "provider": "gemini",
     "model": "gemini-3.5-flash-lite",
     "api_key_env": "GEMINI_API_KEY",
-    "timeout_seconds": 45,
     "max_output_tokens": 4000,
-    "max_input_chars": 120000,
-    "retry_invalid_response": true
+    "max_input_chars": 120000
   },
-  "tool_provider": {
-    "provider": "live",
-    "application_config_file": "saleor-application.json"
+  "human_review": {
+    "policy": "non_blocking"
   },
   "state_directory": "../runs-google-dlp",
-  "human_review": {
-    "policy": "non_blocking",
-    "allow_follow_up_verification": true
-  },
-  "verification": {
-    "enabled": true,
-    "approval": "human_review",
-    "scenarios": [
-      {
-        "id": "checkout-voucher",
-        "description": "Test the configured sandbox voucher on fresh baseline/patched guest carts and remove it on patched. No orders or payments.",
-        "config_file": "verification/saleor-voucher.json",
-        "changed_paths": [
-          "src/checkout/views/saleor-checkout/order-summary.tsx",
-          "src/checkout/views/saleor-checkout/saleor-checkout.tsx"
-        ]
-      }
-    ]
-  }
+  "verification_config_file": "verification/saleor-policy.json"
 }

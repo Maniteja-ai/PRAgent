@@ -1,8 +1,11 @@
 {
   "$schema": "../schemas/coordinator.schema.json",
   "schema_version": 1,
-  "limits": {"per_agent_tool":5,"total_calls":30,"max_rounds":10,"retry_delay_seconds":0},
-  "model": {"provider":"fixture","file":"../examples/repeated-search.json"},
-  "tool_provider": {"provider":"fixture","file":"../examples/voucher-fixture.json"},
+  "tool_fixture_file": "../examples/voucher-fixture.json",
+  "runtime_config_file": "runtime/limit-demo.json",
+  "model": {
+    "provider": "fixture",
+    "file": "../examples/repeated-search.json"
+  },
   "state_directory": "../runs"
 }

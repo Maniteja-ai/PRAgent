@@ -1,0 +1,510 @@
+{
+  "$defs": {
+    "ArtifactSecurityConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "discriminator": {
+            "mapping": {
+              "baseline": "#/$defs/BaselineDlp",
+              "disabled": "#/$defs/DisabledDlp",
+              "google_dlp": "#/$defs/GoogleDlp"
+            },
+            "propertyName": "provider"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DisabledDlp"
+            },
+            {
+              "$ref": "#/$defs/BaselineDlp"
+            },
+            {
+              "$ref": "#/$defs/GoogleDlp"
+            }
+          ],
+          "title": "Provider"
+        },
+        "sensitive_action": {
+          "const": "block",
+          "default": "block",
+          "title": "Sensitive Action",
+          "type": "string"
+        },
+        "scanner_error_action": {
+          "default": "block",
+          "enum": [
+            "block",
+            "allow"
+          ],
+          "title": "Scanner Error Action",
+          "type": "string"
+        },
+        "unsupported_action": {
+          "default": "block",
+          "enum": [
+            "block",
+            "allow"
+          ],
+          "title": "Unsupported Action",
+          "type": "string"
+        },
+        "max_bytes": {
+          "default": 1000000,
+          "maximum": 10000000,
+          "minimum": 1000,
+          "title": "Max Bytes",
+          "type": "integer"
+        },
+        "text_suffixes": {
+          "default": [
+            ".json",
+            ".html",
+            ".txt",
+            ".md",
+            ".diff",
+            ".observation.json",
+            ".transition.json",
+            ".assertion.json",
+            ".fixture.json",
+            ".behavior.json",
+            ".graph.json"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "title": "Text Suffixes",
+          "type": "array"
+        },
+        "image_suffixes": {
+          "default": [
+            ".png",
+            ".jpg",
+            ".jpeg"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "title": "Image Suffixes",
+          "type": "array"
+        }
+      },
+      "title": "ArtifactSecurityConfig",
+      "type": "object"
+    },
+    "BaselineDlp": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "const": "baseline",
+          "default": "baseline",
+          "title": "Provider",
+          "type": "string"
+        }
+      },
+      "title": "BaselineDlp",
+      "type": "object"
+    },
+    "CallPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "per_tool": {
+          "default": 5,
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Per Tool",
+          "type": "integer"
+        },
+        "total": {
+          "default": 30,
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Total",
+          "type": "integer"
+        },
+        "reasoning_rounds": {
+          "default": 10,
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Reasoning Rounds",
+          "type": "integer"
+        },
+        "review_requests": {
+          "default": 2,
+          "maximum": 10,
+          "minimum": 0,
+          "title": "Review Requests",
+          "type": "integer"
+        },
+        "citation_repairs": {
+          "default": 1,
+          "maximum": 2,
+          "minimum": 0,
+          "title": "Citation Repairs",
+          "type": "integer"
+        },
+        "overrides": {
+          "additionalProperties": {
+            "additionalProperties": {
+              "maximum": 5,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "title": "Overrides",
+          "type": "object"
+        }
+      },
+      "title": "CallPolicy",
+      "type": "object"
+    },
+    "DisabledDlp": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "const": "disabled",
+          "default": "disabled",
+          "title": "Provider",
+          "type": "string"
+        }
+      },
+      "title": "DisabledDlp",
+      "type": "object"
+    },
+    "DisabledObservability": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "const": "disabled",
+          "default": "disabled",
+          "title": "Provider",
+          "type": "string"
+        }
+      },
+      "title": "DisabledObservability",
+      "type": "object"
+    },
+    "GoogleDlp": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "const": "google_dlp",
+          "default": "google_dlp",
+          "title": "Provider",
+          "type": "string"
+        },
+        "project_id_env": {
+          "default": "GOOGLE_CLOUD_PROJECT",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "title": "Project Id Env",
+          "type": "string"
+        },
+        "location": {
+          "default": "global",
+          "pattern": "^[A-Za-z0-9-]{1,63}$",
+          "title": "Location",
+          "type": "string"
+        },
+        "info_types": {
+          "default": [
+            "PERSON_NAME",
+            "EMAIL_ADDRESS",
+            "PHONE_NUMBER",
+            "STREET_ADDRESS",
+            "CREDIT_CARD_NUMBER",
+            "US_SOCIAL_SECURITY_NUMBER",
+            "AUTH_TOKEN",
+            "JSON_WEB_TOKEN"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Info Types",
+          "type": "array"
+        },
+        "min_likelihood": {
+          "default": "POSSIBLE",
+          "enum": [
+            "POSSIBLE",
+            "LIKELY",
+            "VERY_LIKELY"
+          ],
+          "title": "Min Likelihood",
+          "type": "string"
+        },
+        "max_findings": {
+          "default": 100,
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Max Findings",
+          "type": "integer"
+        },
+        "timeout_seconds": {
+          "default": 15,
+          "exclusiveMinimum": 0,
+          "maximum": 60,
+          "title": "Timeout Seconds",
+          "type": "number"
+        }
+      },
+      "title": "GoogleDlp",
+      "type": "object"
+    },
+    "GuardrailPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "request_sensitive_action": {
+          "default": "block",
+          "enum": [
+            "block",
+            "allow"
+          ],
+          "title": "Request Sensitive Action",
+          "type": "string"
+        },
+        "evidence_sensitive_action": {
+          "default": "redact",
+          "enum": [
+            "redact",
+            "block"
+          ],
+          "title": "Evidence Sensitive Action",
+          "type": "string"
+        },
+        "prompt_injection_action": {
+          "default": "quarantine",
+          "enum": [
+            "quarantine",
+            "block"
+          ],
+          "title": "Prompt Injection Action",
+          "type": "string"
+        },
+        "output_sensitive_action": {
+          "const": "block",
+          "default": "block",
+          "title": "Output Sensitive Action",
+          "type": "string"
+        },
+        "max_findings_per_call": {
+          "default": 100,
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Max Findings Per Call",
+          "type": "integer"
+        }
+      },
+      "title": "GuardrailPolicy",
+      "type": "object"
+    },
+    "LangSmithObservability": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "const": "langsmith",
+          "title": "Provider",
+          "type": "string"
+        },
+        "project": {
+          "default": "testsigma-impact-agent-demo",
+          "description": "LangSmith project receiving the coordinator trace.",
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Project",
+          "type": "string"
+        },
+        "api_key_env": {
+          "default": "LANGSMITH_API_KEY",
+          "description": "Environment variable containing the LangSmith API key.",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "title": "Api Key Env",
+          "type": "string"
+        },
+        "endpoint_env": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional environment variable containing a self-hosted or regional API URL.",
+          "title": "Endpoint Env"
+        },
+        "workspace_id_env": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional workspace ID environment variable for multi-workspace API keys.",
+          "title": "Workspace Id Env"
+        },
+        "dashboard_url": {
+          "default": "https://smith.langchain.com",
+          "description": "Safe user-facing dashboard link written to reports; no credential is appended.",
+          "maxLength": 500,
+          "pattern": "^https://[^\\s]+$",
+          "title": "Dashboard Url",
+          "type": "string"
+        },
+        "capture_content": {
+          "const": false,
+          "default": false,
+          "description": "Coordinator traces always hide graph inputs and outputs so code, retrieved text, DOM, review answers and credentials are not uploaded.",
+          "title": "Capture Content",
+          "type": "boolean"
+        },
+        "sampling_rate": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Sampling Rate",
+          "type": "number"
+        },
+        "flush_timeout_seconds": {
+          "default": 2.0,
+          "description": "Best-effort shutdown wait; tracing failures never change workflow status.",
+          "maximum": 10,
+          "minimum": 0,
+          "title": "Flush Timeout Seconds",
+          "type": "number"
+        },
+        "request_timeout_seconds": {
+          "default": 1.0,
+          "description": "Short provider connect/read timeout so telemetry cannot materially delay analysis.",
+          "maximum": 5,
+          "minimum": 0.1,
+          "title": "Request Timeout Seconds",
+          "type": "number"
+        }
+      },
+      "required": [
+        "provider"
+      ],
+      "title": "LangSmithObservability",
+      "type": "object"
+    },
+    "RetryPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "attempts": {
+          "default": 2,
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Attempts",
+          "type": "integer"
+        },
+        "delay_seconds": {
+          "default": 1,
+          "maximum": 30,
+          "minimum": 0,
+          "title": "Delay Seconds",
+          "type": "number"
+        },
+        "invalid_model_response": {
+          "default": false,
+          "title": "Invalid Model Response",
+          "type": "boolean"
+        }
+      },
+      "title": "RetryPolicy",
+      "type": "object"
+    },
+    "TimeoutPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "run_seconds": {
+          "default": 900,
+          "maximum": 86400,
+          "minimum": 1,
+          "title": "Run Seconds",
+          "type": "integer"
+        },
+        "model_seconds": {
+          "default": 45,
+          "exclusiveMinimum": 0,
+          "maximum": 120,
+          "title": "Model Seconds",
+          "type": "number"
+        }
+      },
+      "title": "TimeoutPolicy",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Optional operational overrides; safe defaults apply when omitted.",
+  "properties": {
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "calls": {
+      "$ref": "#/$defs/CallPolicy"
+    },
+    "retries": {
+      "$ref": "#/$defs/RetryPolicy"
+    },
+    "timeouts": {
+      "$ref": "#/$defs/TimeoutPolicy"
+    },
+    "guardrails": {
+      "$ref": "#/$defs/GuardrailPolicy"
+    },
+    "artifact_security": {
+      "$ref": "#/$defs/ArtifactSecurityConfig"
+    },
+    "observability": {
+      "discriminator": {
+        "mapping": {
+          "disabled": "#/$defs/DisabledObservability",
+          "langsmith": "#/$defs/LangSmithObservability"
+        },
+        "propertyName": "provider"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/DisabledObservability"
+        },
+        {
+          "$ref": "#/$defs/LangSmithObservability"
+        }
+      ],
+      "title": "Observability"
+    }
+  },
+  "title": "Coordinator runtime policy",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
