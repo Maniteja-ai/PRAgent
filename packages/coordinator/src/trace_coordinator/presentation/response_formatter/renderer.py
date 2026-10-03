@@ -1,28 +1,7 @@
-"""Validated Markdown rendering with optional LLM-written prose."""
+"""Render validated report facts and optional validated narrative as Markdown."""
 
-import logging
-
-from trace_coordinator.application.interfaces import ReportWriter
 from trace_coordinator.domain.contracts import AnalysisReportPayload
 from trace_coordinator.domain.models import ReportNarrative
-
-LOGGER = logging.getLogger(__name__)
-
-
-class ReportService:
-    """Improve prose when a writer is available; always preserve deterministic output."""
-
-    def __init__(self, writer: ReportWriter | None = None) -> None:
-        self.writer = writer
-
-    def render(self, report: AnalysisReportPayload) -> str:
-        narrative: ReportNarrative | None = None
-        if self.writer:
-            try:
-                narrative = self.writer.write(report)
-            except Exception as exc:
-                LOGGER.warning("Optional report writer failed; using template: %s", type(exc).__name__)
-        return markdown(report, narrative)
 
 
 def _template_summary(report: AnalysisReportPayload) -> str:
@@ -35,7 +14,7 @@ def _template_summary(report: AnalysisReportPayload) -> str:
     )
 
 
-def markdown(report: AnalysisReportPayload, narrative: ReportNarrative | None = None) -> str:
+def render_markdown(report: AnalysisReportPayload, narrative: ReportNarrative | None = None) -> str:
     lines = [
         "# PR impact analysis",
         "",
@@ -77,12 +56,7 @@ def markdown(report: AnalysisReportPayload, narrative: ReportNarrative | None = 
                 ]
             )
         if report.get("follow_up"):
-            lines.extend(
-                [
-                    f"Linked parent run: {report['follow_up']['parent_run_id']}",
-                    "",
-                ]
-            )
+            lines.extend([f"Linked parent run: {report['follow_up']['parent_run_id']}", ""])
     behavior = report.get("behavior_verification")
     if behavior and behavior["status"] != "NOT_RUN":
         lines.extend(

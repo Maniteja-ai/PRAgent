@@ -17,6 +17,7 @@ from pydantic import Field, TypeAdapter, field_validator
 
 from trace_coordinator.domain.contracts import AnalysisReportPayload, JsonObject, as_json_object
 from trace_coordinator.domain.models import AnalysisRequest, Record
+from trace_coordinator.presentation.response_formatter.interface import ResponseFormatter
 
 
 class WebhookJobPayload(TypedDict):
@@ -48,10 +49,6 @@ class TokenProvider(Protocol):
 
 class CommentPublisher(Protocol):
     def publish(self, job: ClaimedJobPayload, body: str) -> JsonObject: ...
-
-
-class ReportRenderer(Protocol):
-    def render(self, report: AnalysisReportPayload) -> str: ...
 
 
 _REPORT_ADAPTER = TypeAdapter(AnalysisReportPayload)
@@ -413,9 +410,9 @@ def run_next_job(
     publisher: CommentPublisher | None = None,
     auth: TokenProvider | None = None,
     github_client: Any | None = None,
-    report_service: ReportRenderer | None = None,
+    response_formatter: ResponseFormatter | None = None,
 ) -> JsonObject:
-    from trace_coordinator.bootstrap import create_coordinator, create_report_service
+    from trace_coordinator.bootstrap import create_coordinator, create_response_formatter
 
     config = load_webhook_config(config_path)
     store = WebhookStore(config.database_file)
@@ -465,11 +462,11 @@ def run_next_job(
             report = _REPORT_ADAPTER.validate_python(coordinator.run(request, job["run_id"]))
         report_path = output / "report.json"
         report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-        if report_service is None:
-            with create_report_service(Path(config.coordinator_config_file)) as reports:
-                rendered = reports.render(report)
+        if response_formatter is None:
+            with create_response_formatter(Path(config.coordinator_config_file)) as formatter:
+                rendered = formatter.format(report)
         else:
-            rendered = report_service.render(report)
+            rendered = response_formatter.format(report)
         (output / "report.md").write_text(rendered, encoding="utf-8")
         if config.publish == "comment":
             if publisher is None:

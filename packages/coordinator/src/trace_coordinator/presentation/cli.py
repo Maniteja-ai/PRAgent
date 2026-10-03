@@ -6,7 +6,7 @@ from pathlib import Path
 
 from pydantic import TypeAdapter
 
-from trace_coordinator.bootstrap import create_coordinator, create_report_service
+from trace_coordinator.bootstrap import create_coordinator, create_response_formatter
 from trace_coordinator.config import schema
 from trace_coordinator.domain.contracts import AnalysisReportPayload, VerificationResultPayload
 from trace_coordinator.domain.models import AnalysisRequest, ReviewResponse
@@ -238,8 +238,8 @@ def main() -> None:
         analysis_report = TypeAdapter(AnalysisReportPayload).validate_python(
             coordinator.run(request, args.run_id, review=review)
         )
-    with create_report_service(args.config) as reports:
-        rendered_report = reports.render(analysis_report)
+    with create_response_formatter(args.config) as formatter:
+        rendered_report = formatter.format(analysis_report)
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / "report.json").write_text(json.dumps(analysis_report, indent=2) + "\n", encoding="utf-8")
     (args.output / "report.md").write_text(rendered_report, encoding="utf-8")

@@ -153,21 +153,21 @@
       "title": "OpenAIProvider",
       "type": "object"
     },
-    "ReportConfig": {
+    "ResponseFormatterConfig": {
       "additionalProperties": false,
       "properties": {
-        "writer": {
+        "provider": {
           "default": "template",
-          "description": "template renders validated facts without another model call; llm improves only the summary and finding explanations and falls back to the template on failure.",
+          "description": "template renders validated facts without another model call; llm improves the summary and finding explanations, with automatic template fallback.",
           "enum": [
             "template",
             "llm"
           ],
-          "title": "Writer",
+          "title": "Provider",
           "type": "string"
         }
       },
-      "title": "ReportConfig",
+      "title": "ResponseFormatterConfig",
       "type": "object"
     },
     "UIExplorationConfig": {
@@ -308,8 +308,8 @@
     "human_review": {
       "$ref": "#/$defs/HumanReviewPolicy"
     },
-    "report": {
-      "$ref": "#/$defs/ReportConfig"
+    "response_formatter": {
+      "$ref": "#/$defs/ResponseFormatterConfig"
     },
     "model": {
       "discriminator": {

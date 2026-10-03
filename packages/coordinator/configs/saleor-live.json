@@ -11,8 +11,8 @@
     "max_output_tokens": 4000,
     "max_input_chars": 120000
   },
-  "report": {
-    "writer": "llm"
+  "response_formatter": {
+    "provider": "llm"
   },
   "ui_exploration": {
     "enabled": true,

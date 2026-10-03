@@ -181,9 +181,9 @@ def test_full_graph_integrates_results_using_same_run_and_ledger(setup, tmp_path
     )
     assert not (tmp_path / "standalone-unused").exists()
     assert build().run(request, "run") == result and calls == ["factory"]
-    from trace_coordinator.presentation.report_formatter import markdown
+    from trace_coordinator.presentation.response_formatter import TemplateResponseFormatter
 
-    rendered = markdown(result)
+    rendered = TemplateResponseFormatter().format(result)
     assert (
         "Observed behavioral checks" in rendered
         and "| baseline | Eligible voucher reaches backend | FAIL |" in rendered
@@ -236,9 +236,9 @@ def test_non_blocking_approval_and_linked_late_verification_preserve_run_contrac
     assert question["kind"] == "verification_approval"
     assert question["scenario_id"] == "voucher"
     assert "Approve scenario voucher" in question["question"]
-    from trace_coordinator.presentation.report_formatter import markdown
+    from trace_coordinator.presentation.response_formatter import TemplateResponseFormatter
 
-    assert question["question"] in markdown(original)
+    assert question["question"] in TemplateResponseFormatter().format(original)
     assert not calls
     usage_before = {row["tool"]: row["attempts"] for row in original["tool_usage"]}
     evidence_before = original["evidence"]

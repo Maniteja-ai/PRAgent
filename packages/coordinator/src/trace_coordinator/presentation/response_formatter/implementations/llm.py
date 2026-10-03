@@ -1,4 +1,4 @@
-"""One-call LLM writer for reviewer-friendly report prose."""
+"""One-call LLM response formatter for reviewer-friendly report prose."""
 
 from typing import Any
 
@@ -7,6 +7,8 @@ from trace_coordinator.domain.contracts import AnalysisReportPayload
 from trace_coordinator.domain.models import ReportNarrative
 from trace_coordinator.infrastructure.adapters.langchain_model import create_chat_model
 from trace_coordinator.infrastructure.ledger import canonical
+from trace_coordinator.presentation.response_formatter.interface import ResponseFormatter
+from trace_coordinator.presentation.response_formatter.renderer import render_markdown
 
 REPORT_PROMPT = """Rewrite a validated PR impact analysis for a software reviewer.
 
@@ -45,7 +47,7 @@ def _writing_input(report: AnalysisReportPayload) -> dict[str, object]:
     }
 
 
-class LangChainReportWriter:
+class LlmResponseFormatter(ResponseFormatter):
     def __init__(
         self,
         config: GeminiProvider | OpenAIProvider,
@@ -56,17 +58,17 @@ class LangChainReportWriter:
         self.client = client or create_chat_model(config)
         self.structured = self.client.with_structured_output(ReportNarrative, method="json_schema")
 
-    def write(self, report: AnalysisReportPayload) -> ReportNarrative:
+    def format(self, report: AnalysisReportPayload) -> str:
         content = canonical(_writing_input(report))
         if len(REPORT_PROMPT) + len(content) > self.max_input_chars:
-            raise ValueError("Report writing input exceeds the configured model context limit")
+            raise ValueError("Response formatting input exceeds the configured model context limit")
         response = self.structured.invoke([("system", REPORT_PROMPT), ("human", content)])
         narrative = ReportNarrative.model_validate(response)
         positions = [item.position for item in narrative.findings]
         expected = list(range(len(report.get("findings", []))))
         if positions != expected:
-            raise ValueError("Report writer did not return one ordered explanation per finding")
-        return narrative
+            raise ValueError("LLM formatter did not return one ordered explanation per finding")
+        return render_markdown(report, narrative)
 
     def close(self) -> None:
         for name in ("root_client", "client"):

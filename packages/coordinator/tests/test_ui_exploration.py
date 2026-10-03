@@ -209,9 +209,9 @@ def test_no_invented_flow_across_restart_or_environments():
 
 
 def test_ui_exploration_report_explains_paths_and_unconfirmed_candidates():
-    from trace_coordinator.presentation.report_formatter import markdown
+    from trace_coordinator.presentation.response_formatter import TemplateResponseFormatter
 
-    result = markdown(
+    result = TemplateResponseFormatter().format(
         {
             "status": "COMPLETED",
             "tool_usage": [],

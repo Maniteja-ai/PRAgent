@@ -9,12 +9,12 @@ from trace_coordinator.config import load_config
 from trace_coordinator.infrastructure.factories import (
     BootstrapContext,
     ModelFactory,
-    ReportWriterFactory,
+    ResponseFormatterFactory,
     ScenarioFactory,
     ToolFactory,
 )
 from trace_coordinator.infrastructure.observability import CoordinatorObservability
-from trace_coordinator.presentation.report_formatter import ReportService
+from trace_coordinator.presentation.response_formatter import ResponseFormatter
 from trace_coordinator.security.artifact_security import artifact_security
 
 
@@ -47,8 +47,8 @@ def create_coordinator(config_path: Path) -> Iterator[Coordinator]:
 
 
 @contextmanager
-def create_report_service(config_path: Path) -> Iterator[ReportService]:
-    """Create the configured report writer independently from the analysis graph."""
+def create_response_formatter(config_path: Path) -> Iterator[ResponseFormatter]:
+    """Create the configured response formatter independently from the analysis graph."""
 
     path = config_path.resolve()
     config = load_config(path)
@@ -57,5 +57,4 @@ def create_report_service(config_path: Path) -> Iterator[ReportService]:
 
         load_dotenv(path.parent / config.env_file, override=False)
     with ExitStack() as resources:
-        writer = ReportWriterFactory(resources).create(config.report, config.model)
-        yield ReportService(writer)
+        yield ResponseFormatterFactory(resources).create(config.response_formatter, config.model)

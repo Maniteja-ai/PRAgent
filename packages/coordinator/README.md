@@ -375,6 +375,7 @@ Current evidence:
 | `security/` | Model guardrails and pluggable artifact DLP enforcement |
 | `evaluation/` | Golden, real-PR, live-model, campaign and release-gate evaluation |
 | `presentation/` | CLI commands and validated Markdown rendering with deterministic fallback |
+| `presentation/response_formatter/` | One formatter interface and separate template, LLM and fallback implementations |
 | `config.py`, `bootstrap.py` | Strict configuration schemas and dependency construction |
 
 Plain JSON is limited to provider, webhook, checkpoint and artifact boundaries. Those values are
