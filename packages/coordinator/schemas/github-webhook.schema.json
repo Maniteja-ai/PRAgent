@@ -1,0 +1,143 @@
+{
+  "$defs": {
+    "GitHubAppAuth": {
+      "additionalProperties": false,
+      "properties": {
+        "app_id_env": {
+          "default": "GITHUB_APP_ID",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "title": "App Id Env",
+          "type": "string"
+        },
+        "private_key_env": {
+          "default": "GITHUB_APP_PRIVATE_KEY",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "title": "Private Key Env",
+          "type": "string"
+        },
+        "private_key_file_env": {
+          "default": "GITHUB_APP_PRIVATE_KEY_FILE",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "title": "Private Key File Env",
+          "type": "string"
+        },
+        "api_version": {
+          "default": "2026-03-10",
+          "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}$",
+          "title": "Api Version",
+          "type": "string"
+        }
+      },
+      "title": "GitHubAppAuth",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "webhook_secret_env": {
+      "default": "GITHUB_WEBHOOK_SECRET",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+      "title": "Webhook Secret Env",
+      "type": "string"
+    },
+    "allowed_repositories": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "title": "Allowed Repositories",
+      "type": "array"
+    },
+    "accepted_actions": {
+      "default": [
+        "opened",
+        "reopened",
+        "synchronize",
+        "ready_for_review"
+      ],
+      "items": {
+        "enum": [
+          "opened",
+          "reopened",
+          "synchronize",
+          "ready_for_review"
+        ],
+        "type": "string"
+      },
+      "title": "Accepted Actions",
+      "type": "array"
+    },
+    "database_file": {
+      "title": "Database File",
+      "type": "string"
+    },
+    "coordinator_config_file": {
+      "title": "Coordinator Config File",
+      "type": "string"
+    },
+    "output_directory": {
+      "title": "Output Directory",
+      "type": "string"
+    },
+    "project_id": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Project Id",
+      "type": "string"
+    },
+    "question": {
+      "default": "Which UI flows and requirements could this PR affect?",
+      "maxLength": 4000,
+      "title": "Question",
+      "type": "string"
+    },
+    "publish": {
+      "default": "disabled",
+      "enum": [
+        "disabled",
+        "comment"
+      ],
+      "title": "Publish",
+      "type": "string"
+    },
+    "github_app": {
+      "$ref": "#/$defs/GitHubAppAuth"
+    },
+    "max_payload_bytes": {
+      "default": 1000000,
+      "maximum": 10000000,
+      "minimum": 1000,
+      "title": "Max Payload Bytes",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "allowed_repositories",
+    "database_file",
+    "coordinator_config_file",
+    "output_directory",
+    "project_id"
+  ],
+  "title": "GitHub webhook integration",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

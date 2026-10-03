@@ -1,0 +1,39 @@
+{
+  "at": "2026-10-02T12:11:29.475360+00:00",
+  "publication": {
+    "graph_id": "0ee1e79541baa31323dcbe2235403d62",
+    "nodes": 2101,
+    "edges": 5365,
+    "sha256": "fa1ffd4b23d2d1f1aa26582301f28f3dd8cc9d0b37251d4684688b4a7d588955"
+  },
+  "query": {
+    "changed_files": [
+      "src/checkout/views/saleor-checkout/order-summary.tsx",
+      "src/checkout/views/saleor-checkout/saleor-checkout.tsx"
+    ],
+    "scope": {
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "max_dependency_hops": 3,
+      "mapping_statuses": [
+        "CONFIRMED"
+      ]
+    }
+  },
+  "result_status": "UNMAPPED",
+  "affected_symbols": 43,
+  "affected_files": [
+    "src/checkout/root.tsx",
+    "src/checkout/views/order-confirmation/index.tsx",
+    "src/checkout/views/order-confirmation/order-confirmation.tsx",
+    "src/checkout/views/root-views.tsx",
+    "src/checkout/views/saleor-checkout/index.tsx",
+    "src/checkout/views/saleor-checkout/order-summary.tsx",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx"
+  ],
+  "ui_flows": 0,
+  "mapping_coverage": "NOT_EVALUATED",
+  "query_seconds": 0.9260349000105634,
+  "diagnostics": 338,
+  "real_ui_mappings_available": false
+}

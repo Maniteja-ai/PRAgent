@@ -1,0 +1,3 @@
+{"id":"demo-1","input":{"query":"Which code handles a discount?"},"reference":{"expected_ids":["discount-handler","order-summary"]},"review":{"approved":false}}
+{"id":"demo-2","input":{"query":"Where is guest checkout attached?"},"reference":{"expected_ids":["attach-customer"]},"review":{"approved":false}}
+{"id":"demo-3","input":{"query":"Which flows are affected by an empty change?"},"reference":{"expected_ids":[]},"review":{"approved":false}}

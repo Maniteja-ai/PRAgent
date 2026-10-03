@@ -1,0 +1,233 @@
+{
+  "query": "After setting a shipping address, how do I fetch available delivery methods?",
+  "scope": {
+    "project_id": "saleor-excerpt-evaluation",
+    "run_id": "saleor-excerpts-v1"
+  },
+  "candidates": [
+    {
+      "id": "P13",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "shipping-address",
+      "text": "#### Shipping Methods[\u200b](#shipping-methods \"Direct link to Shipping Methods\")\n\nAfter choosing the shipping address, use the [`deliveryOptionsCalculate`](/api-reference/shipping/mutations/delivery-options-calculate) mutation to explicitly fetch available delivery methods.\n",
+      "artifact_path": "review/sources/shipping-address.md",
+      "retrieval_score": 0.8289682536397152,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/address",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P14",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "shipping-address",
+      "text": "### Selecting the Delivery Method[\u200b](#selecting-the-delivery-method \"Direct link to Selecting the Delivery Method\")\n\nUse the [`checkoutDeliveryMethodUpdate`](/api-reference/checkout/mutations/checkout-delivery-method-update) mutation to effectively pair the specific [`Checkout`](/api-reference/checkout/objects/checkout) object with the specified delivery method selected by the user.\n\nThis operation requires the following input:\n\n* `id`: the checkout ID (the `id` field of the [`Checkout`](/api-reference/checkout/objects/checkout) object).\n* `deliveryMethodId`: the shipping method ID or Warehouse ID (`delivery` from the `deliveryOptionsCalculate` mutation or `availableCollectionPoints` field of the [`Checkout`](/api-reference/checkout/objects/checkout) object).\n",
+      "artifact_path": "review/sources/shipping-address.md",
+      "retrieval_score": 0.7515673219425392,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/address",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P11",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "shipping-address",
+      "text": "## Shipping[\u200b](#shipping \"Direct link to Shipping\")\n\nThis step is only used if purchased items require shipping (if they are physical products). The user must select a specific shipping method to create shipping for this checkout. To signify whether shipping is required, use the `isShippingRequired` field in the [`Checkout`](/api-reference/checkout/objects/checkout) object.\n",
+      "artifact_path": "review/sources/shipping-address.md",
+      "retrieval_score": 0.6788410120733328,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/address",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P24",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Shipping method removal invalidates shipping voucher[\u200b](#shipping-method-removal-invalidates-shipping-voucher \"Direct link to Shipping method removal invalidates shipping voucher\")\n\n**Scenario:**\n\n1. Checkout has 2 lines and a shipping method assigned.\n2. A shipping voucher is applied.\n3. One checkout line is removed.\n4. The assigned shipping method is no longer valid for the updated checkout (e.g., weight, location, or product eligibility changes).\n5. The shipping method is automatically removed from the checkout.\n\nSince the shipping method is removed, the shipping voucher is also automatically unassigned.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.6535663416034643,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P23",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Shipping Voucher[\u200b](#shipping-voucher \"Direct link to Shipping Voucher\")\n\nTo apply a shipping voucher, the checkout must include shippable products, a provided shipping address, and a shipping method assigned.\n\nIn this example the checkout consists of one line for **$100**, shipping price for **$20** and **50%** shipping voucher.\nThe discount affects shipping price only.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.6519303902527087,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P07",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "checkout",
+      "text": "## Multiple Channels and Checkout[\u200b](#multiple-channels-and-checkout \"Direct link to Multiple Channels and Checkout\")\n\nDepending on the chosen channel, the user will have access to different objects. This impacts available:\n\n* Products and Product Variants\n* Payment Gateways\n* Shipping Methods\n* Collection Points\n* Discounts\n\n[Learn more about using multiple channels](/developer/channels/overview).\n",
+      "artifact_path": "review/sources/checkout.md",
+      "retrieval_score": 0.648084518041462,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/overview",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P12",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "shipping-address",
+      "text": "### Default Address[\u200b](#default-address \"Direct link to Default Address\")\n\nCustomers with accounts can set up default addresses, which will be attached automatically during the checkout creation. More information on API reference page for [accountSetDefaultAddress](/api-reference/users/mutations/account-set-default-address).\n\n#### Changing the Default Address During Checkout[\u200b](#changing-the-default-address-during-checkout \"Direct link to Changing the Default Address During Checkout\")\n\nTo change your default address during checkout:\n\n1. Select a previously saved address or create a new one.\n2. Use the [accountSetDefaultAddress](/api-reference/users/mutations/account-set-default-address) mutation to update your default shipping or billing address.\n3. Call [`checkoutShippingAddressUpdate`](/api-reference/checkout/mutations/checkout-shipping-address-update) and/or [`checkoutBillingAddressUpdate`](/api-reference/checkout/mutations/checkout-billing-address-update) to apply the selected address to the current checkout.\n\nThis process ensures that the address you want to use is both set as your account default and applied to the ongoing checkout.\n",
+      "artifact_path": "review/sources/shipping-address.md",
+      "retrieval_score": 0.6469577631598562,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/address",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P21",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "### Limit Shipping Vouchers to Specific Countries[\u200b](#limit-shipping-vouchers-to-specific-countries \"Direct link to Limit Shipping Vouchers to Specific Countries\")\n\n`Voucher.countries` defines a list of countries where the shipping voucher can be applied.\n\n* If set, the voucher will only be valid for orders shipping to the specified countries.\n* If left empty, the voucher will be valid for all countries.\n\n**Example:**\n\n```\n{  \n  \"countries\": [\"US\", \"CA\", \"GB\"]  \n}\n```\n\nIn this example, the voucher is only valid for shipments to the United States, Canada, and the United Kingdom.\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.6406357660143643,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P16",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "## Types[\u200b](#types \"Direct link to Types\")\n\nVouchers come in three types:\n\n* `ENTIRE_ORDER`: Applies discount to the checkout subtotal\n* `SPECIFIC_PRODUCT`: Applies discount to eligible product unit prices. You define eligibility by linking products, variants, categories, or collections.\n* `SHIPPING`: Applies discount to shipping costs. To apply a shipping voucher, the checkout must include shippable products, shipping address, and a shipping method assigned.\n\nVouchers also have two value types:\n\n* `FIXED`: Reduces price by a specific amount\n* `PERCENTAGE`: Reduces price by a specific percentage\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.6222883225136069,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P25",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Subtotal change invalidates minimum spent voucher[\u200b](#subtotal-change-invalidates-minimum-spent-voucher \"Direct link to Subtotal change invalidates minimum spent voucher\")\n\n**Scenario:**\n\n1. Checkout has 2 lines and a valid shipping method assigned.\n2. A voucher with a minimum spent amount condition is applied.\n3. One line is removed from the checkout.\n4. The checkout subtotal drops below the voucher\u2019s minimum requirement.\n\nThe voucher is automatically removed, but the shipping method remains assigned.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.6208169182380662,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    }
+  ],
+  "ranking": {
+    "score_kind": "gemini-relevance-v1",
+    "scores": [
+      {
+        "id": "P13",
+        "score": 3.0,
+        "quote": "After choosing the shipping address, use the [`deliveryOptionsCalculate`](/api-reference/shipping/mutations/delivery-options-calculate) mutation to explicitly fetch available delivery methods."
+      },
+      {
+        "id": "P12",
+        "score": 2.0,
+        "quote": ""
+      },
+      {
+        "id": "P14",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "P11",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "P23",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "P07",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "P16",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "P24",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P21",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P25",
+        "score": 0.0,
+        "quote": ""
+      }
+    ],
+    "usage": {
+      "input_tokens": 1698,
+      "output_tokens": 349,
+      "total_tokens": 2047
+    }
+  },
+  "selection": {
+    "ids": [
+      "P13"
+    ],
+    "reason": "relevance_threshold",
+    "limit_reached": false
+  },
+  "status": "EVIDENCE_FOUND",
+  "coverage": "NOT_EVALUATED",
+  "timings_ms": {
+    "retrieve": 0.13250000483822078,
+    "rerank": 11995.797099996707,
+    "select": 0.1914000022225082
+  }
+}

@@ -1,0 +1,346 @@
+{
+  "$defs": {
+    "BrowserOptions": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "headless": {
+          "default": true,
+          "title": "Headless",
+          "type": "boolean"
+        },
+        "timeout_seconds": {
+          "default": 30,
+          "maximum": 120,
+          "minimum": 1,
+          "title": "Timeout Seconds",
+          "type": "integer"
+        },
+        "settle_ms": {
+          "default": 500,
+          "maximum": 3000,
+          "minimum": 0,
+          "title": "Settle Ms",
+          "type": "integer"
+        },
+        "max_elements": {
+          "default": 80,
+          "maximum": 200,
+          "minimum": 1,
+          "title": "Max Elements",
+          "type": "integer"
+        },
+        "max_text_chars": {
+          "default": 16000,
+          "maximum": 30000,
+          "minimum": 1000,
+          "title": "Max Text Chars",
+          "type": "integer"
+        },
+        "max_dom_chars": {
+          "default": 300000,
+          "maximum": 1000000,
+          "minimum": 1000,
+          "title": "Max Dom Chars",
+          "type": "integer"
+        },
+        "allowed_button_names": {
+          "default": [],
+          "description": "Exact visible/accessible names authorized for button clicks.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Button Names",
+          "type": "array"
+        },
+        "allowed_button_test_ids": {
+          "default": [],
+          "description": "Exact observed data-testid values allowed for buttons whose accessible name changes (for example cart item counts).",
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Button Test Ids",
+          "type": "array"
+        },
+        "allowed_field_names": {
+          "default": [],
+          "description": "Exact labels or placeholders permitted for fill/select actions.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Field Names",
+          "type": "array"
+        },
+        "readiness_checks": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional route-prefix -> visible Playwright locator. Wait before capture; longest matching prefix wins. Uses the browser timeout, never clicks or fills.",
+          "title": "Readiness Checks",
+          "type": "object"
+        }
+      },
+      "title": "BrowserOptions",
+      "type": "object"
+    },
+    "Deployment": {
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "revision": {
+          "pattern": "^[a-f0-9]{40}$",
+          "title": "Revision",
+          "type": "string"
+        },
+        "entry_path": {
+          "default": "/",
+          "title": "Entry Path",
+          "type": "string"
+        },
+        "attestation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RuntimeAttestation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "url",
+        "revision"
+      ],
+      "title": "Deployment",
+      "type": "object"
+    },
+    "GitHubSource": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "const": "github",
+          "default": "github",
+          "title": "Provider",
+          "type": "string"
+        }
+      },
+      "title": "GitHubSource",
+      "type": "object"
+    },
+    "LocalGitSource": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "const": "local_git",
+          "default": "local_git",
+          "title": "Provider",
+          "type": "string"
+        },
+        "pull_request": {
+          "description": "User-supplied PR label; not verified against GitHub.",
+          "exclusiveMinimum": 0,
+          "title": "Pull Request",
+          "type": "integer"
+        },
+        "base_revision": {
+          "description": "Full commit ID already present in the local repository.",
+          "pattern": "^[a-f0-9]{40}$",
+          "title": "Base Revision",
+          "type": "string"
+        },
+        "head_revision": {
+          "description": "Full commit ID of the proposed change, already present locally.",
+          "pattern": "^[a-f0-9]{40}$",
+          "title": "Head Revision",
+          "type": "string"
+        },
+        "historical_replay": {
+          "default": false,
+          "description": "User-supplied replay label; no remote status lookup.",
+          "title": "Historical Replay",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "pull_request",
+        "base_revision",
+        "head_revision"
+      ],
+      "title": "LocalGitSource",
+      "type": "object"
+    },
+    "RuntimeAttestation": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "default": "/api/trace-build",
+          "description": "Same-origin JSON endpoint that reports the running build and backend identity.",
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "title": "RuntimeAttestation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "schema_version": {
+      "default": 1,
+      "maximum": 1,
+      "minimum": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "repository": {
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
+      "title": "Repository",
+      "type": "string"
+    },
+    "repository_path": {
+      "title": "Repository Path",
+      "type": "string"
+    },
+    "change_source": {
+      "description": "Where revision identities come from. local_git makes no GitHub requests or automatic fetches.",
+      "discriminator": {
+        "mapping": {
+          "github": "#/$defs/GitHubSource",
+          "local_git": "#/$defs/LocalGitSource"
+        },
+        "propertyName": "provider"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/LocalGitSource"
+        },
+        {
+          "$ref": "#/$defs/GitHubSource"
+        }
+      ],
+      "title": "Change Source"
+    },
+    "graph_snapshot_file": {
+      "title": "Graph Snapshot File",
+      "type": "string"
+    },
+    "head_graph_snapshot_file": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Head Graph Snapshot File"
+    },
+    "ingestion_run_directory": {
+      "title": "Ingestion Run Directory",
+      "type": "string"
+    },
+    "retrieval_config_file": {
+      "title": "Retrieval Config File",
+      "type": "string"
+    },
+    "vector_directory": {
+      "title": "Vector Directory",
+      "type": "string"
+    },
+    "baseline": {
+      "$ref": "#/$defs/Deployment"
+    },
+    "patched": {
+      "$ref": "#/$defs/Deployment"
+    },
+    "github_token_env": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Github Token Env"
+    },
+    "github_timeout_seconds": {
+      "default": 30,
+      "maximum": 120,
+      "minimum": 1,
+      "title": "Github Timeout Seconds",
+      "type": "integer"
+    },
+    "git_timeout_seconds": {
+      "default": 45,
+      "maximum": 120,
+      "minimum": 1,
+      "title": "Git Timeout Seconds",
+      "type": "integer"
+    },
+    "max_changed_files": {
+      "default": 100,
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Max Changed Files",
+      "type": "integer"
+    },
+    "max_patch_chars": {
+      "default": 50000,
+      "maximum": 55000,
+      "minimum": 1000,
+      "title": "Max Patch Chars",
+      "type": "integer"
+    },
+    "production_mode": {
+      "default": false,
+      "description": "Fail before analysis unless both HTTPS deployments attest their exact revisions.",
+      "title": "Production Mode",
+      "type": "boolean"
+    },
+    "browser": {
+      "$ref": "#/$defs/BrowserOptions"
+    }
+  },
+  "required": [
+    "project_id",
+    "repository",
+    "repository_path",
+    "graph_snapshot_file",
+    "ingestion_run_directory",
+    "retrieval_config_file",
+    "vector_directory",
+    "baseline",
+    "patched"
+  ],
+  "title": "ApplicationConfig",
+  "type": "object",
+  "": "https://json-schema.org/draft/2020-12/schema"
+}

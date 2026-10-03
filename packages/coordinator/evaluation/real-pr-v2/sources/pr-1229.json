@@ -1,0 +1,19 @@
+{
+  "base_revision": "546f389a72bd28767cd2a0457530eee870a14ed4",
+  "evidence": [
+    {
+      "additions": 1,
+      "deletions": 1,
+      "id": "github:pr:1229:file:src/ui/components/pdp/variant-selection/renderers/button-option.tsx",
+      "patch": "@@ -59,7 +59,7 @@ export function ButtonOption({\n \t\t\t\t\taria-disabled={isOutOfStock || isPending}\n \t\t\t\t\tstyle={{ minWidth }}\n \t\t\t\t\tclassName={cn(\n-\t\t\t\t\t\t\"h-12 rounded-lg border px-4 text-sm font-medium transition-all\",\n+\t\t\t\t\t\t\"inline-flex h-12 items-center justify-center rounded-lg border px-4 text-sm font-medium transition-all\",\n \t\t\t\t\t\t\"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2\",\n \t\t\t\t\t\tisSelected\n \t\t\t\t\t\t\t? \"border-foreground bg-foreground text-background\"",
+      "path": "src/ui/components/pdp/variant-selection/renderers/button-option.tsx",
+      "status": "modified"
+    }
+  ],
+  "head_revision": "1f4e12a8ad4df9a742e5af30c1b4cc8cd6941a44",
+  "merged_at": "2026-07-24T08:30:32Z",
+  "pull_request": 1229,
+  "repository": "saleor/storefront",
+  "title": "Center labels in PDP variant option buttons",
+  "url": "https://github.com/saleor/storefront/pull/1229"
+}

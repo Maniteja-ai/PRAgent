@@ -1,4 +1,4 @@
-name: Ingestion checks
+name: Library checks
 on:
   push:
   pull_request:
@@ -10,6 +10,16 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           version: "0.12.10"
-      - run: uv sync --locked --extra openai --extra gemini --extra vector --python 3.12
-      - run: uv run ruff check src tests examples
-      - run: uv run pytest -q -m 'not integration'
+      - run: uv sync --locked --extra openai --extra gemini --extra vector --extra reranking --extra evals --python 3.12
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: src/trace_impact/ingestion/code/typescript
+      - run: uv run --no-sync ruff check src tests examples
+      - run: uv run --no-sync pytest -q -m 'not integration' --cov=trace_impact --cov-branch --cov-report=term-missing --cov-report=xml:artifacts/testing/coverage.xml --junitxml=artifacts/testing/offline.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: library-test-reports
+          path: artifacts/testing/

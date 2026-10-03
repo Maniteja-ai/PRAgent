@@ -1,0 +1,233 @@
+{
+  "query": "Does shipping count toward the minimum spend for a voucher?",
+  "scope": {
+    "project_id": "saleor-excerpt-evaluation",
+    "run_id": "saleor-excerpts-v1"
+  },
+  "candidates": [
+    {
+      "id": "P19",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "### Minimal Order Value[\u200b](#minimal-order-value \"Direct link to Minimal Order Value\")\n\nSpecifies the minimum checkout subtotal required for the voucher to be applicable.\nThe value is defined per sales channel via `VoucherChannelListing.minSpent`.\n\nIf the subtotal does not meet this threshold, the voucher will not be applied.\n\n**Example:** If `minSpent` is set to 100.00, and the subtotal is 95.96 with 10.00 shipping (total 105.96), the voucher will not be applied.\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.793429892556597,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P23",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Shipping Voucher[\u200b](#shipping-voucher \"Direct link to Shipping Voucher\")\n\nTo apply a shipping voucher, the checkout must include shippable products, a provided shipping address, and a shipping method assigned.\n\nIn this example the checkout consists of one line for **$100**, shipping price for **$20** and **50%** shipping voucher.\nThe discount affects shipping price only.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.7838371032092826,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P25",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Subtotal change invalidates minimum spent voucher[\u200b](#subtotal-change-invalidates-minimum-spent-voucher \"Direct link to Subtotal change invalidates minimum spent voucher\")\n\n**Scenario:**\n\n1. Checkout has 2 lines and a valid shipping method assigned.\n2. A voucher with a minimum spent amount condition is applied.\n3. One line is removed from the checkout.\n4. The checkout subtotal drops below the voucher\u2019s minimum requirement.\n\nThe voucher is automatically removed, but the shipping method remains assigned.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.7605183595129912,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P16",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "## Types[\u200b](#types \"Direct link to Types\")\n\nVouchers come in three types:\n\n* `ENTIRE_ORDER`: Applies discount to the checkout subtotal\n* `SPECIFIC_PRODUCT`: Applies discount to eligible product unit prices. You define eligibility by linking products, variants, categories, or collections.\n* `SHIPPING`: Applies discount to shipping costs. To apply a shipping voucher, the checkout must include shippable products, shipping address, and a shipping method assigned.\n\nVouchers also have two value types:\n\n* `FIXED`: Reduces price by a specific amount\n* `PERCENTAGE`: Reduces price by a specific percentage\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.7429875642499613,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P20",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "### Minimal Items Quantity[\u200b](#minimal-items-quantity \"Direct link to Minimal Items Quantity\")\n\n`Voucher.minCheckoutItemsQuantity` specifies the minimum number of products in the cart required to redeem the voucher.\nThis is based on the total quantity of items, not unique products.\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.742093292930679,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P21",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "### Limit Shipping Vouchers to Specific Countries[\u200b](#limit-shipping-vouchers-to-specific-countries \"Direct link to Limit Shipping Vouchers to Specific Countries\")\n\n`Voucher.countries` defines a list of countries where the shipping voucher can be applied.\n\n* If set, the voucher will only be valid for orders shipping to the specified countries.\n* If left empty, the voucher will be valid for all countries.\n\n**Example:**\n\n```\n{  \n  \"countries\": [\"US\", \"CA\", \"GB\"]  \n}\n```\n\nIn this example, the voucher is only valid for shipments to the United States, Canada, and the United Kingdom.\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.7389593316517187,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P17",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "note\n\n**Vouchers vs Gift Cards**\n\nVouchers discount the subtotal, unit price, or shipping based on their type and are scoped to channels.\nGift cards reduce the total price and are currency-based, usable across channels with the same currency.\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.7274936119778188,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P24",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Shipping method removal invalidates shipping voucher[\u200b](#shipping-method-removal-invalidates-shipping-voucher \"Direct link to Shipping method removal invalidates shipping voucher\")\n\n**Scenario:**\n\n1. Checkout has 2 lines and a shipping method assigned.\n2. A shipping voucher is applied.\n3. One checkout line is removed.\n4. The assigned shipping method is no longer valid for the updated checkout (e.g., weight, location, or product eligibility changes).\n5. The shipping method is automatically removed from the checkout.\n\nSince the shipping method is removed, the shipping voucher is also automatically unassigned.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.7218238218681035,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P26",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "## Combining Promotions and Vouchers[\u200b](#combining-promotions-and-vouchers \"Direct link to Combining Promotions and Vouchers\")\n\nCatalogue promotions and vouchers can be combined. In this case, the voucher discount\nis applied to the price after the promotion discount.\nLet's consider an example: the checkout has two items, and the first item is on **$5** fixed promotion.\nA percentage discount of **50%** is being applied to the entire order.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.7134897732498596,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P18",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "### Apply Once Per Order[\u200b](#apply-once-per-order \"Direct link to Apply Once Per Order\")\n\nWhen the `Voucher.applyOncePerOrder` setting is enabled, the discount is applied only once per order, targeting the cheapest item.\nThe discount affects a single unit, not the entire order line.\n\n* For **product-specific vouchers**: applies to the cheapest item included in the discount.\n* For **entire order vouchers**: applies to the cheapest item overall.\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.6982359602277193,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    }
+  ],
+  "ranking": {
+    "score_kind": "cross-encoder-logit-v1:cross-encoder/ms-marco-MiniLM-L6-v2@233902d25c440f23af6f7d6e94d2946bac0bee0a:length=512:overlap=64:aggregation=max",
+    "scores": [
+      {
+        "id": "P25",
+        "score": 2.5962042808532715,
+        "quote": ""
+      },
+      {
+        "id": "P19",
+        "score": 1.2184569835662842,
+        "quote": ""
+      },
+      {
+        "id": "P23",
+        "score": -0.6118842363357544,
+        "quote": ""
+      },
+      {
+        "id": "P21",
+        "score": -2.2375998497009277,
+        "quote": ""
+      },
+      {
+        "id": "P16",
+        "score": -2.391937255859375,
+        "quote": ""
+      },
+      {
+        "id": "P20",
+        "score": -2.7590129375457764,
+        "quote": ""
+      },
+      {
+        "id": "P17",
+        "score": -3.487152338027954,
+        "quote": ""
+      },
+      {
+        "id": "P24",
+        "score": -7.328227996826172,
+        "quote": ""
+      },
+      {
+        "id": "P18",
+        "score": -8.065610885620117,
+        "quote": ""
+      },
+      {
+        "id": "P26",
+        "score": -9.002092361450195,
+        "quote": ""
+      }
+    ],
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  "selection": {
+    "ids": [
+      "P25",
+      "P19"
+    ],
+    "reason": "relevance_threshold",
+    "limit_reached": false
+  },
+  "status": "EVIDENCE_FOUND",
+  "coverage": "NOT_EVALUATED",
+  "timings_ms": {
+    "retrieve": 0.07490000280085951,
+    "rerank": 257.88330000068527,
+    "select": 0.33510000503156334
+  }
+}

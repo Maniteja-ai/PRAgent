@@ -1,0 +1,190 @@
+{
+  "status": "IMPLEMENTED_STAGE_CHECKS_COMPLETE_FULL_EVALUATION_INCOMPLETE",
+  "created_at": "2026-10-02T12:31:58.735203+00:00",
+  "offline": {
+    "tests": 250,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "coverage_combined_percent": 91.22010293672419,
+  "coverage_by_package_percent": {
+    "trace_impact": 90.69130732375086,
+    "trace_eval": 95.2755905511811
+  },
+  "live_initial": {
+    "tests": 4,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "live_repair": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "live_transactions": {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "live_unique_current_passing": 6,
+  "graph_cases": 20,
+  "graph_summary": {
+    "ui_ids": {
+      "report": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\artifacts\\evaluation-runs\\graph\\20261002T122707Z-5429447b\\scores\\ffe250f255e5428287a23031fc4a923d\\report.json",
+      "summary": {
+        "cases": 20,
+        "completed": 20,
+        "completion_rate": 1.0,
+        "positive_cases": 11,
+        "empty_reference_cases": 9,
+        "aggregation_scope": "all scoped cases",
+        "tp": 32,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "evidence_status": "DRAFT_PROVISIONAL",
+        "unjudged_count": 0,
+        "status_mismatches": 0,
+        "quality_gate": "NOT_CONFIGURED",
+        "release_pass": false
+      }
+    },
+    "flow_ids": {
+      "report": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\artifacts\\evaluation-runs\\graph\\20261002T122707Z-5429447b\\scores\\11ee837ac8f344638a651ff7503e1f1b\\report.json",
+      "summary": {
+        "cases": 20,
+        "completed": 20,
+        "completion_rate": 1.0,
+        "positive_cases": 11,
+        "empty_reference_cases": 9,
+        "aggregation_scope": "all scoped cases",
+        "tp": 32,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "evidence_status": "DRAFT_PROVISIONAL",
+        "unjudged_count": 0,
+        "status_mismatches": 0,
+        "quality_gate": "NOT_CONFIGURED",
+        "release_pass": false
+      }
+    },
+    "requirement_ids": {
+      "report": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\artifacts\\evaluation-runs\\graph\\20261002T122707Z-5429447b\\scores\\eecde700034c4c4cbfe4f601d80c1ca7\\report.json",
+      "summary": {
+        "cases": 20,
+        "completed": 20,
+        "completion_rate": 1.0,
+        "positive_cases": 11,
+        "empty_reference_cases": 9,
+        "aggregation_scope": "all scoped cases",
+        "tp": 22,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "evidence_status": "DRAFT_PROVISIONAL",
+        "unjudged_count": 0,
+        "status_mismatches": 0,
+        "quality_gate": "NOT_CONFIGURED",
+        "release_pass": false
+      }
+    },
+    "checks": {
+      "idempotent_publication": true,
+      "immutable_snapshot": true,
+      "witness_validation": "PASS",
+      "fixture_only": true
+    }
+  },
+  "vector_summary": {
+    "cases": 40,
+    "completed": 40,
+    "completion_rate": 1.0,
+    "positive_cases": 35,
+    "empty_reference_cases": 5,
+    "aggregation_scope": "answerable cases only; failures remain in recall denominator",
+    "tp": 41,
+    "fp": 134,
+    "fn": 3,
+    "precision": 0.2342857142857143,
+    "recall": 0.9318181818181818,
+    "f1": 0.3744292237442922,
+    "evidence_status": "DRAFT_PROVISIONAL",
+    "unjudged_count": 0,
+    "status_mismatches": 0,
+    "mean_precision_at_k": 0.23428571428571432,
+    "precision_at_k_eligible_cases": 35,
+    "mean_reciprocal_rank": 0.8952380952380952,
+    "reciprocal_rank_eligible_cases": 35,
+    "mean_ndcg_at_k": 0.8365472574285986,
+    "ndcg_at_k_eligible_cases": 35,
+    "mean_evidence_recall_at_k": 1.0,
+    "evidence_recall_at_k_eligible_cases": 35,
+    "quality_gate": "NOT_CONFIGURED",
+    "release_pass": false
+  },
+  "vector_isolation": [
+    {
+      "decoy": "D01",
+      "retrievable_in_own_scope": true,
+      "excluded_from_target_scope": true,
+      "target_scope_count": 30
+    },
+    {
+      "decoy": "D02",
+      "retrievable_in_own_scope": true,
+      "excluded_from_target_scope": true,
+      "target_scope_count": 30
+    }
+  ],
+  "vector_embedding_cache_sha256": "b933412cccde5f9be739313d7cbcf432b1cd1300ba98471028bbff20e90e3abc",
+  "new_vector_benchmark_embedding_calls": 0,
+  "stability": {
+    "scheduled": 100,
+    "completed": 100,
+    "correct": 100,
+    "completion_rate": 1.0,
+    "correct_rate": 1.0,
+    "distinct_success_outputs": 1,
+    "mean_seconds": 0.6122592200004147,
+    "max_seconds": 0.8775362000014866,
+    "limits": [
+      "One fixed synthetic case, repeated live; not 100 independent scenarios.",
+      "No LLM generation, UI exploration, or end-to-end agent stability measured.",
+      "Labels are development fixtures, not independently reviewed product gold."
+    ]
+  },
+  "reranker_rescores": 12,
+  "reranker_scores_unchanged": true,
+  "failure_contracts": {
+    "safety_invariants_passed": 6,
+    "partial_contract": 1,
+    "not_implemented": 1
+  },
+  "combined_end_to_end_cases_executed": 0,
+  "combined_component_audits": 5,
+  "prior_archived_hashes_verified": 299,
+  "outstanding": [
+    "F02 partial-result reporting; current behavior safely discards partial rows.",
+    "F08 semantic judge and calibrated judge-reference data.",
+    "Five combined graph/document orchestration and answer checks; component evidence was audited only.",
+    "Independent semantic gold for all 121 ingestion chunks, including no-requirement chunks.",
+    "Real code-to-UI mappings, reviewed code relationship gold, UI exploration and final PR report evaluation.",
+    "Independent held-out dataset and full-agent/model repeated-run evaluation."
+  ],
+  "warnings": [
+    "Python 3.14 Google SDK deprecation warning.",
+    "SQLite ResourceWarning reproduced in Qdrant client 1.19.1 temporary connection initialization after explicit client.close(); persistent storage has an explicit close. Dependency unchanged."
+  ],
+  "folder_renames": false
+}

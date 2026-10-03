@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from trace_impact import create_pipeline
-from trace_impact.models import Document, RawDocument
+from trace_impact.ingestion.models import Document, RawDocument
 
 
 class JsonFeatureParser:
@@ -29,7 +29,9 @@ def main():
     root = Path(__file__).resolve().parents[1]
     with create_pipeline() as pipeline:
         pipeline.components.parsers.register("json_features", JsonFeatureParser())
-        run_dir, corpus = pipeline.collect(root / "projects/plugin-example/project.yaml", root / "runs")
+        run_dir, corpus = pipeline.collect(
+            root / "configs/ingestion/plugin-example/project.yaml", root / "runs"
+        )
         if corpus.errors:
             raise RuntimeError("Plugin example failed to collect its source")
         print(f"Custom parser completed: {len(corpus.chunks)} chunks in {run_dir}")

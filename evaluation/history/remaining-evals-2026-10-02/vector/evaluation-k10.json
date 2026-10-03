@@ -1,0 +1,14 @@
+{
+  "dataset": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\evaluation\\datasets\\saleor-retrieval-v0.1\\labels\\vector-cases.jsonl",
+  "predictions": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\artifacts\\evaluation-runs\\live-vector\\20261002T122737Z-cached-regression\\predictions.jsonl",
+  "output_directory": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\artifacts\\evaluation-runs\\live-vector\\20261002T122737Z-cached-regression\\scores",
+  "task": "ranked_retrieval",
+  "k": 10,
+  "reference": {
+    "expected_ids": null,
+    "relevance_grades": "reference.relevance_grades",
+    "candidate_universe": "reference.candidate_universe",
+    "evidence_units": "reference.evidence_units",
+    "complete": true
+  }
+}

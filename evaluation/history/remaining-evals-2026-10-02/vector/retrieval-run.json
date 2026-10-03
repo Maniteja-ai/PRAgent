@@ -1,0 +1,37 @@
+{
+  "profile": {
+    "provider": "gemini",
+    "model": "gemini-embedding-2",
+    "dimensions": 768,
+    "preprocessing": "gemini-embedding-2-search-v1"
+  },
+  "isolated_store_path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\evaluation\\local\\vector-indexes\\d8aab62f56e4",
+  "input_fingerprints": {
+    "passages.jsonl": "87814d9b0f52a35f9f4c50054b14882f365f9d18ce3540ca0d38bfb43c868393",
+    "queries.jsonl": "6fb4d2948aa3a68eef3e5b654d07ac9287f5dc861a9017eef269f04d70bcf84e",
+    "isolation-decoys.jsonl": "9f961a858a7d6e1b0c7c0fca14324b49a4eb5d49f5a50a68ba36f3b806d90bb6"
+  },
+  "passages": 30,
+  "decoys": 2,
+  "queries": 40,
+  "completed": 40,
+  "persistence_verified": true,
+  "isolation_checks": [
+    {
+      "decoy": "D01",
+      "retrievable_in_own_scope": true,
+      "excluded_from_target_scope": true,
+      "target_scope_count": 30
+    },
+    {
+      "decoy": "D02",
+      "retrievable_in_own_scope": true,
+      "excluded_from_target_scope": true,
+      "target_scope_count": 30
+    }
+  ],
+  "application_embed_calls_total": 43,
+  "sdk_max_attempts_per_call": 2,
+  "request_timeout_seconds": 45.0,
+  "requests_per_minute": 10
+}

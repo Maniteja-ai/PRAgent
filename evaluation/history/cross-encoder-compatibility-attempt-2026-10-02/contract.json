@@ -1,0 +1,43 @@
+{
+  "pipeline": {
+    "schema_version": 1,
+    "candidate_limit": 10,
+    "reranker": {
+      "provider": "cross_encoder",
+      "options": {
+        "model": "cross-encoder/ms-marco-MiniLM-L6-v2",
+        "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+        "cache_directory": ".model-cache",
+        "local_files_only": false,
+        "batch_size": 8,
+        "max_length": 512,
+        "max_query_tokens": 128,
+        "overlap_tokens": 64,
+        "max_windows": 256,
+        "max_input_chars": 120000
+      }
+    },
+    "selector": {
+      "provider": "score_threshold",
+      "options": {
+        "score_kind": "cross-encoder-logit-v1:cross-encoder/ms-marco-MiniLM-L6-v2@233902d25c440f23af6f7d6e94d2946bac0bee0a:length=512:overlap=64:aggregation=max",
+        "min_score": 0,
+        "max_results": 5,
+        "deduplicate_text": true
+      }
+    }
+  },
+  "fingerprints": {
+    "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\evaluation\\datasets\\saleor-retrieval-v0.1\\inputs\\vector\\passages.jsonl": "87814d9b0f52a35f9f4c50054b14882f365f9d18ce3540ca0d38bfb43c868393",
+    "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\evaluation\\datasets\\saleor-retrieval-v0.1\\inputs\\vector\\queries.jsonl": "6fb4d2948aa3a68eef3e5b654d07ac9287f5dc861a9017eef269f04d70bcf84e",
+    "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\evaluation\\history\\vector-baseline-2026-10-02\\predictions.jsonl": "7ba4ac26b75967b69dbb8dbf2aadd4fed4b36f4c3f7d4c5f4cfb490b1d9a61e0",
+    "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\evaluation\\history\\vector-baseline-2026-10-02\\diagnostics.json": "a66e7a66c55a8e72c4954640b7b8a709e6dd273e767073c32b214988a812954c",
+    "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\src\\trace_impact\\retrieval\\__init__.py": "4d4965339d62d6b7a39ec3848d2ec48a54a7ef929061ece5b89582cae7835577",
+    "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\src\\trace_impact\\retrieval\\adapters.py": "edc9b2057c691985cdefafc08925aebabc3955e8ea05921949348746b039582a",
+    "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\src\\trace_impact\\retrieval\\config.py": "7b1222bf8d09a5be6740dc121b2639bc11ba76697617e4353aa727c956c034a5",
+    "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\src\\trace_impact\\retrieval\\contracts.py": "06e9fcdeb0d2afc49c6fc170a9145d83dcab5339b04a38540cf1e536c07c37e1",
+    "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\src\\trace_impact\\retrieval\\cross_encoder.py": "4079051ed8a57f42e2b2565bfe88d6e6d5c999540bbfe6dd3acef8556d6d6d3e",
+    "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\src\\trace_impact\\retrieval\\gemini.py": "2b45339d7bdfb8350f068abd41091d5675a7e0c63c837cefe6febac92d63de15",
+    "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\src\\trace_impact\\retrieval\\service.py": "58226154414ebc67a7c6ece23eb094853d814a11f1eb908ddf2e59c6c5e12c42"
+  }
+}

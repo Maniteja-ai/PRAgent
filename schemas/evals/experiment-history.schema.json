@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Retrieval experiment history",
+  "description": "Completed measurements and future experiments. Paths are relative to evaluation/history unless explicitly described otherwise. Add a new record for a new experiment; preserve prior evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "target_pipeline", "records", "planned_experiments"],
+  "properties": {
+    "$schema": {"type": "string"},
+    "schema_version": {"const": 1},
+    "target_pipeline": {
+      "type": "array",
+      "items": {"enum": ["Retriever", "Reranker", "EvidenceSelector"]},
+      "minItems": 3,
+      "maxItems": 3,
+      "uniqueItems": true
+    },
+    "records": {"type": "array", "items": {"$ref": "#/$defs/record"}},
+    "planned_experiments": {"type": "array", "items": {"$ref": "#/$defs/planned"}}
+  },
+  "$defs": {
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["k", "scored_at", "report", "metrics"],
+      "properties": {
+        "k": {"type": "integer", "minimum": 1},
+        "scored_at": {"type": "string", "format": "date-time"},
+        "report": {"type": "string", "minLength": 1},
+        "metrics": {"type": "object", "description": "Copy the evaluator summary exactly. Ratios use 0 to 1; unknown measurements remain null."}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "hypothesis", "parent_experiment", "dataset", "split", "configuration", "measurements", "evidence", "notes", "decision"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "status": {"enum": ["COMPLETED_PROVISIONAL", "COMPLETED_REVIEWED", "FAILED", "INCOMPLETE"]},
+        "hypothesis": {"type": "string"},
+        "parent_experiment": {"type": ["string", "null"]},
+        "dataset": {"type": "string", "minLength": 1},
+        "split": {"enum": ["development", "held_out"]},
+        "configuration": {"type": "object", "description": "Actual stage implementations and model versions. Exclude secrets."},
+        "measurements": {"type": "array", "items": {"$ref": "#/$defs/measurement"}},
+        "evidence": {"type": "object", "description": "Saved predictions, reports, fingerprints, scope and observed execution checks."},
+        "notes": {"type": "array", "items": {"type": "string"}},
+        "decision": {"type": "string"}
+      }
+    },
+    "planned": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "parent_experiment", "hypothesis", "change", "measurements"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "status": {"const": "PLANNED"},
+        "parent_experiment": {"type": "string", "minLength": 1},
+        "hypothesis": {"type": "string"},
+        "change": {"type": "string"},
+        "measurements": {"type": "null", "description": "Planned work has no measured result yet."}
+      }
+    }
+  }
+}

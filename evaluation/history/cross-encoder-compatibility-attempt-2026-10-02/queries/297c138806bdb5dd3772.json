@@ -1,0 +1,232 @@
+{
+  "query": "Can the channel of an existing checkout be changed?",
+  "scope": {
+    "project_id": "saleor-excerpt-evaluation",
+    "run_id": "saleor-excerpts-v1"
+  },
+  "candidates": [
+    {
+      "id": "P08",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "checkout-lifecycle",
+      "text": "## Checkout Creation[\u200b](#checkout-creation \"Direct link to Checkout Creation\")\n\nUpon creation, `checkout` is assigned to a channel that influences product stock, availability, and price. The channel can not be changed after the checkout is created. Learn more about [Channels](/developer/channels/overview).\n\nCheckout can be created from [existing orders](/developer/order/order-to-checkout), which is helpful for re-order functionality.\n",
+      "artifact_path": "review/sources/checkout-lifecycle.md",
+      "retrieval_score": 0.8116144553385064,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/lifecycle",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P07",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "checkout",
+      "text": "## Multiple Channels and Checkout[\u200b](#multiple-channels-and-checkout \"Direct link to Multiple Channels and Checkout\")\n\nDepending on the chosen channel, the user will have access to different objects. This impacts available:\n\n* Products and Product Variants\n* Payment Gateways\n* Shipping Methods\n* Collection Points\n* Discounts\n\n[Learn more about using multiple channels](/developer/channels/overview).\n",
+      "artifact_path": "review/sources/checkout.md",
+      "retrieval_score": 0.7644322913564208,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/overview",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P10",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "checkout-lifecycle",
+      "text": "## Updating Checkout[\u200b](#updating-checkout \"Direct link to Updating Checkout\")\n\n* **Updating lines**. Each line (product variant) should have at least a quantity of 1; if the line reaches a quantity of 0, it will be automatically removed. Optionally [Price overwrites](/developer/checkout/api-guide#setting-custom-line-prices) and [Line Stacking](/developer/checkout/api-guide#creating-two-lines-using-a-single-variant) can be controlled via API.\n",
+      "artifact_path": "review/sources/checkout-lifecycle.md",
+      "retrieval_score": 0.7029113184655922,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/lifecycle",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P12",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "shipping-address",
+      "text": "### Default Address[\u200b](#default-address \"Direct link to Default Address\")\n\nCustomers with accounts can set up default addresses, which will be attached automatically during the checkout creation. More information on API reference page for [accountSetDefaultAddress](/api-reference/users/mutations/account-set-default-address).\n\n#### Changing the Default Address During Checkout[\u200b](#changing-the-default-address-during-checkout \"Direct link to Changing the Default Address During Checkout\")\n\nTo change your default address during checkout:\n\n1. Select a previously saved address or create a new one.\n2. Use the [accountSetDefaultAddress](/api-reference/users/mutations/account-set-default-address) mutation to update your default shipping or billing address.\n3. Call [`checkoutShippingAddressUpdate`](/api-reference/checkout/mutations/checkout-shipping-address-update) and/or [`checkoutBillingAddressUpdate`](/api-reference/checkout/mutations/checkout-billing-address-update) to apply the selected address to the current checkout.\n\nThis process ensures that the address you want to use is both set as your account default and applied to the ongoing checkout.\n",
+      "artifact_path": "review/sources/shipping-address.md",
+      "retrieval_score": 0.6915757054702887,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/address",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P09",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "checkout-lifecycle",
+      "text": "## Authentication in Checkout[\u200b](#authentication-in-checkout \"Direct link to Authentication in Checkout\")\n\nSaleor allows you to manage both logged-in customers and guest users using the same API mutations.\nYou do not need separate logic branches for different user states; instead, Saleor determines the checkout ownership based on the request's authentication context.\n\n* **With Auth Header:** If the checkout creation request includes a valid user token, the new checkout is automatically \"Signed\" (linked to that specific User ID).\n* **Without Auth Header:** The checkout is created as \"Anonymous\" (guest). It is identified solely by a unique token and is not linked to any user profile.\n\n### Attaching a Guest Checkout to a User[\u200b](#attaching-a-guest-checkout-to-a-user \"Direct link to Attaching a Guest Checkout to a User\")\n\nIf a guest user logs in midway through their shopping experience, you can convert their anonymous checkout into a signed one using the [`checkoutCustomerAttach`](/api-reference/checkout/mutations/checkout-customer-attach) mutation.\nThis ensures their items are preserved and linked to their account history.\n",
+      "artifact_path": "review/sources/checkout-lifecycle.md",
+      "retrieval_score": 0.6820792224895171,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/lifecycle",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P14",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "shipping-address",
+      "text": "### Selecting the Delivery Method[\u200b](#selecting-the-delivery-method \"Direct link to Selecting the Delivery Method\")\n\nUse the [`checkoutDeliveryMethodUpdate`](/api-reference/checkout/mutations/checkout-delivery-method-update) mutation to effectively pair the specific [`Checkout`](/api-reference/checkout/objects/checkout) object with the specified delivery method selected by the user.\n\nThis operation requires the following input:\n\n* `id`: the checkout ID (the `id` field of the [`Checkout`](/api-reference/checkout/objects/checkout) object).\n* `deliveryMethodId`: the shipping method ID or Warehouse ID (`delivery` from the `deliveryOptionsCalculate` mutation or `availableCollectionPoints` field of the [`Checkout`](/api-reference/checkout/objects/checkout) object).\n",
+      "artifact_path": "review/sources/shipping-address.md",
+      "retrieval_score": 0.6799242946319405,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/address",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P02",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "storefront-readme",
+      "text": "### \ud83c\udf0d Multi-Channel, Multi-Currency\n\nOne codebase, many storefronts. Channel-scoped routing means `/us/products` and `/eu/products` can serve different catalogs, prices, and shipping options\u2014all from the same deployment.\n\n### \ud83d\udcf1 Product Pages Done Right\n\nThe hard parts are solved. Adapt the look, keep the logic.\n\n- **Multi-attribute variant selection** \u2014 Color + Size + Material? Handled. Complex variant matrices just work.\n- **Dynamic pricing** \u2014 Sale prices, variant-specific pricing, channel pricing\u2014all reactive.\n- **Image gallery** \u2014 Next.js Image optimization, proper aspect ratios, keyboard navigation.\n",
+      "artifact_path": "review/sources/storefront-readme.md",
+      "retrieval_score": 0.6758087325722989,
+      "metadata": {
+        "source_url": "https://raw.githubusercontent.com/saleor/storefront/23bc49ccd22e13e182b30daff562d5e5c9af874c/README.md",
+        "source_version": "23bc49ccd22e13e182b30daff562d5e5c9af874c"
+      }
+    },
+    {
+      "id": "P30",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "remove-promo-api",
+      "text": "#### [`id`](#id)\u00a0\u25cf\u00a0[`ID`](/api-reference/miscellaneous/scalars/id)[\u200b](#id \"Direct link to id\")\n\nThe checkout's ID.\n\n#### [`promoCode`](#promo-code)\u00a0\u25cf\u00a0[`String`](/api-reference/miscellaneous/scalars/string)[\u200b](#promo-code \"Direct link to promo-code\")\n\nGift card code or voucher code.\n\n#### [`promoCodeId`](#promo-code-id)\u00a0\u25cf\u00a0[`ID`](/api-reference/miscellaneous/scalars/id)[\u200b](#promo-code-id \"Direct link to promo-code-id\")\n\nGift card or voucher ID.\n\nShow deprecatedHide deprecated\n\n#### [`checkoutId`](#checkout-id)\u00a0\u25cf\u00a0[`ID`](/api-reference/miscellaneous/scalars/id)[\u200b](#checkout-id \"Direct link to checkout-id\")\n\nDEPRECATED\n\nUse `id` instead.\n\nThe ID of the checkout.\n\n#### [`token`](#token)\u00a0\u25cf\u00a0[`UUID`](/api-reference/miscellaneous/scalars/uuid)[\u200b](#token \"Direct link to token\")\n\nDEPRECATED\n\nUse `id` instead.\n\nCheckout token.\n",
+      "artifact_path": "review/sources/remove-promo-api.md",
+      "retrieval_score": 0.6752374109144696,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-remove-promo-code",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P25",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Subtotal change invalidates minimum spent voucher[\u200b](#subtotal-change-invalidates-minimum-spent-voucher \"Direct link to Subtotal change invalidates minimum spent voucher\")\n\n**Scenario:**\n\n1. Checkout has 2 lines and a valid shipping method assigned.\n2. A voucher with a minimum spent amount condition is applied.\n3. One line is removed from the checkout.\n4. The checkout subtotal drops below the voucher\u2019s minimum requirement.\n\nThe voucher is automatically removed, but the shipping method remains assigned.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.6740609438302405,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P28",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "add-promo-api",
+      "text": "#### [`id`](#id)\u00a0\u25cf\u00a0[`ID`](/api-reference/miscellaneous/scalars/id)[\u200b](#id \"Direct link to id\")\n\nThe checkout's ID.\n\n#### [`promoCode`](#promo-code)\u00a0\u25cf\u00a0[`String!`](/api-reference/miscellaneous/scalars/string)[\u200b](#promo-code \"Direct link to promo-code\")\n\nGift card code or voucher code.\n\nShow deprecatedHide deprecated\n\n#### [`checkoutId`](#checkout-id)\u00a0\u25cf\u00a0[`ID`](/api-reference/miscellaneous/scalars/id)[\u200b](#checkout-id \"Direct link to checkout-id\")\n\nDEPRECATED\n\nUse `id` instead.\n\nThe ID of the checkout.\n\n#### [`token`](#token)\u00a0\u25cf\u00a0[`UUID`](/api-reference/miscellaneous/scalars/uuid)[\u200b](#token \"Direct link to token\")\n\nDEPRECATED\n\nUse `id` instead.\n\nCheckout token.\n",
+      "artifact_path": "review/sources/add-promo-api.md",
+      "retrieval_score": 0.672117901764085,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-add-promo-code",
+        "source_version": "current-online-unpinned"
+      }
+    }
+  ],
+  "ranking": {
+    "score_kind": "cross-encoder-logit-v1:cross-encoder/ms-marco-MiniLM-L6-v2@233902d25c440f23af6f7d6e94d2946bac0bee0a:length=512:overlap=64:aggregation=max",
+    "scores": [
+      {
+        "id": "P08",
+        "score": 7.71865177154541,
+        "quote": ""
+      },
+      {
+        "id": "P07",
+        "score": -0.8161628842353821,
+        "quote": ""
+      },
+      {
+        "id": "P12",
+        "score": -1.9717330932617188,
+        "quote": ""
+      },
+      {
+        "id": "P10",
+        "score": -3.3423523902893066,
+        "quote": ""
+      },
+      {
+        "id": "P25",
+        "score": -3.630764961242676,
+        "quote": ""
+      },
+      {
+        "id": "P09",
+        "score": -5.264843940734863,
+        "quote": ""
+      },
+      {
+        "id": "P14",
+        "score": -7.297414779663086,
+        "quote": ""
+      },
+      {
+        "id": "P28",
+        "score": -9.80380630493164,
+        "quote": ""
+      },
+      {
+        "id": "P30",
+        "score": -10.0476713180542,
+        "quote": ""
+      },
+      {
+        "id": "P02",
+        "score": -10.272050857543945,
+        "quote": ""
+      }
+    ],
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  "selection": {
+    "ids": [
+      "P08"
+    ],
+    "reason": "relevance_threshold",
+    "limit_reached": false
+  },
+  "status": "EVIDENCE_FOUND",
+  "coverage": "NOT_EVALUATED",
+  "timings_ms": {
+    "retrieve": 0.1331000094069168,
+    "rerank": 424.7532000008505,
+    "select": 0.2103000006172806
+  }
+}

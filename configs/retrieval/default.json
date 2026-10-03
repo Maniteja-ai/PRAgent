@@ -1,0 +1,14 @@
+{
+  "$schema": "../../schemas/retrieval/retrieval.schema.json",
+  "candidate_limit": 5,
+  "reranker": {
+    "provider": "identity",
+    "options": {}
+  },
+  "selector": {
+    "provider": "top_k",
+    "options": {
+      "max_results": 5
+    }
+  }
+}

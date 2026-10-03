@@ -1,0 +1,58 @@
+{
+  "$schema": "../schemas/application.schema.json",
+  "schema_version": 1,
+  "project_id": "saleor-storefront",
+  "repository": "saleor/storefront",
+  "repository_path": "../../../../../work/saleor-storefront-upstream",
+  "change_source": {
+    "provider": "github"
+  },
+  "graph_snapshot_file": "../../../artifacts/code/saleor-baseline-attested.json",
+  "ingestion_run_directory": "../../../runs/saleor-storefront/44dd49dc16a84d2e82153ebd7d65c6ee",
+  "retrieval_config_file": "../../../configs/retrieval/default.json",
+  "vector_directory": "../../../.vector-store",
+  "baseline": {
+    "url": "https://testsigma-saleor-baseline.vercel.app",
+    "revision": "1b5d6545d34fda38c1fb24712ed4bf3dffc684b8",
+    "entry_path": "/default-channel/products",
+    "attestation": {
+      "path": "/api/trace-build"
+    }
+  },
+  "patched": {
+    "url": "https://testsigma-saleor-patched.vercel.app",
+    "revision": "f1f0abe96cd9adabc28fe2bb12d407dfef171379",
+    "entry_path": "/default-channel/products",
+    "attestation": {
+      "path": "/api/trace-build"
+    }
+  },
+  "production_mode": true,
+  "browser": {
+    "enabled": true,
+    "headless": true,
+    "timeout_seconds": 30,
+    "readiness_checks": {
+      "/default-channel/products/": "button:has-text('Add to bag'), button:has-text('Select options'), button:has-text('Out of stock')",
+      "/checkout": "input[type='email']"
+    },
+    "allowed_button_names": [
+      "S",
+      "M",
+      "L",
+      "Add to bag",
+      "Add to Bag",
+      "Apply",
+      "Remove"
+    ],
+    "allowed_button_test_ids": [
+      "CartNavItem"
+    ],
+    "allowed_field_names": [
+      "Promo code",
+      "Discount code",
+      "Voucher code"
+    ]
+  },
+  "head_graph_snapshot_file": "../../../artifacts/code/saleor-patched-attested-ui.json"
+}

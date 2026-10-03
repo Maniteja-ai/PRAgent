@@ -1,0 +1,135 @@
+{
+  "3": {
+    "maximum_possible_mean_precision_at_k": 0.41904761904761906,
+    "misses": [
+      {
+        "id": "V01",
+        "query": "What must be present before a shipping voucher can be applied?",
+        "missing_passage_ids": [
+          "P16"
+        ],
+        "matched_ids": [
+          "P23"
+        ],
+        "evidence_recall_at_k": 1.0
+      },
+      {
+        "id": "V02",
+        "query": "I entered my address but have not picked delivery. Can I redeem a postage discount?",
+        "missing_passage_ids": [
+          "P16"
+        ],
+        "matched_ids": [
+          "P23"
+        ],
+        "evidence_recall_at_k": 1.0
+      },
+      {
+        "id": "V24",
+        "query": "Which mutation adds a voucher and which current result field exposes errors?",
+        "missing_passage_ids": [
+          "P27"
+        ],
+        "matched_ids": [],
+        "evidence_recall_at_k": 0.0
+      },
+      {
+        "id": "V26",
+        "query": "Can a promo code be removed using its ID rather than the code string?",
+        "missing_passage_ids": [
+          "P30"
+        ],
+        "matched_ids": [
+          "P29"
+        ],
+        "evidence_recall_at_k": 1.0
+      },
+      {
+        "id": "V27",
+        "query": "For adding a promo code, what replaces deprecated checkoutId and token arguments?",
+        "missing_passage_ids": [
+          "P28"
+        ],
+        "matched_ids": [],
+        "evidence_recall_at_k": 0.0
+      },
+      {
+        "id": "V32",
+        "query": "How do I assign delivery and what must exist to apply a shipping voucher?",
+        "missing_passage_ids": [
+          "P14",
+          "P16"
+        ],
+        "matched_ids": [
+          "P23"
+        ],
+        "evidence_recall_at_k": 0.5
+      },
+      {
+        "id": "V39",
+        "query": "Since shipping vouchers work without a shipping address, how can I apply one to an address-free checkout?",
+        "missing_passage_ids": [
+          "P16"
+        ],
+        "matched_ids": [
+          "P23"
+        ],
+        "evidence_recall_at_k": 1.0
+      },
+      {
+        "id": "V40",
+        "query": "what do i need for a shiping cupon to work?",
+        "missing_passage_ids": [
+          "P16"
+        ],
+        "matched_ids": [
+          "P23"
+        ],
+        "evidence_recall_at_k": 1.0
+      }
+    ]
+  },
+  "5": {
+    "maximum_possible_mean_precision_at_k": 0.25142857142857145,
+    "misses": [
+      {
+        "id": "V01",
+        "query": "What must be present before a shipping voucher can be applied?",
+        "missing_passage_ids": [
+          "P16"
+        ],
+        "matched_ids": [
+          "P23"
+        ],
+        "evidence_recall_at_k": 1.0
+      },
+      {
+        "id": "V02",
+        "query": "I entered my address but have not picked delivery. Can I redeem a postage discount?",
+        "missing_passage_ids": [
+          "P16"
+        ],
+        "matched_ids": [
+          "P23"
+        ],
+        "evidence_recall_at_k": 1.0
+      },
+      {
+        "id": "V32",
+        "query": "How do I assign delivery and what must exist to apply a shipping voucher?",
+        "missing_passage_ids": [
+          "P16"
+        ],
+        "matched_ids": [
+          "P23",
+          "P14"
+        ],
+        "evidence_recall_at_k": 1.0
+      }
+    ]
+  },
+  "10": {
+    "maximum_possible_mean_precision_at_k": 0.12571428571428572,
+    "misses": []
+  }
+}

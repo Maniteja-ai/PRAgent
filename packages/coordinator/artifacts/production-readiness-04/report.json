@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "status": "READY",
+  "scope": "Configured Saleor PR impact analysis and voucher behavior scenario",
+  "checks": [
+    {
+      "name": "workflow completed",
+      "passed": true,
+      "actual": "COMPLETED"
+    },
+    {
+      "name": "configured scope complete",
+      "passed": true,
+      "actual": "COMPLETE_FOR_CONFIGURED_SCOPE"
+    },
+    {
+      "name": "model guardrails applied",
+      "passed": true,
+      "actual": {
+        "status": "PASSED",
+        "events": 2,
+        "policy_fingerprint": "06e543a5a451db02c7ee6c07778a589656c4ff9b7cfb27664fc8b3dc13fbbe93"
+      }
+    },
+    {
+      "name": "two runtime builds attested",
+      "passed": true,
+      "actual": "VERIFIED"
+    },
+    {
+      "name": "behavior verification completed",
+      "passed": true,
+      "actual": "COMPLETED"
+    },
+    {
+      "name": "verification approval bound to policy",
+      "passed": true,
+      "actual": {
+        "approved": true,
+        "mode": "preapproved",
+        "scenario_id": "checkout-voucher",
+        "policy_fingerprint": "e2235399323c59d08431bffba5db1f5b44efe54f09ab33a88532ef28ea050ae5"
+      }
+    },
+    {
+      "name": "behavior attribution supported",
+      "passed": true,
+      "actual": "SUPPORTED"
+    },
+    {
+      "name": "required behavior outcomes",
+      "passed": true,
+      "actual": {
+        "baseline::Empty voucher disables Apply": "PASS",
+        "baseline::Eligible voucher reaches backend": "FAIL",
+        "baseline::Displayed discounted total and voucher state": "FAIL",
+        "patched::Empty voucher disables Apply": "PASS",
+        "patched::Eligible voucher reaches backend": "PASS",
+        "patched::Displayed discounted total and voucher state": "PASS",
+        "patched::Remove voucher and restore total": "PASS"
+      }
+    },
+    {
+      "name": "required requirement outcomes",
+      "passed": true,
+      "actual": {
+        "VOUCHER_APPLY_TOTAL": "PASS",
+        "VOUCHER_REMOVE_TOTAL": "PASS"
+      }
+    },
+    {
+      "name": "golden evaluation",
+      "passed": true,
+      "actual": {
+        "true_positive": 2,
+        "false_positive": 0,
+        "false_negative": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "case_pass_rate": 1.0,
+        "cases_passed": 4,
+        "cases_total": 4
+      }
+    },
+    {
+      "name": "live LLM safety and grounding evaluation",
+      "passed": true,
+      "actual": {
+        "cases_passed": 4,
+        "cases_total": 4,
+        "case_pass_rate": 1.0,
+        "provider_calls": 3,
+        "structured_output_rate": 1.0,
+        "grounded_finding_rate": 1.0,
+        "sensitive_output_leaks": 0,
+        "latency_ms_median": 1503.8,
+        "latency_ms_max": 2042.85
+      }
+    },
+    {
+      "name": "test suite",
+      "passed": true,
+      "actual": {
+        "tests": 256,
+        "failures": 0,
+        "errors": 0
+      }
+    },
+    {
+      "name": "coverage",
+      "passed": true,
+      "actual": 90.14860977948226
+    },
+    {
+      "name": "tool attempt ceilings",
+      "passed": true,
+      "actual": [
+        {
+          "agent": "coordinator",
+          "tool": "browser.act",
+          "attempts": 5,
+          "succeeded": 5,
+          "failed": 0,
+          "uncertain": 0
+        },
+        {
+          "agent": "coordinator",
+          "tool": "browser.check",
+          "attempts": 5,
+          "succeeded": 5,
+          "failed": 0,
+          "uncertain": 0
+        },
+        {
+          "agent": "coordinator",
+          "tool": "browser.navigate",
+          "attempts": 4,
+          "succeeded": 4,
+          "failed": 0,
+          "uncertain": 0
+        },
+        {
+          "agent": "coordinator",
+          "tool": "deployment.attest",
+          "attempts": 2,
+          "succeeded": 2,
+          "failed": 0,
+          "uncertain": 0
+        },
+        {
+          "agent": "coordinator",
+          "tool": "fixture.apply",
+          "attempts": 1,
+          "succeeded": 1,
+          "failed": 0,
+          "uncertain": 0
+        },
+        {
+          "agent": "coordinator",
+          "tool": "fixture.catalog",
+          "attempts": 1,
+          "succeeded": 1,
+          "failed": 0,
+          "uncertain": 0
+        },
+        {
+          "agent": "coordinator",
+          "tool": "fixture.observe",
+          "attempts": 3,
+          "succeeded": 3,
+          "failed": 0,
+          "uncertain": 0
+        },
+        {
+          "agent": "coordinator",
+          "tool": "fixture.prepare",
+          "attempts": 3,
+          "succeeded": 3,
+          "failed": 0,
+          "uncertain": 0
+        },
+        {
+          "agent": "coordinator",
+          "tool": "github.diff",
+          "attempts": 1,
+          "succeeded": 1,
+          "failed": 0,
+          "uncertain": 0
+        },
+        {
+          "agent": "coordinator",
+          "tool": "knowledge.documents",
+          "attempts": 1,
+          "succeeded": 1,
+          "failed": 0,
+          "uncertain": 0
+        },
+        {
+          "agent": "coordinator",
+          "tool": "knowledge.graph",
+          "attempts": 1,
+          "succeeded": 1,
+          "failed": 0,
+          "uncertain": 0
+        },
+        {
+          "agent": "coordinator",
+          "tool": "model.decide",
+          "attempts": 1,
+          "succeeded": 1,
+          "failed": 0,
+          "uncertain": 0
+        }
+      ]
+    },
+    {
+      "name": "no limit events",
+      "passed": true,
+      "actual": 0
+    },
+    {
+      "name": "evidence citations",
+      "passed": true,
+      "actual": 26
+    },
+    {
+      "name": "evidence artifact hashes",
+      "passed": true,
+      "actual": 137
+    }
+  ],
+  "inputs": {
+    "report_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\packages\\coordinator\\artifacts\\saleor-production-09\\report.json",
+      "sha256": "5f9db78b7597c4c73e11774a8326c5c34ca00851f1068f35687f7e3621852803"
+    },
+    "evaluation_report_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\packages\\coordinator\\artifacts\\golden-evaluation-03\\report.json",
+      "sha256": "1e89928e1fa1c1a34a10d3d116179a27f2c339a617b6fe9640de0a83d2d07003"
+    },
+    "llm_evaluation_report_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\packages\\coordinator\\artifacts\\live-llm-evaluation-01\\report.json",
+      "sha256": "714f9b20cb8ba9c3222a3a99f5ce09d758b43db5053640fc28c46e3b0695cebb"
+    },
+    "junit_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\packages\\coordinator\\artifacts\\production-tests.xml",
+      "sha256": "b3976cef0715444ceafdcb04df88ea5f1b1c1309627920a33f971b491e0143f0"
+    },
+    "coverage_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\packages\\coordinator\\artifacts\\production-coverage.json",
+      "sha256": "4bd01223edeb0e26b02e8ccdfd31ee1a60658fbca2cde8b034729ab2a562be23"
+    }
+  }
+}

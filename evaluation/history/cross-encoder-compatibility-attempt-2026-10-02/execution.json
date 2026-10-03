@@ -1,0 +1,522 @@
+[
+  {
+    "id": "V01",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.12759999663103372,
+      "rerank": 288.7691999931121,
+      "select": 0.2865999995265156
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V02",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.0881000014487654,
+      "rerank": 349.1877000051318,
+      "select": 0.2767999976640567
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V03",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.11010000889655203,
+      "rerank": 256.673600000795,
+      "select": 0.17610000213608146
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V04",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.08289999095723033,
+      "rerank": 271.4620000042487,
+      "select": 0.19459999748505652
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V05",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.10559998918324709,
+      "rerank": 308.9401000033831,
+      "select": 0.21150000975467265
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V06",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.15390000771731138,
+      "rerank": 221.68999999121297,
+      "select": 0.18109999655280262
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V07",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.11079999967478216,
+      "rerank": 258.9042000035988,
+      "select": 0.18370000179857016
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V08",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.07860000187065452,
+      "rerank": 260.5389000091236,
+      "select": 0.3083000046899542
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V09",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.12480000441428274,
+      "rerank": 298.9664000051562,
+      "select": 0.2789999998640269
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V10",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.07670000195503235,
+      "rerank": 240.94079999485984,
+      "select": 0.21610000112559646
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V11",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.1331000094069168,
+      "rerank": 424.7532000008505,
+      "select": 0.2103000006172806
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V12",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.12080000306013972,
+      "rerank": 472.1535999997286,
+      "select": 0.2911000046879053
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V13",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.10769999062176794,
+      "rerank": 275.2641999977641,
+      "select": 0.29719999292865396
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V14",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.10689999908208847,
+      "rerank": 476.11489999690093,
+      "select": 0.2869000018108636
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V15",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.11490000179037452,
+      "rerank": 468.5870000103023,
+      "select": 0.22839999292045832
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V16",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.12399999832268804,
+      "rerank": 452.3865999944974,
+      "select": 0.36190000537317246
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V17",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.1370999962091446,
+      "rerank": 512.9139000055147,
+      "select": 0.3127999952994287
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V18",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.11079999967478216,
+      "rerank": 452.0961000089301,
+      "select": 0.2226999931735918
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V19",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.1320000010309741,
+      "rerank": 455.1674000103958,
+      "select": 0.20870000298600644
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V20",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.112599998828955,
+      "rerank": 425.41280000295956,
+      "select": 0.2069000038318336
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V21",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.07779999577905983,
+      "rerank": 429.8708999995142,
+      "select": 0.1810000103432685
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V22",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.07740000728517771,
+      "rerank": 423.4918000001926,
+      "select": 0.3136000013910234
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V23",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.10729998757597059,
+      "rerank": 335.1554999971995,
+      "select": 0.18340001406613737
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V24",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.10730000212788582,
+      "rerank": 410.3183999977773,
+      "select": 0.2710000117076561
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V25",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.10969999129883945,
+      "rerank": 303.002300002845,
+      "select": 0.1810000103432685
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V26",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.10949998977594078,
+      "rerank": 432.95129999751225,
+      "select": 0.18619999173097312
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V27",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.0914999982342124,
+      "rerank": 502.2729999909643,
+      "select": 0.32700000156182796
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V28",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.15199999324977398,
+      "rerank": 560.2838000049815,
+      "select": 0.2989999920828268
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V29",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.07470000127796084,
+      "rerank": 514.8114000039641,
+      "select": 0.2891000040108338
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V30",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.07790001109242439,
+      "rerank": 531.8961000011768,
+      "select": 0.3234000032534823
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V31",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.12070000229869038,
+      "rerank": 242.53840000892524,
+      "select": 0.3006999904755503
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V32",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.11470000026747584,
+      "rerank": 397.0958999998402,
+      "select": 0.34509999386500567
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V33",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.11570000788196921,
+      "rerank": 524.814400007017,
+      "select": 0.27859999681822956
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V34",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.12799999967683107,
+      "rerank": 379.40800000797026,
+      "select": 0.20650000078603625
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V35",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.12989999959245324,
+      "rerank": 540.9532000048785,
+      "select": 0.3167999966535717
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V36",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.15669999993406236,
+      "rerank": 547.5845000037225,
+      "select": 0.21100000594742596
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V37",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.07809999806340784,
+      "rerank": 449.54109999525826,
+      "select": 0.27659999614115804
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V38",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.0923000043258071,
+      "rerank": 422.1784999972442,
+      "select": 0.19579999207053334
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V39",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.07449999975506216,
+      "rerank": 276.23139999923296,
+      "select": 0.20589999621734023
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V40",
+    "cached": false,
+    "timings_ms": {
+      "retrieve": 0.09919999865815043,
+      "rerank": 261.69909999589436,
+      "select": 0.19150000298395753
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  }
+]

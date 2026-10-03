@@ -1,0 +1,27 @@
+{
+  "$schema": "../../schemas/retrieval/retrieval.schema.json",
+  "candidate_limit": 10,
+  "reranker": {
+    "provider": "openai_compatible",
+    "options": {
+      "model": "YOUR_RERANKER_MODEL",
+      "api_key_env": "ENCODER_API_KEY",
+      "base_url": "https://api.example.com/v1",
+      "structured_output": "json_schema",
+      "requests_per_minute": 5,
+      "timeout_seconds": 45,
+      "max_retries": 1,
+      "max_output_tokens": 6000,
+      "max_input_chars": 120000
+    }
+  },
+  "selector": {
+    "provider": "score_threshold",
+    "options": {
+      "score_kind": "llm-relevance-v1",
+      "min_score": 3,
+      "max_results": 5,
+      "deduplicate_text": true
+    }
+  }
+}

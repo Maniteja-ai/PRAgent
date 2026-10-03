@@ -1,0 +1,233 @@
+{
+  "query": "Does the storefront README explicitly advertise changing cart quantities?",
+  "scope": {
+    "project_id": "saleor-excerpt-evaluation",
+    "run_id": "saleor-excerpts-v1"
+  },
+  "candidates": [
+    {
+      "id": "P02",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "storefront-readme",
+      "text": "### \ud83c\udf0d Multi-Channel, Multi-Currency\n\nOne codebase, many storefronts. Channel-scoped routing means `/us/products` and `/eu/products` can serve different catalogs, prices, and shipping options\u2014all from the same deployment.\n\n### \ud83d\udcf1 Product Pages Done Right\n\nThe hard parts are solved. Adapt the look, keep the logic.\n\n- **Multi-attribute variant selection** \u2014 Color + Size + Material? Handled. Complex variant matrices just work.\n- **Dynamic pricing** \u2014 Sale prices, variant-specific pricing, channel pricing\u2014all reactive.\n- **Image gallery** \u2014 Next.js Image optimization, proper aspect ratios, keyboard navigation.\n",
+      "artifact_path": "review/sources/storefront-readme.md",
+      "retrieval_score": 0.6862027571917988,
+      "metadata": {
+        "source_url": "https://raw.githubusercontent.com/saleor/storefront/23bc49ccd22e13e182b30daff562d5e5c9af874c/README.md",
+        "source_version": "23bc49ccd22e13e182b30daff562d5e5c9af874c"
+      }
+    },
+    {
+      "id": "P03",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "storefront-readme",
+      "text": "## What's in the Box\n\n| Feature              | Description                                                                       |\n| -------------------- | --------------------------------------------------------------------------------- |\n| **Checkout**         | Multi-step flow with guest/auth support, address selector, international forms    |\n| **Cart**             | Slide-over drawer with real-time updates, quantity editing                        |\n| **Product Pages**    | Multi-attribute variants, image gallery, sticky add-to-cart                       |\n| **Product Listings** | Category & collection pages with pagination                                       |\n| **Navigation**       | Dynamic menus from Saleor, mobile hamburger                                       |\n| **SEO**              | Metadata, JSON-LD, Open Graph images                                              |\n| **Caching**          | ISR with on-demand revalidation via webhooks                                      |\n| **Customer Profile** | Account dashboard, address book, order history, password change, account deletion |\n| **Authentication**   | Login, register, password reset, guest checkout                                   |\n| **API Resilience**   | Automatic retries, rate limiting, timeouts\u2014handles flaky connections gracefully   |\n",
+      "artifact_path": "review/sources/storefront-readme.md",
+      "retrieval_score": 0.6680926058305846,
+      "metadata": {
+        "source_url": "https://raw.githubusercontent.com/saleor/storefront/23bc49ccd22e13e182b30daff562d5e5c9af874c/README.md",
+        "source_version": "23bc49ccd22e13e182b30daff562d5e5c9af874c"
+      }
+    },
+    {
+      "id": "P10",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "checkout-lifecycle",
+      "text": "## Updating Checkout[\u200b](#updating-checkout \"Direct link to Updating Checkout\")\n\n* **Updating lines**. Each line (product variant) should have at least a quantity of 1; if the line reaches a quantity of 0, it will be automatically removed. Optionally [Price overwrites](/developer/checkout/api-guide#setting-custom-line-prices) and [Line Stacking](/developer/checkout/api-guide#creating-two-lines-using-a-single-variant) can be controlled via API.\n",
+      "artifact_path": "review/sources/checkout-lifecycle.md",
+      "retrieval_score": 0.6469702101833871,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/lifecycle",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P13",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "shipping-address",
+      "text": "#### Shipping Methods[\u200b](#shipping-methods \"Direct link to Shipping Methods\")\n\nAfter choosing the shipping address, use the [`deliveryOptionsCalculate`](/api-reference/shipping/mutations/delivery-options-calculate) mutation to explicitly fetch available delivery methods.\n",
+      "artifact_path": "review/sources/shipping-address.md",
+      "retrieval_score": 0.6446780123196219,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/address",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P06",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "checkout",
+      "text": "### Why Is There No Cart Model?[\u200b](#why-is-there-no-cart-model \"Direct link to Why Is There No Cart Model?\")\n\nSaleor has no distinct object type for shopping carts and checkouts. We wanted the same features \u2013 like discounts, vouchers, address-specific taxes, and shipping estimates \u2013 to be available in the cart and the checkout, so we've decided to use the same object type for both.\nCheckout provides the interface for standard cart operations like adding products or promo codes. It can also be processed in almost any order, for example, by saving a billing address before adding any items.\n",
+      "artifact_path": "review/sources/checkout.md",
+      "retrieval_score": 0.6291327908235652,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/overview",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P20",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "### Minimal Items Quantity[\u200b](#minimal-items-quantity \"Direct link to Minimal Items Quantity\")\n\n`Voucher.minCheckoutItemsQuantity` specifies the minimum number of products in the cart required to redeem the voucher.\nThis is based on the total quantity of items, not unique products.\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.628391712381401,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P01",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "storefront-readme",
+      "text": "### \ud83d\uded2 Open Checkout\n\nThe checkout is where most storefronts fall apart or fall short. Paper's doesn't. We aim to provide open UI components and full wiring around the whole process.\n\n- **Multi-step, mobile-first** \u2014 Each step is a focused form. No infinite scrolling on phones.\n- **Guest & authenticated** \u2014 Seamless flow for everyone. Logged-in users get address book and saved preferences.\n- **International address forms** \u2014 Country-aware fields that adapt (US states, UK postcodes, German formats).\n- **Connection resilience** \u2014 Automatic retries with exponential backoff. Flaky networks? Handled.\n- **Componentized architecture** \u2014 Swap steps, add steps, remove steps. It's your checkout.\n- **Multi-channel ready** \u2014 Different currencies and shipping zones per channel.\n",
+      "artifact_path": "review/sources/storefront-readme.md",
+      "retrieval_score": 0.6264960638971102,
+      "metadata": {
+        "source_url": "https://raw.githubusercontent.com/saleor/storefront/23bc49ccd22e13e182b30daff562d5e5c9af874c/README.md",
+        "source_version": "23bc49ccd22e13e182b30daff562d5e5c9af874c"
+      }
+    },
+    {
+      "id": "P08",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "checkout-lifecycle",
+      "text": "## Checkout Creation[\u200b](#checkout-creation \"Direct link to Checkout Creation\")\n\nUpon creation, `checkout` is assigned to a channel that influences product stock, availability, and price. The channel can not be changed after the checkout is created. Learn more about [Channels](/developer/channels/overview).\n\nCheckout can be created from [existing orders](/developer/order/order-to-checkout), which is helpful for re-order functionality.\n",
+      "artifact_path": "review/sources/checkout-lifecycle.md",
+      "retrieval_score": 0.6091049143315512,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/lifecycle",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P04",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "products",
+      "text": "## Product and variants[\u200b](#product-and-variants \"Direct link to Product and variants\")\n\nVariants are designed to provide variations of the product, such as size, material, color, or any other dimension that can be user-defined; if the product has no variants, you will need to create a product with a single variant because prices and stock can only be assigned at a variant level.\n\nIt might seem like it is overhead to configure twice the availability of variant and product (especially when there is only one variant), but it has an intentional purpose. First, it gives more degree of freedom per variant, and second, it is convenient when you have many variants and need to disable one all at once in a single channel.\n\nIt is possible to create products without variants, but checkout and orders can only contain variants.\n",
+      "artifact_path": "review/sources/products.md",
+      "retrieval_score": 0.6072729126100085,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/products/overview",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P25",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Subtotal change invalidates minimum spent voucher[\u200b](#subtotal-change-invalidates-minimum-spent-voucher \"Direct link to Subtotal change invalidates minimum spent voucher\")\n\n**Scenario:**\n\n1. Checkout has 2 lines and a valid shipping method assigned.\n2. A voucher with a minimum spent amount condition is applied.\n3. One line is removed from the checkout.\n4. The checkout subtotal drops below the voucher\u2019s minimum requirement.\n\nThe voucher is automatically removed, but the shipping method remains assigned.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.5998156563960354,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    }
+  ],
+  "ranking": {
+    "score_kind": "gemini-relevance-v1",
+    "scores": [
+      {
+        "id": "P03",
+        "score": 3.0,
+        "quote": "| **Cart**             | Slide-over drawer with real-time updates, quantity editing                        |"
+      },
+      {
+        "id": "P02",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P10",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P13",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P06",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P20",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P01",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P08",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P04",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P25",
+        "score": 0.0,
+        "quote": ""
+      }
+    ],
+    "usage": {
+      "input_tokens": 1702,
+      "output_tokens": 213,
+      "total_tokens": 1915
+    }
+  },
+  "selection": {
+    "ids": [
+      "P03"
+    ],
+    "reason": "relevance_threshold",
+    "limit_reached": false
+  },
+  "status": "EVIDENCE_FOUND",
+  "coverage": "NOT_EVALUATED",
+  "timings_ms": {
+    "retrieve": 0.12569999671541154,
+    "rerank": 11914.754299999913,
+    "select": 0.28449999808799475
+  }
+}

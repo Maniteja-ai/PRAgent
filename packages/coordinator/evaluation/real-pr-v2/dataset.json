@@ -1,0 +1,155 @@
+{
+  "$schema": "../../schemas/real-pr-evaluation.schema.json",
+  "schema_version": 1,
+  "id": "saleor-real-pr-v2-draft",
+  "review": {
+    "status": "DRAFT",
+    "label_author": "Codex-assisted implementation",
+    "independent_reviewer": null,
+    "reviewed_at": null,
+    "notes": "Frozen real GitHub PRs with candidate labels. A second human must check every label and held-out split before approval."
+  },
+  "minimum_relevance_precision": 0.8,
+  "minimum_relevance_recall": 0.8,
+  "minimum_faithfulness": 0.95,
+  "minimum_claim_recall": 0.8,
+  "cases": [
+    {
+      "id": "pr-1199",
+      "split": "development",
+      "repository": "saleor/storefront",
+      "pull_request": 1199,
+      "base_revision": "6eb0b97b25bd4344d8139515a1cabf763d703b39",
+      "head_revision": "5a1597025a760848d7d53456678805d5e19e92f4",
+      "source_file": "sources/pr-1199.json",
+      "source_sha256": "fb993041af2572b90cf3a7740d7e1cfded7569c02b3648c05493b1949dbd6436",
+      "expected": {
+        "ui_elements": ["checkout.discount-code-input", "checkout.apply-voucher", "checkout.remove-voucher", "checkout.voucher-error", "checkout.total"],
+        "flows": ["checkout.apply-voucher", "checkout.remove-voucher"],
+        "requirements": ["voucher.apply-updates-total", "voucher.remove-restores-total", "voucher.error-is-visible"],
+        "claims": {
+          "voucher-mutations": {
+            "statement": "The checkout UI now applies and removes vouchers through Saleor mutations.",
+            "allowed_evidence_ids": ["github:pr:1199:file:src/checkout/views/saleor-checkout/order-summary.tsx"]
+          },
+          "voucher-refresh": {
+            "statement": "Successful voucher changes refetch checkout state so totals and voucher state update.",
+            "allowed_evidence_ids": ["github:pr:1199:file:src/checkout/views/saleor-checkout/saleor-checkout.tsx"]
+          }
+        }
+      }
+    },
+    {
+      "id": "pr-1243",
+      "split": "development",
+      "repository": "saleor/storefront",
+      "pull_request": 1243,
+      "base_revision": "a7e5ff122ab51ff2add2f5e48b1e09dfa6ec2f9a",
+      "head_revision": "1d907124547c2b7e8a52fbdd74f968830c3cfbea",
+      "source_file": "sources/pr-1243.json",
+      "source_sha256": "ab04f7050a27d550d09016cbbf0690e02974086ab229a5101567dc273f402e2e",
+      "expected": {
+        "ui_elements": ["checkout.country-select", "checkout.availability-banner", "checkout.sold-out-line", "checkout.remove-unavailable-item"],
+        "flows": ["checkout.enter-address", "checkout.continue-to-shipping", "checkout.pay-with-stock-recheck"],
+        "requirements": ["checkout.default-country", "checkout.block-unavailable-stock", "checkout.recheck-stock-before-payment"],
+        "claims": {
+          "availability-ui": {
+            "statement": "Unavailable checkout lines are shown as a checkout issue and can be removed.",
+            "allowed_evidence_ids": ["github:pr:1243:file:src/checkout/components/checkout-issue-banner.tsx", "github:pr:1243:file:src/checkout/views/saleor-checkout/order-summary.tsx"]
+          },
+          "stock-recheck": {
+            "statement": "Stock is rechecked when continuing and before payment.",
+            "allowed_evidence_ids": ["github:pr:1243:file:src/checkout/lib/validate-checkout-fulfillment.ts", "github:pr:1243:file:src/checkout/views/saleor-checkout/payment-step.tsx"]
+          },
+          "default-country": {
+            "statement": "Blank checkout addresses use the channel default country.",
+            "allowed_evidence_ids": ["github:pr:1243:file:src/checkout/lib/default-address-country.ts"]
+          }
+        }
+      }
+    },
+    {
+      "id": "pr-1233",
+      "split": "development",
+      "repository": "saleor/storefront",
+      "pull_request": 1233,
+      "base_revision": "3274119bb54ab36ae072c7928bb82f64972d1093",
+      "head_revision": "418ded8fc0d5057ee8885cb9f2191dd189775131",
+      "source_file": "sources/pr-1233.json",
+      "source_sha256": "6f705e80be94247e6d0d3cd1e215808f355b7b411213e8a9acf1cb346a2cfeb7",
+      "expected": {
+        "ui_elements": ["account.confirm-password", "account.show-password", "account.forgot-password", "account.confirm-error"],
+        "flows": ["account.confirm-signup", "account.request-password-reset"],
+        "requirements": ["account.confirmation-requires-password", "account.confirmation-errors-visible"],
+        "claims": {
+          "confirmation-form": {
+            "statement": "Account confirmation now asks for a password and exposes confirmation/reset states.",
+            "allowed_evidence_ids": ["github:pr:1233:file:src/ui/components/auth/confirm-account-mode.tsx"]
+          },
+          "confirmation-mutation": {
+            "statement": "The confirmation API forwards the password to Saleor.",
+            "allowed_evidence_ids": ["github:pr:1233:file:src/app/api/auth/confirm-account/route.ts", "github:pr:1233:file:src/lib/auth/confirm-account.ts"]
+          }
+        }
+      }
+    },
+    {
+      "id": "pr-1229",
+      "split": "development",
+      "repository": "saleor/storefront",
+      "pull_request": 1229,
+      "base_revision": "546f389a72bd28767cd2a0457530eee870a14ed4",
+      "head_revision": "1f4e12a8ad4df9a742e5af30c1b4cc8cd6941a44",
+      "source_file": "sources/pr-1229.json",
+      "source_sha256": "da6ba1bedcbcda92d3e73fc39bf272b8f79a7abae27161445f0c25600c785f4e",
+      "expected": {
+        "ui_elements": ["pdp.variant-option-button"],
+        "flows": ["pdp.select-variant"],
+        "requirements": ["pdp.variant-label-centered"],
+        "claims": {
+          "variant-alignment": {
+            "statement": "Variant option labels are horizontally and vertically centered.",
+            "allowed_evidence_ids": ["github:pr:1229:file:src/ui/components/pdp/variant-selection/renderers/button-option.tsx"]
+          }
+        }
+      }
+    },
+    {
+      "id": "pr-1246",
+      "split": "held_out",
+      "repository": "saleor/storefront",
+      "pull_request": 1246,
+      "base_revision": "27b52ff86aaab8aea2bf38c2f59d0b2d5d643eca",
+      "head_revision": "848c2ee16ec598e23b1bb03d3eb50077736ca9b2",
+      "source_file": "sources/pr-1246.json",
+      "source_sha256": "19b2161b0d3e21a1fc79867b30d47530b722d38dc9cbe66f5a56ab242457cd9f",
+      "expected": {
+        "ui_elements": ["account.login-form", "account.signup-form"],
+        "flows": ["account.open-login", "account.open-signup"],
+        "requirements": ["account.auth-forms-session-gated"],
+        "claims": {
+          "session-gating": {
+            "statement": "Login and signup forms are gated by session state.",
+            "allowed_evidence_ids": ["github:pr:1246:file:src/app/(storefront)/[locale]/[channel]/(main)/login/page.tsx", "github:pr:1246:file:src/app/(storefront)/[locale]/[channel]/(main)/signup/page.tsx"]
+          }
+        }
+      }
+    },
+    {
+      "id": "pr-1242",
+      "split": "held_out",
+      "repository": "saleor/storefront",
+      "pull_request": 1242,
+      "base_revision": "56f021d42196eaa78b997df010430d8ea7842e99",
+      "head_revision": "64917a8cc3eda263ce2d4269f5203db5bc5c98f6",
+      "source_file": "sources/pr-1242.json",
+      "source_sha256": "898885eff832eca6f5d26b3e0e0cf4404c2d3e4d2ce0a5699de7d1a1ceba33a4",
+      "expected": {
+        "ui_elements": [],
+        "flows": [],
+        "requirements": [],
+        "claims": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "graph_id": "integration-impact-e90e5b0521ae4db7a00e3d1e62275595",
+  "origin": "SYNTHETIC_CONTRACT_FIXTURE_NOT_SALEOR_OBSERVATIONS",
+  "sha256": {
+    "evaluation\\datasets\\saleor-retrieval-v0.1\\inputs\\graph\\fixture.json": "9d9fb541ced7ae5aa42ab4e6fc3e7b1458417c1597c302409f6534eb7d1d7944",
+    "evaluation\\datasets\\saleor-retrieval-v0.1\\inputs\\graph\\queries.jsonl": "300fe45dc484828a54c06b406aa0e6f7aa53e1a0e4f2b1bf48fb07f84695f998",
+    "examples\\evaluation\\run_graph_benchmark.py": "be3530db00e102bcc8b22a7e7e354d1cb7c709322e4ece4f05b4586be3ab3e2e",
+    "src\\trace_impact\\code_graph\\__init__.py": "c4b3b911aaf48aaf331bd8c473bf0c110b8b1b796a2c0758d50f29d8288e3142",
+    "src\\trace_impact\\code_graph\\analyzer.py": "94c3891241fc74529ef883041889b0ab40a01966808c9a477cc80094a524c02b",
+    "src\\trace_impact\\code_graph\\config.py": "889ed99fc4731a772a756a84170dd714906b5e1bb16095d80d6771084818c610",
+    "src\\trace_impact\\code_graph\\models.py": "99f1506fd972a23a1dead7f9ee63b367b71e8518b4f61f2c1d786cf9fd47e3eb",
+    "src\\trace_impact\\code_graph\\neo4j.py": "af1efcd6f6ac4a92a8b50e96cb82a53e12cfa1dfd174dd0cdfb9c9438bfb7de6",
+    "src\\trace_impact\\code_graph\\retrieval.py": "848b893555bdd0c7b132635b7e7f37510b654b74f84f34daad44e40615416ec6"
+  }
+}

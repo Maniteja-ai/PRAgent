@@ -1,0 +1,115 @@
+{
+  "dataset_id": "saleor-retrieval",
+  "version": "0.1.0-draft",
+  "status": "DRAFT_PENDING_HUMAN_REVIEW",
+  "created_on": "2026-10-02",
+  "golden_release": false,
+  "source_run_id": "44dd49dc16a84d2e82153ebd7d65c6ee",
+  "source_corpus_sha256": "82d6590de4ad6f7e0b0e01f27bbc5a3b2e515a6987285e171adf8eb1f517bd3c",
+  "split": "development",
+  "held_out_cases": 0,
+  "review": {
+    "status": "DRAFT",
+    "author": "assistant",
+    "evidence_checked_by": [
+      "assistant"
+    ],
+    "human_reviewers": [],
+    "approved": false
+  },
+  "counts": {
+    "source_snapshots": 9,
+    "vector_passages": 30,
+    "vector_cases": 40,
+    "graph_nodes": 29,
+    "graph_edges": 32,
+    "graph_cases": 20,
+    "combined_cases": 5,
+    "failure_contracts": 8,
+    "isolation_cases": 2,
+    "isolation_decoys": 2
+  },
+  "scope": {
+    "vector": "Closed candidate universe of 30 frozen evidence passages; no full-corpus recall claim.",
+    "graph": "Synthetic contract topology; future impact traversal schema, not a populated Saleor UI/code graph.",
+    "combined": "Synthetic orchestration contracts, not real PR end-to-end accuracy.",
+    "real_pr": "Static code evidence only; real UI mapping gold is pending."
+  },
+  "isolation": {
+    "target_input_allowlist": [
+      "inputs/vector/passages.jsonl",
+      "inputs/vector/queries.jsonl",
+      "inputs/graph/fixture.json",
+      "inputs/graph/queries.jsonl",
+      "inputs/vector/isolation-decoys.jsonl"
+    ],
+    "scorer_only": [
+      "labels/",
+      "review/",
+      "manifest.json"
+    ],
+    "enforcement": "Runner not implemented; this manifest specifies the required boundary, it does not enforce OS access."
+  },
+  "grading": {
+    "0": "No evidence for a requested fact in this bounded corpus",
+    "1": "Related context without a complete required evidence unit",
+    "2": "Directly supports at least one required evidence unit",
+    "precision_relevance_min_grade": 2,
+    "recall_unit": "Distinct evidence units; any acceptable passage may cover a unit",
+    "unanswerable": "Expected supporting evidence is empty, but nearest-neighbor retrieval may still return non-supporting passages; abstention belongs to answer selection, not raw vector search.",
+    "full_corpus_use": "Unlisted full-run chunks must be UNJUDGED; never apply this 30-passage qrel matrix to all 121 chunks.",
+    "ndcg_scope": "Answerable cases only. Graded rank scoring may use grades 0/1/2; Precision@k and evidence recall require grade 2.",
+    "input_adapter": "Map dataset snapshot_id to vector-store run_id. Embedding model/profile chosen and frozen when the future runner creates its isolated collection; no stored vectors or relevance scores supplied as embeddings."
+  },
+  "files": {
+    "coverage-matrix.md": "71bf77e9729892388299abd5f3abb717f88236afaf6376c0c1345c2409742e79",
+    "inputs/graph/fixture.json": "9d9fb541ced7ae5aa42ab4e6fc3e7b1458417c1597c302409f6534eb7d1d7944",
+    "inputs/graph/queries.jsonl": "300fe45dc484828a54c06b406aa0e6f7aa53e1a0e4f2b1bf48fb07f84695f998",
+    "inputs/vector/isolation-decoys.jsonl": "9f961a858a7d6e1b0c7c0fca14324b49a4eb5d49f5a50a68ba36f3b806d90bb6",
+    "inputs/vector/passages.jsonl": "87814d9b0f52a35f9f4c50054b14882f365f9d18ce3540ca0d38bfb43c868393",
+    "inputs/vector/queries.jsonl": "6fb4d2948aa3a68eef3e5b654d07ac9287f5dc861a9017eef269f04d70bcf84e",
+    "labels/combined-cases.jsonl": "fc1d7633b0d279e35452f2f37a9c326f630e6e8502c26d48095a2ba71686f399",
+    "labels/failure-contracts.jsonl": "4266de760396beb4f76424e51059ce3376abd4e56983aff8c9bb67e94961922b",
+    "labels/graph-cases.jsonl": "2df50383663617619fe62893b58d43e064e2f7cd078c00882bd1b25657021736",
+    "labels/isolation-cases.jsonl": "4b693934770dabb2b9517e5e364db6a586f1addbd15d6c2642c8edd25ec168c7",
+    "labels/vector-cases.jsonl": "f904474cd769a9d399c1415bc42ec84be44510eddc0dd895fcd1cca96e4fcb58",
+    "README.md": "c6f72a97d1fed68da202fdcc40e1c7b9e2c1168e96bb7f2a306b4a786e150aea",
+    "review/code/baseline/order-summary.tsx": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476",
+    "review/code/baseline/saleor-checkout.tsx": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb",
+    "review/code/LICENSE.upstream": "cf64a058f4001126d9fbef4b41b7827d4b32c7d270b3adf32ee1b5c1cda60e29",
+    "review/code/patched/order-summary.tsx": "d9ac5df219117437b6986fe96f89981eb1b24ff51ecba156f36ea8053d7f2c4f",
+    "review/code/patched/saleor-checkout.tsx": "e9c9e76bc381bfa6924a0406163c1dd97048dfde9faaab3ac8d78dfc8c88ecc7",
+    "review/code/pr-1199.diff": "eb7367e90e2e425e31d2bd19dde239034e7ee0b3a099e57a861ffffd7a26476f",
+    "review/queue.jsonl": "15c9d80feeac10c7e7eee535ae60ea0b47e6234e11be17eaca73cfd53307f28e",
+    "review/real-pr-seeds.json": "7853867159d4ba3d7b7651ee459227fe02cd80b48218d0e35cc9394f4d3a2fe9",
+    "review/review-packet.md": "51a49783312883614350a5891aaff0a33b1cc24cfa21e5eac4a9f7937c855bd4",
+    "review/source-inventory.jsonl": "33842b5b6dec50eef99b186d7982342ae9bddca184533b19bca4f77477664635",
+    "review/sources/add-promo-api.md": "fc28bf7c07e81ae38154161fad04239cf77a2f91103786c35cf7970104d9e3f7",
+    "review/sources/apply-vouchers.md": "aaf88e69e3d4552861e0abb3ec0c206573c069a7de85df685a1b640c836f138d",
+    "review/sources/checkout-lifecycle.md": "faf5b39aebffa2c22cecae2200b6ad115749adef43a2cb9bb5079ddf3a644a3d",
+    "review/sources/checkout.md": "70c14fe3990d64a604708757e84b99c939005d96aedd15a7af4b96fec72fe051",
+    "review/sources/products.md": "5db31c72bb8f36f742992b1f71277a56a5e4456171312cfabca05b580114582f",
+    "review/sources/remove-promo-api.md": "f44bd3d032214fad8ee2e2cc9df0e81425f1cdbd7614ef000ebb7cfe5159e182",
+    "review/sources/shipping-address.md": "d84c8efc121c58e9c589a80c3eef9121cf0a0b9cdbdcd7632c379d8b3e8c1e57",
+    "review/sources/storefront-readme.md": "a45f82b8c7a9adb126952b2a286b5997bdd339d23b589dfc819ba1891bef7477",
+    "review/sources/vouchers.md": "9969faebe6be64f86d71a6ea21f78ec4ac150ee3ad6d172cc9b080b1a5c9bd94",
+    "schemas/dataset.schema.json": "0d4a9a3e786526c3a89201949337132ac6c082ab865be85ebf1e918012e4ba38"
+  },
+  "schema_file": "schemas/dataset.schema.json",
+  "file_schemas": {
+    "manifest.json": "manifest",
+    "inputs/vector/passages.jsonl": "passage",
+    "inputs/vector/isolation-decoys.jsonl": "passage",
+    "inputs/vector/queries.jsonl": "vector_query",
+    "inputs/graph/fixture.json": "graph_fixture",
+    "inputs/graph/queries.jsonl": "graph_query",
+    "labels/vector-cases.jsonl": "vector_case",
+    "labels/graph-cases.jsonl": "graph_case",
+    "labels/combined-cases.jsonl": "combined",
+    "labels/failure-contracts.jsonl": "failure",
+    "labels/isolation-cases.jsonl": "isolation",
+    "review/queue.jsonl": "queue",
+    "review/source-inventory.jsonl": "source",
+    "review/real-pr-seeds.json": "real_seeds"
+  }
+}

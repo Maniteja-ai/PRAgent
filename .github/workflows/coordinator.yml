@@ -1,0 +1,38 @@
+name: Coordinator checks
+on:
+  push:
+    paths: ["packages/coordinator/**", "src/trace_impact/**", "pyproject.toml", ".github/workflows/coordinator.yml"]
+  pull_request:
+    paths: ["packages/coordinator/**", "src/trace_impact/**", "pyproject.toml", ".github/workflows/coordinator.yml"]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/coordinator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.10"
+      - run: uv sync --locked --python 3.12 --extra knowledge --extra browser
+      - run: uv run --no-sync playwright install --with-deps chromium
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --prefix ../../src/trace_impact/ingestion/code/typescript --ignore-scripts
+      - run: uv run --no-sync ruff check src tests
+      - run: uv run --no-sync ruff format --check src tests
+      - run: uv run --no-sync pytest -q --cov=trace_coordinator --cov-branch --cov-fail-under=90 --cov-report=xml:artifacts/coverage.xml --junitxml=artifacts/tests.xml
+      - run: uv build --wheel
+      - name: Verify core without optional dependencies
+        run: |
+          uv venv /tmp/coordinator-core --python 3.12
+          uv pip install --python /tmp/coordinator-core/bin/python dist/*.whl
+          /tmp/coordinator-core/bin/python -c "import importlib.util; import trace_coordinator; assert importlib.util.find_spec('trace_impact') is None"
+          /tmp/coordinator-core/bin/trace-coordinator run configs/demo.json examples/request.json --run-id isolated-core --output artifacts/isolated-core
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coordinator-test-reports
+          path: packages/coordinator/artifacts/

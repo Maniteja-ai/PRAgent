@@ -1,0 +1,204 @@
+{
+  "query": "What must be present before a shipping voucher can be applied?",
+  "scope": {
+    "project_id": "saleor-storefront",
+    "run_id": "44dd49dc16a84d2e82153ebd7d65c6ee"
+  },
+  "candidates": [
+    {
+      "id": "02d6cca4ffb1723cff220549c22b9b54",
+      "scope": {
+        "project_id": "saleor-storefront",
+        "run_id": "44dd49dc16a84d2e82153ebd7d65c6ee"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Shipping Voucher[​](#shipping-voucher \"Direct link to Shipping Voucher\")\n\nTo apply a shipping voucher, the checkout must include shippable products, a provided shipping address, and a shipping method assigned.\n\nIn this example the checkout consists of one line for **$100**, shipping price for **$20** and **50%** shipping voucher.\nThe discount affects shipping price only.\n\n* Mutation* Variables* Result\n\n```\nmutation AddCheckoutPromoCode($checkoutId: ID!, $promoCode: String!) {  \n  checkoutAddPromoCode(id: $checkoutId, promoCode: $promoCode) {  \n    checkout {  \n      id  \n      token  \n      voucherCode  \n      discountName  \n      discount {  \n        amount  \n      }  \n      totalPrice {  \n        net {  \n          amount  \n        }  \n      }  \n      subtotalPrice {  \n        net {  \n          amount  \n        }  \n      }  \n      shippingPrice {  \n        net {  \n          amount  \n        }  \n      }  \n    }  \n  }  \n}\n```\n\n```\n{  \n  \"checkoutId\": \"Q2hlY2tvdXQ6ZDgwMWI3MjUtNzBmMC00NGNiLWFmNjctMmNmYjc4YmY5MTU4\",  \n  \"promoCode\": \"code-123\"  \n}\n```\n\n```\n{  \n   \"data\":{  \n      \"checkoutAddPromoCode\":{  \n         \"checkout\":{  \n            \"id\":\"Q2hlY2tvdXQ6ZDgwMWI3MjUtNzBmMC00NGNiLWFmNjctMmNmYjc4YmY5MTU4\",  \n            \"token\":\"d801b725-70f0-44cb-af67-2cfb78bf9158\",  \n            \"voucherCode\":\"code-123\",  \n            \"discountName\":\"half-shipping\",  \n            \"discount\":{  \n               \"amount\":10.0  \n            },  \n            \"totalPrice\":{  \n               \"net\":{  \n                  \"amount\":110.0  \n               }  \n            },  \n            \"subtotalPrice\":{  \n               \"net\":{  \n                  \"amount\":100.0  \n               }  \n            },  \n            \"shippingPrice\":{  \n               \"net\":{  \n                  \"amount\":10.0  \n               }  \n            }  \n         }  \n      }  \n   }  \n}\n```\n\nFor more complex cases, please check [Examples](/developer/discounts/examples) section.",
+      "artifact_path": "sources/apply-vouchers/476c932575a61948ffffc891e286cc58/normalized.md",
+      "retrieval_score": 0.7783829664938298,
+      "metadata": {}
+    },
+    {
+      "id": "247d18c3b508978febbaf9bfb2275081",
+      "scope": {
+        "project_id": "saleor-storefront",
+        "run_id": "44dd49dc16a84d2e82153ebd7d65c6ee"
+      },
+      "source_id": "vouchers",
+      "text": "### Limit Shipping Vouchers to Specific Countries[​](#limit-shipping-vouchers-to-specific-countries \"Direct link to Limit Shipping Vouchers to Specific Countries\")\n\n`Voucher.countries` defines a list of countries where the shipping voucher can be applied.\n\n* If set, the voucher will only be valid for orders shipping to the specified countries.\n* If left empty, the voucher will be valid for all countries.\n\n**Example:**\n\n```\n{  \n  \"countries\": [\"US\", \"CA\", \"GB\"]  \n}\n```\n\nIn this example, the voucher is only valid for shipments to the United States, Canada, and the United Kingdom.",
+      "artifact_path": "sources/vouchers/6bcb65ff68115a993bb84bad6668ddb2/normalized.md",
+      "retrieval_score": 0.7668425188277247,
+      "metadata": {}
+    },
+    {
+      "id": "69ba389102541f6aa494018353847f2f",
+      "scope": {
+        "project_id": "saleor-storefront",
+        "run_id": "44dd49dc16a84d2e82153ebd7d65c6ee"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Shipping method removal invalidates shipping voucher[​](#shipping-method-removal-invalidates-shipping-voucher \"Direct link to Shipping method removal invalidates shipping voucher\")\n\n**Scenario:**\n\n1. Checkout has 2 lines and a shipping method assigned.\n2. A shipping voucher is applied.\n3. One checkout line is removed.\n4. The assigned shipping method is no longer valid for the updated checkout (e.g., weight, location, or product eligibility changes).\n5. The shipping method is automatically removed from the checkout.\n\nSince the shipping method is removed, the shipping voucher is also automatically unassigned.\n\n**Before removing a line:**\n\n```\n{  \n   \"checkout\":{  \n      \"isShippingRequired\":true,  \n      \"voucherCode\":\"shipping\",  \n      \"deliveryMethod\":{  \n         \"id\":\"U2hpcHBpbmdNZXRob2Q6MzE=\",  \n         \"name\":\"ups\"  \n      },  \n      \"lines\":[  \n         {  \n            \"id\":\"Q2hlY2tvdXRMaW5lOmE4NWJjNDkwLTEwMjAtNDU5Zi1iYmMzLWNmZTYyYmI4Y2I1Ng==\",  \n            \"quantity\":1,  \n            \"requiresShipping\":true  \n         },  \n         {  \n            \"id\":\"Q2hlY2tvdXRMaW5lOmVkMDE2YzY0LTdhZjctNGI0Ny1hYjJjLWJmMDc2NWM3MzQxNg==\",  \n            \"quantity\":2,  \n            \"requiresShipping\":false  \n         }  \n      ],  \n      \"totalPrice\":{  \n         \"gross\":{  \n            \"amount\":120.0  \n         }  \n      }  \n   }  \n}\n```\n\n**After removing one line (shipping method becomes invalid):**\n\n```\n{  \n   \"checkout\":{  \n      \"isShippingRequired\":false,  \n      \"voucherCode\":null,  \n      \"deliveryMethod\":null,  \n      \"lines\":[  \n         {  \n            \"id\":\"Q2hlY2tvdXRMaW5lOmVkMDE2YzY0LTdhZjctNGI0Ny1hYjJjLWJmMDc2NWM3MzQxNg==\",  \n            \"quantity\":2,  \n            \"requiresShipping\":false  \n         }  \n      ],  \n      \"totalPrice\":{  \n         \"gross\":{  \n            \"amount\":80.0  \n         }  \n      }  \n   }  \n}\n```",
+      "artifact_path": "sources/apply-vouchers/476c932575a61948ffffc891e286cc58/normalized.md",
+      "retrieval_score": 0.7528982474305261,
+      "metadata": {}
+    },
+    {
+      "id": "22740223a1556608286e15fc19d8d206",
+      "scope": {
+        "project_id": "saleor-storefront",
+        "run_id": "44dd49dc16a84d2e82153ebd7d65c6ee"
+      },
+      "source_id": "vouchers",
+      "text": "### Minimal Order Value[​](#minimal-order-value \"Direct link to Minimal Order Value\")\n\nSpecifies the minimum checkout subtotal required for the voucher to be applicable.\nThe value is defined per sales channel via `VoucherChannelListing.minSpent`.\n\nIf the subtotal does not meet this threshold, the voucher will not be applied.\n\n**Example:** If `minSpent` is set to 100.00, and the subtotal is 95.96 with 10.00 shipping (total 105.96), the voucher will not be applied.",
+      "artifact_path": "sources/vouchers/6bcb65ff68115a993bb84bad6668ddb2/normalized.md",
+      "retrieval_score": 0.7487838150656465,
+      "metadata": {}
+    },
+    {
+      "id": "1e54dd9ec1dcd5459920846b2f31b12a",
+      "scope": {
+        "project_id": "saleor-storefront",
+        "run_id": "44dd49dc16a84d2e82153ebd7d65c6ee"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Subtotal change invalidates minimum spent voucher[​](#subtotal-change-invalidates-minimum-spent-voucher \"Direct link to Subtotal change invalidates minimum spent voucher\")\n\n**Scenario:**\n\n1. Checkout has 2 lines and a valid shipping method assigned.\n2. A voucher with a minimum spent amount condition is applied.\n3. One line is removed from the checkout.\n4. The checkout subtotal drops below the voucher’s minimum requirement.\n\nThe voucher is automatically removed, but the shipping method remains assigned.\n\n**Before removing a line:**\n\n```\n{  \n   \"checkout\":{  \n      \"voucherCode\":\"minus15\",  \n      \"deliveryMethod\":{  \n         \"id\":\"U2hpcHBpbmdNZXRob2Q6MzE=\",  \n         \"name\":\"ups\",  \n         \"active\":true  \n      },  \n      \"lines\":[  \n         {  \n            \"id\":\"Q2hlY2tvdXRMaW5lOjBiNTQyOGUwLTY0YmQtNGZkZS05MDExLWY2ODYzZDI2MjIzYQ==\",  \n            \"quantity\":1  \n         },  \n         {  \n            \"id\":\"Q2hlY2tvdXRMaW5lOjQyOWNhMzZkLTIwZTMtNDc4OS1hN2JhLTcxOTFjZDAwOGFjZg==\",  \n            \"quantity\":2  \n         }  \n      ],  \n      \"totalPrice\":{  \n         \"gross\":{  \n            \"amount\":112.0  \n         }  \n      }  \n   }  \n}\n```\n\n**After removing one line (subtotal below requirement):**\n\n```\n{  \n   \"checkout\":{  \n      \"voucherCode\":null,  \n      \"deliveryMethod\":{  \n         \"id\":\"U2hpcHBpbmdNZXRob2Q6MzE=\",  \n         \"name\":\"ups\",  \n         \"active\":true  \n      },  \n      \"lines\":[  \n         {  \n            \"id\":\"Q2hlY2tvdXRMaW5lOjBiNTQyOGUwLTY0YmQtNGZkZS05MDExLWY2ODYzZDI2MjIzYQ==\",  \n            \"quantity\":1  \n         }  \n      ],  \n      \"totalPrice\":{  \n         \"gross\":{  \n            \"amount\":50.0  \n         }  \n      }  \n   }  \n}\n```",
+      "artifact_path": "sources/apply-vouchers/476c932575a61948ffffc891e286cc58/normalized.md",
+      "retrieval_score": 0.7260425690740961,
+      "metadata": {}
+    },
+    {
+      "id": "0e6b726aaa102a481ebe6eb8c51e38fb",
+      "scope": {
+        "project_id": "saleor-storefront",
+        "run_id": "44dd49dc16a84d2e82153ebd7d65c6ee"
+      },
+      "source_id": "vouchers",
+      "text": "## Types[​](#types \"Direct link to Types\")\n\nVouchers come in three types:\n\n* `ENTIRE_ORDER`: Applies discount to the checkout subtotal\n* `SPECIFIC_PRODUCT`: Applies discount to eligible product unit prices. You define eligibility by linking products, variants, categories, or collections.\n* `SHIPPING`: Applies discount to shipping costs. To apply a shipping voucher, the checkout must include shippable products, shipping address, and a shipping method assigned.\n\nVouchers also have two value types:\n\n* `FIXED`: Reduces price by a specific amount\n* `PERCENTAGE`: Reduces price by a specific percentage\n\nnote\n\n**Vouchers vs Gift Cards**\n\nVouchers discount the subtotal, unit price, or shipping based on their type and are scoped to channels.\nGift cards reduce the total price and are currency-based, usable across channels with the same currency.",
+      "artifact_path": "sources/vouchers/6bcb65ff68115a993bb84bad6668ddb2/normalized.md",
+      "retrieval_score": 0.7247926403264506,
+      "metadata": {}
+    },
+    {
+      "id": "ba1c1a84263ae6a741cc6ee9ca33a1aa",
+      "scope": {
+        "project_id": "saleor-storefront",
+        "run_id": "44dd49dc16a84d2e82153ebd7d65c6ee"
+      },
+      "source_id": "apply-vouchers",
+      "text": "[View Markdown](/developer/discounts/apply-vouchers.md)\n\nApplying vouchers is the process of redeeming a voucher code during checkout or when creating a draft order.  \nOnce applied, the discount is reflected in product line prices or order subtotal.\nVouchers can be combined with catalog promotions, but their behavior depends on how they were configured.\n\nIf you’re looking for details on voucher types, settings, or how to create them, see the [Vouchers guide](/developer/discounts/vouchers).",
+      "artifact_path": "sources/apply-vouchers/476c932575a61948ffffc891e286cc58/normalized.md",
+      "retrieval_score": 0.715570535527805,
+      "metadata": {}
+    },
+    {
+      "id": "99393ffbea3cb930c82d21313c729e8f",
+      "scope": {
+        "project_id": "saleor-storefront",
+        "run_id": "44dd49dc16a84d2e82153ebd7d65c6ee"
+      },
+      "source_id": "apply-vouchers",
+      "text": "## Apply a Voucher Code[​](#apply-a-voucher-code \"Direct link to Apply a Voucher Code\")\n\nTo apply the voucher on checkout use [`checkoutAddPromoCode`](/api-reference/checkout/mutations/checkout-add-promo-code)\nmutation. The discount will be visible both in the line prices and in the `checkout.discount` field.\nTo apply the voucher on draft order use [`draftOrderCreate`](/api-reference/orders/mutations/draft-order-create) or [`draftOrderUpdate`](/api-reference/orders/mutations/draft-order-update)\nand pass `voucherCode` as an argument.",
+      "artifact_path": "sources/apply-vouchers/476c932575a61948ffffc891e286cc58/normalized.md",
+      "retrieval_score": 0.7102381900392769,
+      "metadata": {}
+    },
+    {
+      "id": "7d8984ab1d1df9d4e186bca8c253f9bb",
+      "scope": {
+        "project_id": "saleor-storefront",
+        "run_id": "44dd49dc16a84d2e82153ebd7d65c6ee"
+      },
+      "source_id": "vouchers",
+      "text": "### When Usage Is Counted[​](#when-usage-is-counted \"Direct link to When Usage Is Counted\")\n\nVoucher usage is **deducted at the order level**, not when a code is applied in checkout.\n\n* Customers can apply vouchers to multiple checkouts or draft orders.\n* The usage count is only increased once an order is successfully completed.\n* For draft orders, you can decide whether they should be included in voucher usage tracking. See [Draft Order Usage](#draft-order-usage) for details.\n* If a voucher has reached its usage limit:\n  + Checkouts or draft orders that already have the voucher applied will fail at **order completion**.\n  + Attempts to apply the voucher to a new checkout or draft order will be rejected immediately.\n\nThis ensures that incomplete or abandoned checkouts do not block other customers from redeeming the voucher, while preventing over-usage once the limit is reached.",
+      "artifact_path": "sources/vouchers/6bcb65ff68115a993bb84bad6668ddb2/normalized.md",
+      "retrieval_score": 0.7084816693133653,
+      "metadata": {}
+    },
+    {
+      "id": "e2203297107c83efea88112fb62b4860",
+      "scope": {
+        "project_id": "saleor-storefront",
+        "run_id": "44dd49dc16a84d2e82153ebd7d65c6ee"
+      },
+      "source_id": "apply-vouchers",
+      "text": "## Completing Checkout with Vouchers[​](#completing-checkout-with-vouchers \"Direct link to Completing Checkout with Vouchers\")\n\nWhen completing the checkout with an assigned voucher, the applied voucher discount\nwill be visible on the order and order line prices. Additionally, the sum of voucher\ndiscounts will be reflected in the `order.discounts` field. This behavior is consistent\nacross all voucher types.\n\nThe following example shows the response from the [`checkoutComplete`](/api-reference/checkout/mutations/checkout-complete)\nmutation for a checkout that includes **two items** of the same variant with a **10% voucher discount** applied.\n\n```\n{  \n  \"data\": {  \n    \"checkoutComplete\": {  \n      \"order\": {  \n        \"id\": \"T3JkZXI6NmM1MjhkNGYtZjc5YS00OGM1LTk2ZWUtYjI0M2U2ZjdmMDBm\",  \n        \"status\": \"UNFULFILLED\",  \n        \"totalCaptured\": {  \n          \"amount\": 113.51  \n        },  \n        \"subtotal\": {  \n          \"net\": {  \n            \"amount\": 33.96  \n          },  \n          \"gross\": {  \n            \"amount\": 36.0  \n          }  \n        },  \n        \"total\": {  \n          \"currency\": \"USD\",  \n          \"net\": {  \n            \"amount\": 107.08  \n          },  \n          \"gross\": {  \n            \"amount\": 113.51  \n          }  \n        },  \n        \"undiscountedTotal\": {  \n          \"currency\": \"USD\",  \n          \"net\": {  \n            \"amount\": 113.12  \n          },  \n          \"gross\": {  \n            \"amount\": 117.51  \n          }  \n        },  \n        \"discounts\": [  \n          {  \n            \"name\": null,  \n            \"type\": \"VOUCHER\",  \n            \"valueType\": \"FIXED\",  \n            \"amount\": {  \n              \"amount\": 4.0  \n            }  \n          }  \n        ],  \n        \"lines\": [  \n          {  \n            \"quantity\": 2,  \n            \"totalPrice\": {  \n              \"gross\": {  \n                \"amount\": 36.0  \n              },  \n              \"net\": {  \n                \"amount\": 33.96  \n              }  \n            },  \n            \"unitPrice\": {  \n              \"gross\": {  \n                \"amount\": 18.0  \n              },  \n              \"net\": {  \n                \"amount\": 16.98  \n              }  \n            },  \n            \"undiscountedUnitPrice\": {  \n              \"gross\": {  \n                \"amount\": 20.0  \n              },  \n              \"net\": {  \n                \"amount\": 20.0  \n              }  \n            },  \n            \"unitDiscount\": {  \n              \"amount\": 2.0  \n            }  \n          }  \n        ]  \n      },  \n      \"errors\": []  \n    }  \n  }  \n}\n```\n\nThe discount amount can be found in `order.discounts.amount`, the value is equal to the\n`order.lines.unitDiscount` multiplied by the line quantity.\nThe discount can also be seen in the line prices - compare the `undiscountedUnitPrice` and the `unitPrice`.\n\n* [Apply a Voucher Code](#apply-a-voucher-code)\n  + [Entire Order Voucher](#entire-order-voucher)+ [Once-Per-Order Entire Order Voucher](#once-per-order-entire-order-voucher)+ [Specific Product Voucher](#specific-product-voucher)+ [Once-Per-Order Specific Product Voucher](#once-per-order-specific-product-voucher)+ [Shipping Voucher](#shipping-voucher)* [Automatic Voucher Invalidation](#automatic-voucher-invalidation)\n    + [Shipping method removal invalidates shipping voucher](#shipping-method-removal-invalidates-shipping-voucher)+ [Subtotal change invalidates minimum spent voucher](#subtotal-change-invalidates-minimum-spent-voucher)* [Combining Promotions and Vouchers](#combining-promotions-and-vouchers)* [Completing Checkout with Vouchers](#completing-checkout-with-vouchers)",
+      "artifact_path": "sources/apply-vouchers/476c932575a61948ffffc891e286cc58/normalized.md",
+      "retrieval_score": 0.7070265020880531,
+      "metadata": {}
+    }
+  ],
+  "ranking": {
+    "score_kind": "gemini-relevance-v1",
+    "scores": [
+      {
+        "id": "02d6cca4ffb1723cff220549c22b9b54",
+        "score": 3.0,
+        "quote": "To apply a shipping voucher, the checkout must include shippable products, a provided shipping address, and a shipping method assigned."
+      },
+      {
+        "id": "0e6b726aaa102a481ebe6eb8c51e38fb",
+        "score": 3.0,
+        "quote": "To apply a shipping voucher, the checkout must include shippable products, shipping address, and a shipping method assigned."
+      },
+      {
+        "id": "69ba389102541f6aa494018353847f2f",
+        "score": 2.0,
+        "quote": ""
+      },
+      {
+        "id": "247d18c3b508978febbaf9bfb2275081",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "22740223a1556608286e15fc19d8d206",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "1e54dd9ec1dcd5459920846b2f31b12a",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "ba1c1a84263ae6a741cc6ee9ca33a1aa",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "99393ffbea3cb930c82d21313c729e8f",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "e2203297107c83efea88112fb62b4860",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "7d8984ab1d1df9d4e186bca8c253f9bb",
+        "score": 0.0,
+        "quote": ""
+      }
+    ],
+    "usage": {
+      "input_tokens": 4712,
+      "output_tokens": 615,
+      "total_tokens": 5327
+    }
+  },
+  "selection": {
+    "ids": [
+      "02d6cca4ffb1723cff220549c22b9b54",
+      "0e6b726aaa102a481ebe6eb8c51e38fb"
+    ],
+    "reason": "relevance_threshold",
+    "limit_reached": false
+  },
+  "status": "EVIDENCE_FOUND",
+  "coverage": "NOT_EVALUATED",
+  "timings_ms": {
+    "retrieve": 1743.971000003512,
+    "rerank": 8515.256000013324,
+    "select": 0.20179999410174787
+  }
+}

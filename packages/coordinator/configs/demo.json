@@ -1,0 +1,17 @@
+{
+  "$schema": "../schemas/coordinator.schema.json",
+  "schema_version": 1,
+  "limits": {
+    "per_agent_tool": 5,
+    "overrides": {},
+    "total_calls": 30,
+    "max_rounds": 10,
+    "max_review_requests": 2,
+    "max_run_seconds": 900,
+    "retry_attempts": 2,
+    "retry_delay_seconds": 1
+  },
+  "model": {"provider": "fixture", "file": "../examples/voucher-fixture.json"},
+  "tools": {"provider": "fixture", "file": "../examples/voucher-fixture.json"},
+  "state_directory": "../runs"
+}

@@ -1,0 +1,43 @@
+[View Markdown](/developer/checkout/overview.md)
+
+### Why Is There No Cart Model?[​](#why-is-there-no-cart-model "Direct link to Why Is There No Cart Model?")
+
+Saleor has no distinct object type for shopping carts and checkouts. We wanted the same features – like discounts, vouchers, address-specific taxes, and shipping estimates – to be available in the cart and the checkout, so we've decided to use the same object type for both.
+Checkout provides the interface for standard cart operations like adding products or promo codes. It can also be processed in almost any order, for example, by saving a billing address before adding any items.
+
+### Glossary[​](#glossary "Direct link to Glossary")
+
+* **Checkout**: Object that groups all the data needed for the checkout process and creating an order.
+* **Checkout Line**: Items added to the checkout with quantity data. Each added variant has a separate line.
+* **Checkout Completion**: During this step, payments may be processed and stocks may be reserved. If requirements are met, the order is created.
+* **Payment Gateway**: Payment App or legacy plugin. e.g., [Adyen](/developer/app-store/apps/adyen/overview), [Stripe](/developer/app-store/apps/stripe/overview).
+* **Transaction**: Object containing status and additional data about payment.
+* **Shipping Methods**: The way orders will be sent. E.g., DHL courier, postal service.
+* **Collection Points**: Places where orders can be self-picked.
+* **Delivery Methods**: Union of shipping methods and collection points.
+
+## Multiple Channels and Checkout[​](#multiple-channels-and-checkout "Direct link to Multiple Channels and Checkout")
+
+Depending on the chosen channel, the user will have access to different objects. This impacts available:
+
+* Products and Product Variants
+* Payment Gateways
+* Shipping Methods
+* Collection Points
+* Discounts
+
+[Learn more about using multiple channels](/developer/channels/overview).
+
+## Permissions[​](#permissions "Direct link to Permissions")
+
+A checkout is identified by a UUID-based ID.
+Anyone who knows this ID can query or modify the checkout.
+
+The table below shows what is publicly accessible when you know the checkout ID,
+and what requires ownership or staff/app permissions.
+
+|  |  |  |  |  |  |  |  |  |  |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Public Private|  |  |  |  |  |  |  |  | | --- | --- | --- | --- | --- | --- | --- | --- | | **Cart details**: products in the checkout, quantities, discounts, totals **User**: returned only to the authenticated owner or staff/app with `MANAGE_CHECKOUTS`| **Addresses & contact**: shipping and billing address, customer email, customer note **Transactions**: require staff/app with `MANAGE_CHECKOUTS` and `HANDLE_PAYMENTS`| **Delivery options**: shipping methods, collection points, selected delivery method **Private metadata**: only staff with `MANAGE_CHECKOUTS`| **Public metadata**  | | | | | | | | | |
+
+* [Why Is There No Cart Model?](#why-is-there-no-cart-model)* [Glossary](#glossary)* [Multiple Channels and Checkout](#multiple-channels-and-checkout)* [Permissions](#permissions)

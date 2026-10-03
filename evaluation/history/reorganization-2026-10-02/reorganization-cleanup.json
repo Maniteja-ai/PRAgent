@@ -1,0 +1,7 @@
+[
+  "src\\trace_impact\\implementations",
+  "src\\trace_impact\\code_graph",
+  "src\\trace_eval",
+  "projects",
+  "requirements"
+]

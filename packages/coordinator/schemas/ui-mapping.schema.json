@@ -1,0 +1,135 @@
+{
+  "$defs": {
+    "ComponentBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "module": {
+          "description": "Exact import specifier in the consuming TSX file.",
+          "title": "Module",
+          "type": "string"
+        },
+        "export": {
+          "title": "Export",
+          "type": "string"
+        },
+        "path": {
+          "description": "Repository-relative wrapper source at the pinned revision.",
+          "title": "Path",
+          "type": "string"
+        },
+        "native_tag": {
+          "enum": [
+            "input",
+            "button"
+          ],
+          "title": "Native Tag",
+          "type": "string"
+        }
+      },
+      "required": [
+        "module",
+        "export",
+        "path",
+        "native_tag"
+      ],
+      "title": "ComponentBinding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "provider": {
+      "const": "typescript_jsx",
+      "default": "typescript_jsx",
+      "title": "Provider",
+      "type": "string"
+    },
+    "application_file": {
+      "title": "Application File",
+      "type": "string"
+    },
+    "report_file": {
+      "title": "Report File",
+      "type": "string"
+    },
+    "report_sha256": {
+      "description": "Pins the reviewed exploration report.",
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Report Sha256",
+      "type": "string"
+    },
+    "code_config_file": {
+      "title": "Code Config File",
+      "type": "string"
+    },
+    "env_file": {
+      "title": "Env File",
+      "type": "string"
+    },
+    "output_directory": {
+      "title": "Output Directory",
+      "type": "string"
+    },
+    "environment": {
+      "default": "patched",
+      "enum": [
+        "baseline",
+        "patched"
+      ],
+      "title": "Environment",
+      "type": "string"
+    },
+    "flow_name": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Flow Name",
+      "type": "string"
+    },
+    "components": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ComponentBinding"
+      },
+      "maxItems": 50,
+      "title": "Components",
+      "type": "array"
+    },
+    "max_candidates": {
+      "default": 50,
+      "maximum": 50,
+      "minimum": 1,
+      "title": "Max Candidates",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "application_file",
+    "report_file",
+    "report_sha256",
+    "code_config_file",
+    "env_file",
+    "output_directory",
+    "flow_name"
+  ],
+  "title": "MappingConfig",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

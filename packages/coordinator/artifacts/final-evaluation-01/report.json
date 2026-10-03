@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "status": "PASSED_WITH_LIMITATIONS",
+  "campaign": "saleor-final-evaluation-v1",
+  "checks": [
+    {
+      "stage": "ingestion",
+      "name": "pipeline completed",
+      "passed": true,
+      "actual": "COMPLETE",
+      "threshold": null
+    },
+    {
+      "stage": "ingestion",
+      "name": "all chunks indexed and processed",
+      "passed": true,
+      "actual": {
+        "chunks": 121,
+        "indexed": 121,
+        "processed": 121
+      },
+      "threshold": null
+    },
+    {
+      "stage": "ingestion",
+      "name": "persisted stores verified",
+      "passed": true,
+      "actual": {
+        "source_hashes": "VERIFIED",
+        "qdrant": "VERIFIED_AGAINST_SOURCES_AND_CACHE",
+        "neo4j_chunks": 121
+      },
+      "threshold": null
+    },
+    {
+      "stage": "vector",
+      "name": "40-query benchmark completed",
+      "passed": true,
+      "actual": 40,
+      "threshold": 40
+    },
+    {
+      "stage": "vector",
+      "name": "passage recall at five",
+      "passed": true,
+      "actual": 0.9318181818181818,
+      "threshold": 0.9
+    },
+    {
+      "stage": "vector",
+      "name": "required evidence recall at five",
+      "passed": true,
+      "actual": 1.0,
+      "threshold": 1.0
+    },
+    {
+      "stage": "vector",
+      "name": "mean reciprocal rank",
+      "passed": true,
+      "actual": 0.8952380952380952,
+      "threshold": 0.85
+    },
+    {
+      "stage": "optional reranker",
+      "name": "selected evidence precision",
+      "passed": true,
+      "actual": 0.9777777777777777,
+      "threshold": 0.95
+    },
+    {
+      "stage": "optional reranker",
+      "name": "selected evidence recall",
+      "passed": true,
+      "actual": 1.0,
+      "threshold": 0.95
+    },
+    {
+      "stage": "neo4j",
+      "name": "UI nodes precision and recall",
+      "passed": true,
+      "actual": {
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "threshold": {
+        "precision": 1.0,
+        "recall": 1.0
+      }
+    },
+    {
+      "stage": "neo4j",
+      "name": "flows precision and recall",
+      "passed": true,
+      "actual": {
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "threshold": {
+        "precision": 1.0,
+        "recall": 1.0
+      }
+    },
+    {
+      "stage": "neo4j",
+      "name": "requirements precision and recall",
+      "passed": true,
+      "actual": {
+        "precision": 1.0,
+        "recall": 1.0
+      },
+      "threshold": {
+        "precision": 1.0,
+        "recall": 1.0
+      }
+    },
+    {
+      "stage": "neo4j",
+      "name": "100-run query stability",
+      "passed": true,
+      "actual": {
+        "scheduled": 100,
+        "completed": 100,
+        "correct": 100,
+        "distinct_success_outputs": 1
+      },
+      "threshold": 100
+    },
+    {
+      "stage": "coordinator",
+      "name": "golden contract cases",
+      "passed": true,
+      "actual": {
+        "true_positive": 2,
+        "false_positive": 0,
+        "false_negative": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "case_pass_rate": 1.0,
+        "cases_passed": 4,
+        "cases_total": 4
+      },
+      "threshold": 1.0
+    },
+    {
+      "stage": "coordinator",
+      "name": "100-run agent stability",
+      "passed": true,
+      "actual": {
+        "scheduled": 100,
+        "completed": 100,
+        "passed": 100,
+        "pass_rate": 1.0,
+        "distinct_behavioral_outputs": 1,
+        "mean_seconds": 0.517745,
+        "max_seconds": 1.515316
+      },
+      "threshold": 100
+    },
+    {
+      "stage": "llm",
+      "name": "live grounding and safety",
+      "passed": true,
+      "actual": {
+        "cases_passed": 4,
+        "cases_total": 4,
+        "case_pass_rate": 1.0,
+        "provider_calls": 3,
+        "structured_output_rate": 1.0,
+        "grounded_finding_rate": 1.0,
+        "sensitive_output_leaks": 0,
+        "latency_ms_median": 1503.8,
+        "latency_ms_max": 2042.85
+      },
+      "threshold": 1.0
+    },
+    {
+      "stage": "end to end",
+      "name": "live PR workflow and behavioral verification",
+      "passed": true,
+      "actual": {
+        "status": "COMPLETED",
+        "completeness": "COMPLETE_FOR_CONFIGURED_SCOPE",
+        "verification": "COMPLETED",
+        "attestation": "VERIFIED",
+        "attribution": "SUPPORTED"
+      },
+      "threshold": null
+    }
+  ],
+  "summary": {
+    "checks_passed": 17,
+    "checks_total": 17,
+    "limitations": 10
+  },
+  "limitations": [
+    "Requirement extraction has quote-grounding checks, but no independently reviewed semantic precision/recall over all 121 chunks.",
+    "Retrieval and graph labels are development references created by the implementation author; no independent reviewer approved them.",
+    "Raw vector precision at five is 23.43%; use the evidence selector when precision matters.",
+    "Neo4j accuracy uses a synthetic contract graph; the Saleor code-to-UI-to-requirement graph is not independently labelled.",
+    "Coordinator accuracy covers 4 fixture cases; broader PR coverage remains future work.",
+    "Live LLM evaluation has four focused cases and three provider calls; it is a safety/grounding check, not a statistical model-quality claim.",
+    "PR number and replay status are configuration labels; remote PR metadata was not verified.",
+    "UI links have static structural validation and an attested deployed revision; behavior is reported separately.",
+    "Only the explicitly listed behavioral checks were run; unlisted flows are outside scope.",
+    "Reviewed requirement contracts passed for this scenario; other retrieved requirements remain unvalidated."
+  ],
+  "inputs": {
+    "ingestion_report_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\artifacts\\ingestion\\saleor-run-44dd49dc.json",
+      "sha256": "2baea3694467b4fa21336aba240e733141fe5cf0d16c317aa07e0604f5e5304a"
+    },
+    "retrieval_dataset_manifest_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\evaluation\\datasets\\saleor-retrieval-v0.1\\manifest.json",
+      "sha256": "1edd8f68f59b4d8f75d5b659f3f2462d3563ff9ffa31d2de5c0254d90d038b41"
+    },
+    "vector_summary_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\evaluation\\history\\remaining-evals-2026-10-02\\vector\\summary.json",
+      "sha256": "10f5f535cdceb5fb87c579d600c8d409124db27aa0e4988d368ef57ecca6359c"
+    },
+    "reranker_summary_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\evaluation\\history\\gemini-reranking-2026-10-02\\summary.json",
+      "sha256": "407348db55ac95f7d5c5b3a3ffd05aca8b91d214ea8c0821c6ad619bbe34f2ad"
+    },
+    "graph_summary_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\evaluation\\history\\neo4j-graph-2026-10-02\\summary.json",
+      "sha256": "e07a7658267a2cb33d3fe34048b4f71bcbd6d26e5aeeadbb4896e42074de34c1"
+    },
+    "graph_stability_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\evaluation\\history\\remaining-evals-2026-10-02\\stability\\summary.json",
+      "sha256": "8ef22d921761f1f468a62e1326b58a1eb5c52d34893aedd760b020186e8c995e"
+    },
+    "coordinator_evaluation_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\packages\\coordinator\\artifacts\\golden-evaluation-03\\report.json",
+      "sha256": "1e89928e1fa1c1a34a10d3d116179a27f2c339a617b6fe9640de0a83d2d07003"
+    },
+    "coordinator_stability_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\packages\\coordinator\\artifacts\\coordinator-stability-01\\report.json",
+      "sha256": "6a6de5157ca3afe4f991bfdb4b0651af19cc1ab74b448bcbfa5dddb9bc02cb1d"
+    },
+    "llm_evaluation_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\packages\\coordinator\\artifacts\\live-llm-evaluation-01\\report.json",
+      "sha256": "714f9b20cb8ba9c3222a3a99f5ce09d758b43db5053640fc28c46e3b0695cebb"
+    },
+    "workflow_report_file": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\packages\\coordinator\\artifacts\\saleor-production-09\\report.json",
+      "sha256": "5f9db78b7597c4c73e11774a8326c5c34ca00851f1068f35687f7e3621852803"
+    },
+    "config": {
+      "path": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\packages\\coordinator\\configs\\evaluation\\final-campaign.json",
+      "sha256": "f953c869ff28f777ae80efd5503f5fc30a5ae1ebe83acb4845ed5b226b43480a"
+    }
+  }
+}

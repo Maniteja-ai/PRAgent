@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "trace-coordinator"
+version = "0.1.0"
+description = "Bounded, resumable LangGraph orchestration for PR impact analysis"
+requires-python = ">=3.11,<3.15"
+dependencies = [
+  "langgraph>=1,<2", "langgraph-checkpoint-sqlite>=3,<4",
+  "pydantic>=2.12,<3", "filelock>=3.20,<4",
+  "httpx>=0.28,<1", "python-dotenv>=1.1,<2",
+]
+
+[project.optional-dependencies]
+gemini = ["langchain-google-genai>=4,<5"]
+openai = ["langchain-openai>=1,<2"]
+browser = ["playwright>=1.55,<2"]
+knowledge = ["trace-impact[gemini,vector]==0.4.0"]
+dlp = ["google-cloud-dlp>=3,<4"]
+webhook = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "PyJWT[crypto]>=2.10,<3"]
+
+[tool.uv.sources]
+trace-impact = { path = "../..", editable = true }
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-cov>=7,<8", "jsonschema>=4,<5", "ruff>=0.12,<1"]
+
+[project.scripts]
+trace-coordinator = "trace_coordinator.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/trace_coordinator"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["browser: controlled local Playwright browser integration", "integration: opt-in external services"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]

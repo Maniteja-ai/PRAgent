@@ -1,0 +1,26 @@
+{
+  "$schema": "../../schemas/ui-mapping.schema.json",
+  "provider": "typescript_jsx",
+  "application_file": "../saleor-application.json",
+  "report_file": "../../artifacts/saleor-attested-exploration-01/report.json",
+  "report_sha256": "421bdb32835731072c6c776d0668e45e5dc672bf4aad10627f889eef16def2d4",
+  "code_config_file": "../../../../configs/ingestion/saleor/code-head.json",
+  "env_file": "../../../../.env",
+  "output_directory": "../../artifacts/ui-publication-attested",
+  "environment": "patched",
+  "flow_name": "Browse product, add to bag, open checkout",
+  "components": [
+    {
+      "module": "@/ui/components/ui/input",
+      "export": "Input",
+      "path": "src/ui/components/ui/input.tsx",
+      "native_tag": "input"
+    },
+    {
+      "module": "@/ui/components/ui/button",
+      "export": "Button",
+      "path": "src/ui/components/ui/button.tsx",
+      "native_tag": "button"
+    }
+  ]
+}

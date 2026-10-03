@@ -1,0 +1,232 @@
+{
+  "query": "Does changing the account default alone apply it to the ongoing checkout?",
+  "scope": {
+    "project_id": "saleor-excerpt-evaluation",
+    "run_id": "saleor-excerpts-v1"
+  },
+  "candidates": [
+    {
+      "id": "P12",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "shipping-address",
+      "text": "### Default Address[\u200b](#default-address \"Direct link to Default Address\")\n\nCustomers with accounts can set up default addresses, which will be attached automatically during the checkout creation. More information on API reference page for [accountSetDefaultAddress](/api-reference/users/mutations/account-set-default-address).\n\n#### Changing the Default Address During Checkout[\u200b](#changing-the-default-address-during-checkout \"Direct link to Changing the Default Address During Checkout\")\n\nTo change your default address during checkout:\n\n1. Select a previously saved address or create a new one.\n2. Use the [accountSetDefaultAddress](/api-reference/users/mutations/account-set-default-address) mutation to update your default shipping or billing address.\n3. Call [`checkoutShippingAddressUpdate`](/api-reference/checkout/mutations/checkout-shipping-address-update) and/or [`checkoutBillingAddressUpdate`](/api-reference/checkout/mutations/checkout-billing-address-update) to apply the selected address to the current checkout.\n\nThis process ensures that the address you want to use is both set as your account default and applied to the ongoing checkout.\n",
+      "artifact_path": "review/sources/shipping-address.md",
+      "retrieval_score": 0.8121599673721884,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/address",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P24",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Shipping method removal invalidates shipping voucher[\u200b](#shipping-method-removal-invalidates-shipping-voucher \"Direct link to Shipping method removal invalidates shipping voucher\")\n\n**Scenario:**\n\n1. Checkout has 2 lines and a shipping method assigned.\n2. A shipping voucher is applied.\n3. One checkout line is removed.\n4. The assigned shipping method is no longer valid for the updated checkout (e.g., weight, location, or product eligibility changes).\n5. The shipping method is automatically removed from the checkout.\n\nSince the shipping method is removed, the shipping voucher is also automatically unassigned.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.686198589572373,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P08",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "checkout-lifecycle",
+      "text": "## Checkout Creation[\u200b](#checkout-creation \"Direct link to Checkout Creation\")\n\nUpon creation, `checkout` is assigned to a channel that influences product stock, availability, and price. The channel can not be changed after the checkout is created. Learn more about [Channels](/developer/channels/overview).\n\nCheckout can be created from [existing orders](/developer/order/order-to-checkout), which is helpful for re-order functionality.\n",
+      "artifact_path": "review/sources/checkout-lifecycle.md",
+      "retrieval_score": 0.6849646604635259,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/lifecycle",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P11",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "shipping-address",
+      "text": "## Shipping[\u200b](#shipping \"Direct link to Shipping\")\n\nThis step is only used if purchased items require shipping (if they are physical products). The user must select a specific shipping method to create shipping for this checkout. To signify whether shipping is required, use the `isShippingRequired` field in the [`Checkout`](/api-reference/checkout/objects/checkout) object.\n",
+      "artifact_path": "review/sources/shipping-address.md",
+      "retrieval_score": 0.672150666798267,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/address",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P07",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "checkout",
+      "text": "## Multiple Channels and Checkout[\u200b](#multiple-channels-and-checkout \"Direct link to Multiple Channels and Checkout\")\n\nDepending on the chosen channel, the user will have access to different objects. This impacts available:\n\n* Products and Product Variants\n* Payment Gateways\n* Shipping Methods\n* Collection Points\n* Discounts\n\n[Learn more about using multiple channels](/developer/channels/overview).\n",
+      "artifact_path": "review/sources/checkout.md",
+      "retrieval_score": 0.6681880308229062,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/overview",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P01",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "storefront-readme",
+      "text": "### \ud83d\uded2 Open Checkout\n\nThe checkout is where most storefronts fall apart or fall short. Paper's doesn't. We aim to provide open UI components and full wiring around the whole process.\n\n- **Multi-step, mobile-first** \u2014 Each step is a focused form. No infinite scrolling on phones.\n- **Guest & authenticated** \u2014 Seamless flow for everyone. Logged-in users get address book and saved preferences.\n- **International address forms** \u2014 Country-aware fields that adapt (US states, UK postcodes, German formats).\n- **Connection resilience** \u2014 Automatic retries with exponential backoff. Flaky networks? Handled.\n- **Componentized architecture** \u2014 Swap steps, add steps, remove steps. It's your checkout.\n- **Multi-channel ready** \u2014 Different currencies and shipping zones per channel.\n",
+      "artifact_path": "review/sources/storefront-readme.md",
+      "retrieval_score": 0.6675970424508652,
+      "metadata": {
+        "source_url": "https://raw.githubusercontent.com/saleor/storefront/23bc49ccd22e13e182b30daff562d5e5c9af874c/README.md",
+        "source_version": "23bc49ccd22e13e182b30daff562d5e5c9af874c"
+      }
+    },
+    {
+      "id": "P15",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "shipping-address",
+      "text": "## Address Validation[\u200b](#address-validation \"Direct link to Address Validation\")\n\nThe checkout's mutations that accept an address as an input have a field that can turn off the address validation. It allows assigning a partial or not fully valid address to the checkout. Providing country code is mandatory for all addresses regardless of the rules provided in this input.\n\nThe address [validation](/api-reference/checkout/inputs/checkout-address-validation-rules) input has two boolean fields:\n\n* `checkRequiredFields` - signals Saleor to raise an error when the provided address doesn't have all the required fields. Set to `true` by default.\n* `checkFieldsFormat` - signals Saleor to raise an error when the provided address doesn't match the expected format. Set to `true` by default.\n* `enableFieldsNormalization` - determines if Saleor should apply normalization on address fields. Example: converting city field to uppercase letters. Set to `true` by default.\n",
+      "artifact_path": "review/sources/shipping-address.md",
+      "retrieval_score": 0.6666069198799606,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/address",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P10",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "checkout-lifecycle",
+      "text": "## Updating Checkout[\u200b](#updating-checkout \"Direct link to Updating Checkout\")\n\n* **Updating lines**. Each line (product variant) should have at least a quantity of 1; if the line reaches a quantity of 0, it will be automatically removed. Optionally [Price overwrites](/developer/checkout/api-guide#setting-custom-line-prices) and [Line Stacking](/developer/checkout/api-guide#creating-two-lines-using-a-single-variant) can be controlled via API.\n",
+      "artifact_path": "review/sources/checkout-lifecycle.md",
+      "retrieval_score": 0.6613288555636603,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/lifecycle",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P14",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "shipping-address",
+      "text": "### Selecting the Delivery Method[\u200b](#selecting-the-delivery-method \"Direct link to Selecting the Delivery Method\")\n\nUse the [`checkoutDeliveryMethodUpdate`](/api-reference/checkout/mutations/checkout-delivery-method-update) mutation to effectively pair the specific [`Checkout`](/api-reference/checkout/objects/checkout) object with the specified delivery method selected by the user.\n\nThis operation requires the following input:\n\n* `id`: the checkout ID (the `id` field of the [`Checkout`](/api-reference/checkout/objects/checkout) object).\n* `deliveryMethodId`: the shipping method ID or Warehouse ID (`delivery` from the `deliveryOptionsCalculate` mutation or `availableCollectionPoints` field of the [`Checkout`](/api-reference/checkout/objects/checkout) object).\n",
+      "artifact_path": "review/sources/shipping-address.md",
+      "retrieval_score": 0.6600203846533714,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/address",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P13",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "shipping-address",
+      "text": "#### Shipping Methods[\u200b](#shipping-methods \"Direct link to Shipping Methods\")\n\nAfter choosing the shipping address, use the [`deliveryOptionsCalculate`](/api-reference/shipping/mutations/delivery-options-calculate) mutation to explicitly fetch available delivery methods.\n",
+      "artifact_path": "review/sources/shipping-address.md",
+      "retrieval_score": 0.6599554763314462,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/address",
+        "source_version": "current-online-unpinned"
+      }
+    }
+  ],
+  "ranking": {
+    "score_kind": "cross-encoder-logit-v1:cross-encoder/ms-marco-MiniLM-L6-v2@233902d25c440f23af6f7d6e94d2946bac0bee0a:length=512:overlap=64:aggregation=max",
+    "scores": [
+      {
+        "id": "P12",
+        "score": 4.536388874053955,
+        "quote": ""
+      },
+      {
+        "id": "P15",
+        "score": -4.390529632568359,
+        "quote": ""
+      },
+      {
+        "id": "P08",
+        "score": -4.743655204772949,
+        "quote": ""
+      },
+      {
+        "id": "P10",
+        "score": -7.982104301452637,
+        "quote": ""
+      },
+      {
+        "id": "P24",
+        "score": -8.247605323791504,
+        "quote": ""
+      },
+      {
+        "id": "P01",
+        "score": -8.609418869018555,
+        "quote": ""
+      },
+      {
+        "id": "P14",
+        "score": -9.175579071044922,
+        "quote": ""
+      },
+      {
+        "id": "P07",
+        "score": -9.750001907348633,
+        "quote": ""
+      },
+      {
+        "id": "P11",
+        "score": -9.792604446411133,
+        "quote": ""
+      },
+      {
+        "id": "P13",
+        "score": -11.464252471923828,
+        "quote": ""
+      }
+    ],
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  "selection": {
+    "ids": [
+      "P12"
+    ],
+    "reason": "relevance_threshold",
+    "limit_reached": false
+  },
+  "status": "EVIDENCE_FOUND",
+  "coverage": "NOT_EVALUATED",
+  "timings_ms": {
+    "retrieve": 0.11759999324567616,
+    "rerank": 496.981100004632,
+    "select": 0.3100000030826777
+  }
+}

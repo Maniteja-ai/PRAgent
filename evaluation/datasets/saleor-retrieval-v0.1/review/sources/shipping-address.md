@@ -1,0 +1,814 @@
+[View Markdown](/developer/checkout/address.md)
+
+## Shipping[​](#shipping "Direct link to Shipping")
+
+This step is only used if purchased items require shipping (if they are physical products). The user must select a specific shipping method to create shipping for this checkout. To signify whether shipping is required, use the `isShippingRequired` field in the [`Checkout`](/api-reference/checkout/objects/checkout) object.
+
+```
+sequenceDiagram
+  Client ->> Saleor: checkoutCreate
+  alt customer has a default address
+    Saleor->>Saleor: Assign default shipping and billing address
+  end
+  Saleor -->> Client: Checkout
+  alt customer changes address
+    Client ->> Saleor: new address
+    Saleor -->> Client: address set
+  end
+  Client ->> Saleor: getShippingMethods
+  Client ->> Saleor: getCollectionPoints
+  Saleor -->> Client: available ShippingMethods
+  Saleor -->> Client: available CollectionPoints
+  Client ->> Saleor: checkoutShippingAddressUpdate
+  Saleor -->> Client: updated Checkout
+```
+
+### Adding Address Data[​](#adding-address-data "Direct link to Adding Address Data")
+
+Address can be assigned using the [`checkoutShippingAddressUpdate`](/api-reference/checkout/mutations/checkout-shipping-address-update) mutation:
+
+* Mutation* Variables* Result
+
+```
+mutation checkoutShippingAddressUpdate($id: ID, $address: AddressInput!) {  
+  checkoutShippingAddressUpdate(id: $id, shippingAddress: $address) {  
+    checkout {  
+      shippingAddress {  
+        firstName  
+        lastName  
+        streetAddress1  
+        city  
+        postalCode  
+      }  
+    }  
+    errors {  
+      field  
+      message  
+      code  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "id": "Q2hlY2tvdXQ6ZTEzZDFjOTItOWJkNi00ODViLTgyMDctZTNhM2I5NjVkZTQw",  
+  "address": {  
+    "country": "PL",  
+    "firstName": "John",  
+    "lastName": "Smith",  
+    "streetAddress1": "ul. Tęczowa 7",  
+    "postalCode": "53-030",  
+    "city": "Wroclaw"  
+  }  
+}
+```
+
+```
+{  
+  "data": {  
+    "checkoutShippingAddressUpdate": {  
+      "checkout": {  
+        "shippingAddress": {  
+          "firstName": "John",  
+          "lastName": "Smith",  
+          "streetAddress1": "ul. Tęczowa 7",  
+          "city": "WROCLAW",  
+          "postalCode": "53-030"  
+        }  
+      },  
+      "errors": []  
+    }  
+  }  
+}
+```
+
+More information about address validation can be found on the [address validation](/developer/address) page.
+
+### Default Address[​](#default-address "Direct link to Default Address")
+
+Customers with accounts can set up default addresses, which will be attached automatically during the checkout creation. More information on API reference page for [accountSetDefaultAddress](/api-reference/users/mutations/account-set-default-address).
+
+#### Changing the Default Address During Checkout[​](#changing-the-default-address-during-checkout "Direct link to Changing the Default Address During Checkout")
+
+To change your default address during checkout:
+
+1. Select a previously saved address or create a new one.
+2. Use the [accountSetDefaultAddress](/api-reference/users/mutations/account-set-default-address) mutation to update your default shipping or billing address.
+3. Call [`checkoutShippingAddressUpdate`](/api-reference/checkout/mutations/checkout-shipping-address-update) and/or [`checkoutBillingAddressUpdate`](/api-reference/checkout/mutations/checkout-billing-address-update) to apply the selected address to the current checkout.
+
+This process ensures that the address you want to use is both set as your account default and applied to the ongoing checkout.
+
+### Listing Available Delivery Methods[​](#listing-available-delivery-methods "Direct link to Listing Available Delivery Methods")
+
+#### Shipping Methods[​](#shipping-methods "Direct link to Shipping Methods")
+
+After choosing the shipping address, use the [`deliveryOptionsCalculate`](/api-reference/shipping/mutations/delivery-options-calculate) mutation to explicitly fetch available delivery methods.
+
+* Mutation* Variables* Result
+
+```
+mutation DeliveryOptionsCalculate($id: ID!) {  
+  deliveryOptionsCalculate(id: $id) {  
+    deliveries {  
+      id  
+      shippingMethod {  
+        name  
+        active  
+        price {  
+          amount  
+        }  
+      }  
+    }  
+    errors {  
+      field  
+      message  
+      code  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "id": "Q2hlY2tvdXQ6ZTEzZDFjOTItOWJkNi00ODViLTgyMDctZTNhM2I5NjVkZTQw"  
+}
+```
+
+```
+{  
+  "data": {  
+    "deliveryOptionsCalculate": {  
+      "deliveries": [  
+        {  
+          "id": "Q2hlY2tvdXREZWxpdmVyeTozODgwOGU5ZC0wMDVlLTQ1YjQtOTU1MC1mZjAyM2YzZGZlMDM=",  
+          "shippingMethod": {  
+            "name": "Registered priority",  
+            "active": true,  
+            "price": {  
+              "amount": 42.89  
+            }  
+          }  
+        },  
+        {  
+          "id": "Q2hlY2tvdXREZWxpdmVyeToxMzc0NTU3Mi0xMGMxLTRiNmItYTY5MC04Y2ZjZTNhYzk0NTQ=",  
+          "shippingMethod": {  
+            "name": "[EXTERNAL] Provider - Economy",  
+            "active": true,  
+            "price": {  
+              "amount": 10  
+            }  
+          }  
+        },  
+      ],  
+      "errors": []  
+    }  
+  }  
+}
+```
+
+Shipping methods can be internal (defined in the Saleor Dashboard) or [external](/developer/extending/webhooks/synchronous-events/shipping) (coming from a third party).
+
+See [delivery method problems](/developer/checkout/problems#checkoutproblemdeliverymethodstale) for how to handle stale or invalid delivery states.
+
+#### Click And Collect Points[​](#click-and-collect-points "Direct link to Click And Collect Points")
+
+Collection points are [warehouses](/api-reference/products/objects/warehouse) that allow picking up orders, e.g., for a click & collect flow.
+After choosing the shipping address, use the `checkout.availableCollectionPoints` to fetch available click and collect points.
+
+* Query* Variables* Result
+
+```
+query Checkout($id: ID!) {  
+  checkout(id: $id) {  
+    availableCollectionPoints {  
+      id  
+      name  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "id": "Q2hlY2tvdXQ6ZTEzZDFjOTItOWJkNi00ODViLTgyMDctZTNhM2I5NjVkZTQw"  
+}
+```
+
+```
+{  
+  "data": {  
+    "checkout": {  
+      "availableCollectionPoints": [  
+        {  
+          "id": "V2FyZWhvdXNlOjE1Zjk1Y2JhLTA1YjktNDM4Yi04MTM2LTkwZGQ2MWUzZjk1MA==",  
+          "name": "Store1"  
+        },  
+        {  
+          "id": "V2FyZWhvdXNlOjVlNGMwZjM3LWRmMzktNDJhMC05YTc4LTRmYTJiODBlM2ZkZA==",  
+          "name": "Store2"  
+        },  
+        {  
+          "id": "V2FyZWhvdXNlOmMwNzU1YmNmLTU5ZjgtNDE5OS05NjY4LTA4NTM3NzI2ZGZlMg==",  
+          "name": "Store3"  
+        },  
+        {  
+          "id": "V2FyZWhvdXNlOmNlYThiZjUxLTM4YTgtNDgwOC04N2QyLWQ1YmQwNWJkZWY2ZQ==",  
+          "name": "Default"  
+        }  
+      ]  
+    }  
+  }  
+}
+```
+
+### Selecting the Delivery Method[​](#selecting-the-delivery-method "Direct link to Selecting the Delivery Method")
+
+Use the [`checkoutDeliveryMethodUpdate`](/api-reference/checkout/mutations/checkout-delivery-method-update) mutation to effectively pair the specific [`Checkout`](/api-reference/checkout/objects/checkout) object with the specified delivery method selected by the user.
+
+This operation requires the following input:
+
+* `id`: the checkout ID (the `id` field of the [`Checkout`](/api-reference/checkout/objects/checkout) object).
+* `deliveryMethodId`: the shipping method ID or Warehouse ID (`delivery` from the `deliveryOptionsCalculate` mutation or `availableCollectionPoints` field of the [`Checkout`](/api-reference/checkout/objects/checkout) object).
+
+In the following mutation, we assign a delivery method to the checkout using IDs from the previous example. Note that for the checkout object, we want to get back the updated `totalPrice` including shipping costs:
+
+Please note that selecting `collectionPoint` or `shippingMethod` is mandatory for the checkout flow. In other words, setting `delivery` is mandatory.
+
+* Mutation* Variables* Result
+
+```
+mutation checkoutDeliveryMethodUpdate($id: ID, $deliveryMethodId: ID) {  
+  checkoutDeliveryMethodUpdate(id: $id, deliveryMethodId: $deliveryMethodId) {  
+    checkout {  
+      id  
+      delivery {  
+        id  
+        shippingMethod {  
+          id  
+          name  
+        }  
+      }  
+      totalPrice {  
+        gross {  
+          amount  
+          currency  
+        }  
+      }  
+    }  
+    errors {  
+      field  
+      message  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "id": "Q2hlY2tvdXQ6ZTEzZDFjOTItOWJkNi00ODViLTgyMDctZTNhM2I5NjVkZTQw",  
+  "deliveryMethodId": "Q2hlY2tvdXREZWxpdmVyeToxMzc0NTU3Mi0xMGMxLTRiNmItYTY5MC04Y2ZjZTNhYzk0NTQ="  
+}
+```
+
+```
+{  
+  "data": {  
+    "checkoutDeliveryMethodUpdate": {  
+      "checkout": {  
+        "id": "Q2hlY2tvdXQ6NmFkODZhOTgtZDA1Yi00YTA5LTllMTEtZjRmMmVkY2I1ZDk1",  
+        "delivery": {  
+          "id": "RGVsaXZlcnk6dXBz",  
+          "shippingMethod": {  
+            "id": "U2hpcHBpbmdNZXRob2Q6MzE=",  
+            "name": "ups"  
+          }  
+        },  
+        "totalPrice": {  
+          "gross": {  
+            "amount": 19.90,  
+            "currency": "USD"  
+          }  
+        }  
+      },  
+      "errors": []  
+    }  
+  }  
+}
+```
+
+### Switching from C&C to Standard Delivery Method[​](#switching-from-cc-to-standard-delivery-method "Direct link to Switching from C&C to Standard Delivery Method")
+
+After choosing the click & collect option on a checkout, going back to a standard delivery method will require the shipping address to be changed.
+
+1. First use [`checkoutDeliveryMethodUpdate`](/api-reference/checkout/mutations/checkout-delivery-method-update) (just with `id` or `token` provided). This will remove the collection point from checkout and also remove the shipping address.
+
+* Mutation* Variables* Result
+
+```
+mutation checkoutDeliveryMethodUpdate($id: ID, $deliveryMethodId: ID) {  
+  checkoutDeliveryMethodUpdate(id: $id, deliveryMethodId: $deliveryMethodId) {  
+    checkout {  
+      id  
+      deliveryMethod {  
+        __typename  
+        ... on Warehouse {  
+          name  
+        }  
+      }  
+      delivery{  
+        shippingMethod{  
+          name  
+        }  
+      }  
+      totalPrice {  
+        gross {  
+          amount  
+          currency  
+        }  
+      }  
+    }  
+    errors {  
+      field  
+      message  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "id": "Q2hlY2tvdXQ6ZTEzZDFjOTItOWJkNi00ODViLTgyMDctZTNhM2I5NjVkZTQw",  
+}
+```
+
+```
+{  
+  "data": {  
+    "checkoutDeliveryMethodUpdate": {  
+      "checkout": {  
+        "id": "Q2hlY2tvdXQ6Mjg5NjQyZWUtNzM3Ny00ZjQzLWFlMWMtZTlhNmI4ZjRiZTUz",  
+        "deliveryMethod": null,  
+        "delivery": null,  
+        "totalPrice": {  
+          "gross": {  
+            "amount": 9.93,  
+            "currency": "USD"  
+          }  
+        }  
+      },  
+      "errors": []  
+    }  
+  }  
+}
+```
+
+2. Now [`checkoutShippingAddressUpdate`](/api-reference/checkout/mutations/checkout-shipping-address-update) can be used to set the new shipping address for checkout.
+3. Finally, use [`checkoutDeliveryMethodUpdate`](/api-reference/checkout/mutations/checkout-delivery-method-update) with `deliveryMethodId` to set the standard delivery method.
+
+## Address Validation[​](#address-validation "Direct link to Address Validation")
+
+The checkout's mutations that accept an address as an input have a field that can turn off the address validation. It allows assigning a partial or not fully valid address to the checkout. Providing country code is mandatory for all addresses regardless of the rules provided in this input.
+
+The address [validation](/api-reference/checkout/inputs/checkout-address-validation-rules) input has two boolean fields:
+
+* `checkRequiredFields` - signals Saleor to raise an error when the provided address doesn't have all the required fields. Set to `true` by default.
+* `checkFieldsFormat` - signals Saleor to raise an error when the provided address doesn't match the expected format. Set to `true` by default.
+* `enableFieldsNormalization` - determines if Saleor should apply normalization on address fields. Example: converting city field to uppercase letters. Set to `true` by default.
+
+#### CheckoutCreate[​](#checkoutcreate "Direct link to CheckoutCreate")
+
+The [`checkoutCreate`](/api-reference/checkout/mutations/checkout-create) mutation has an optional input for providing shipping and billing addresses. If you want to provide only a part of the address, you can disable the address validation.
+
+The mutation accepts [validationRules](/api-reference/checkout/inputs/checkout-validation-rules) as an [input](/api-reference/checkout/inputs/checkout-create-input) field.
+
+* Mutation* Variables* Result
+
+```
+mutation checkoutCreate($input: CheckoutCreateInput!) {  
+  checkoutCreate(input: $input) {  
+    checkout {  
+      id  
+    }  
+    errors {  
+      field  
+      code  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "input": {  
+    "channel": "default-channel",  
+    "email": "customer@example.com",  
+    "lines": [  
+      {  
+        "quantity": 1,  
+        "variantId": "UHJvZHVjdFZhcmlhbnQ6Mjk3"  
+      }  
+    ],  
+    "shippingAddress": {  
+      "country": "US"  
+    },  
+    "billingAddress": {  
+      "postalCode": "XX-YYY",  
+      "country": "US"  
+    },  
+    "validationRules": {  
+      "shippingAddress": {  
+        "checkRequiredFields": false  
+      },  
+      "billingAddress": {  
+        "checkRequiredFields": false,  
+        "checkFieldsFormat": false  
+      }  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "data": {  
+    "checkoutCreate": {  
+      "checkout": {  
+        "id": "Q2hlY2tvdXQ6NGY1NjI1MDQtOWE2ZS00YjRjLWJiZWYtYmNjNDhkNWMwNDVj"  
+      },  
+      "errors": []  
+    }  
+  }  
+}
+```
+
+#### CheckoutShippingAddressUpdate[​](#checkoutshippingaddressupdate "Direct link to CheckoutShippingAddressUpdate")
+
+The [`checkoutShippingAddressUpdate`](/api-reference/checkout/mutations/checkout-shipping-address-update) mutation has an optional field for controlling the shipping address validation: [validationRules](/api-reference/checkout/inputs/checkout-address-validation-rules).
+
+* Mutation* Variables* Result
+
+```
+mutation checkoutShippingAddressUpdate($id: ID, $address: AddressInput!, $validationRules: CheckoutAddressValidationRules) {  
+  checkoutShippingAddressUpdate(  
+    id: $id  
+    shippingAddress: $address  
+    validationRules: $validationRules  
+  ) {  
+    errors {  
+      field  
+      message  
+      code  
+    }  
+    checkout {  
+      id  
+      shippingAddress {  
+        id  
+        postalCode  
+        firstName  
+        lastName  
+        country {  
+          code  
+        }  
+      }  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "id": "Q2hlY2tvdXQ6MjU1MmYxYTctN2Q3MC00ODg5LTg1OWYtNGNiNWNlMGI4Zjhk",  
+  "address": {  
+    "postalCode": "12-333",  
+    "country": "PL"  
+  },  
+  "validationRules": {  
+    "checkRequiredFields": false  
+  }  
+}
+```
+
+```
+{  
+  "data": {  
+    "checkoutShippingAddressUpdate": {  
+      "errors": [],  
+      "checkout": {  
+        "id": "Q2hlY2tvdXQ6MjU1MmYxYTctN2Q3MC00ODg5LTg1OWYtNGNiNWNlMGI4Zjhk",  
+        "shippingAddress": {  
+          "id": "QWRkcmVzczo4Mg==",  
+          "postalCode": "12-333",  
+          "firstName": "",  
+          "lastName": "",  
+          "country": {  
+            "code": "PL"  
+          }  
+        }  
+      }  
+    }  
+  }  
+}
+```
+
+#### CheckoutBillingAddressUpdate[​](#checkoutbillingaddressupdate "Direct link to CheckoutBillingAddressUpdate")
+
+The [`checkoutBillingAddressUpdate`](/api-reference/checkout/mutations/checkout-billing-address-update) mutation has an optional field for controlling the billing address validation: [validationRules](/api-reference/checkout/inputs/checkout-address-validation-rules).
+
+* Mutation* Variables* Result
+
+```
+mutation checkoutBillingAddressUpdate($id: ID, $address: AddressInput!, $validationRules: CheckoutAddressValidationRules) {  
+  checkoutBillingAddressUpdate(  
+    id: $id  
+    validationRules: $validationRules  
+    billingAddress: $address  
+  ) {  
+    checkout {  
+      id  
+      billingAddress {  
+        streetAddress1  
+        city  
+        cityArea  
+        postalCode  
+        country {  
+          code  
+        }  
+        countryArea  
+      }  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "id": "Q2hlY2tvdXQ6MjU1MmYxYTctN2Q3MC00ODg5LTg1OWYtNGNiNWNlMGI4Zjhk",  
+  "validationRules": {  
+    "checkFieldsFormat": false,  
+    "checkRequiredFields": false  
+  },  
+  "address": {  
+    "country": "GB",  
+    "postalCode": "XX YYY"  
+  }  
+}
+```
+
+```
+{  
+  "data": {  
+    "checkoutBillingAddressUpdate": {  
+      "checkout": {  
+        "id": "Q2hlY2tvdXQ6ZTM4NjMyYzItZTg5NS00ZjE4LTg3YTMtNjIwNGU0NzlmYjUw",  
+        "billingAddress": {  
+          "streetAddress1": "",  
+          "city": "",  
+          "cityArea": "",  
+          "postalCode": "XX YYY",  
+          "country": {  
+            "code": "GB"  
+          },  
+          "countryArea": ""  
+        }  
+      }  
+    }  
+  }  
+}
+```
+
+note
+
+The information about address validation can be found on the [address validation](/developer/address) page.
+
+note
+
+The shipping and billing addresses need to be valid when finalizing checkout by calling [checkoutComplete](/api-reference/checkout/mutations/checkout-complete) mutation.
+
+note
+
+The fields for shipping and billing addresses will be normalized (if needed) on completing the checkout by calling [checkoutComplete](/api-reference/checkout/mutations/checkout-complete) mutation.
+
+## Customer Address Saving Strategies[​](#customer-address-saving-strategies "Direct link to Customer Address Saving Strategies")
+
+Address updates allow configuring the address-saving strategy for both shipping and billing addresses.
+This setting determines whether the shipping or billing address should be saved in the customer's address book.
+It applies only when the checkout is completed by a logged-in user.
+
+By default, both billing and shipping addresses are saved in the customer's address book.
+
+### Use Cases:[​](#use-cases "Direct link to Use Cases:")
+
+* **External Click & Collect (C&C) addresses:** Prevents collection point addresses from being saved to a customer’s address book.
+* **Customer choice during checkout:** Allows customers to explicitly decide whether to save newly entered addresses to their account.
+
+note
+
+The save setting does not apply to the shipping address when the internal Click & Collect delivery method is used.
+In this case, the shipping address will not be saved to the customer’s address book.
+
+### Applicable Checkout Mutations[​](#applicable-checkout-mutations "Direct link to Applicable Checkout Mutations")
+
+The default behavior can be adjusted in the following checkout mutations:
+
+* [checkoutCreate](/api-reference/checkout/mutations/checkout-create)
+
+* Mutation* Variables
+
+```
+mutation createCheckout($input: CheckoutCreateInput!) {  
+  checkoutCreate(input: $input) {  
+    checkout {  
+      id  
+    }  
+    errors {  
+      field  
+      code  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "input": {  
+    "channel": "default-channel",  
+    "email": "customer@example.com",  
+    "lines": [  
+      {  
+        "quantity": 1,  
+        "variantId": "UHJvZHVjdFZhcmlhbnQ6Mjk3"  
+      }  
+    ],  
+    "saveShippingAddress": false,  
+    "shippingAddress": {  
+      "firstName": "John",  
+      "lastName": "Doe",  
+      "streetAddress1": "1470  Pinewood Avenue",  
+      "city": "Michigan",  
+      "postalCode": "49855",  
+      "country": "US",  
+      "countryArea": "MI"  
+    },  
+    "saveBillingAddress": true,  
+    "billingAddress": {  
+      "firstName": "John",  
+      "lastName": "Doe",  
+      "streetAddress1": "1470  Pinewood Avenue",  
+      "city": "Michigan",  
+      "postalCode": "49855",  
+      "country": "US",  
+      "countryArea": "MI"  
+    }  
+  }  
+}
+```
+
+* [checkoutShippingAddressUpdate](/api-reference/checkout/mutations/checkout-shipping-address-update)
+
+* Mutation* Variables
+
+```
+mutation checkoutShippingAddressUpdate($id: ID, $shippingAddress: AddressInput!, $saveAddress: Boolean) {  
+  checkoutShippingAddressUpdate(  
+    id: $id  
+    shippingAddress: $shippingAddress  
+    saveAddress: $saveAddress  
+  ) {  
+    errors {  
+      field  
+      message  
+      code  
+    }  
+    checkout {  
+      id  
+      shippingAddress {  
+        id  
+        postalCode  
+        firstName  
+        lastName  
+        country {  
+          code  
+        }  
+      }  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "id": "Q2hlY2tvdXQ6MjU1MmYxYTctN2Q3MC00ODg5LTg1OWYtNGNiNWNlMGI4Zjhk",  
+  "shippingAddress": {  
+    "postalCode": "12-333"  
+  },  
+  "saveAddress": false  
+}
+```
+
+* [checkoutBillingAddressUpdate](/api-reference/checkout/mutations/checkout-billing-address-update)
+
+* Mutation* Variables
+
+```
+mutation checkoutBillingAddressUpdate($id: ID, $billingAddress: AddressInput!, $saveAddress: Boolean) {  
+  checkoutBillingAddressUpdate(  
+    id: $id  
+    billingAddress: $billingAddress  
+    saveAddress: $saveAddress  
+  ) {  
+    errors {  
+      field  
+      message  
+      code  
+    }  
+    checkout {  
+      id  
+      billingAddress {  
+        id  
+        postalCode  
+        firstName  
+        lastName  
+        country {  
+          code  
+        }  
+      }  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "id": "Q2hlY2tvdXQ6MjU1MmYxYTctN2Q3MC00ODg5LTg1OWYtNGNiNWNlMGI4Zjhk",  
+  "billingAddress": {  
+    "postalCode": "12-333"  
+  },  
+  "saveAddress": false  
+}
+```
+
+### Important Notes[​](#important-notes "Direct link to Important Notes")
+
+The setting is treated as part of the address and cannot be provided independently in the mutation input.
+Attempting to set `saveShippingAddress` or `saveBillingAddress` without including the corresponding
+`shippingAddress` or `billingAddress` will result in an error.
+
+For example, providing `saveShippingAddress` in the `checkoutCreate` mutation without including `shippingAddress` will raise an error:
+
+* Mutation* Variables* Result
+
+```
+mutation createCheckout($input: CheckoutCreateInput!) {  
+  checkoutCreate(input: $input){  
+    checkout {  
+      id  
+    }  
+    errors {  
+      field  
+      code  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "input": {  
+    "channel": "default-channel",  
+    "email": "customer@example.com",  
+    "lines": [  
+      {  
+        "quantity": 1,  
+        "variantId": "UHJvZHVjdFZhcmlhbnQ6NDM4"  
+      }  
+    ],  
+    "saveShippingAddress": true  
+  }  
+}
+```
+
+```
+{  
+  "data": {  
+    "checkoutCreate": {  
+      "checkout": null,  
+      "errors": [  
+        {  
+          "field": "saveShippingAddress",  
+          "code": "MISSING_ADDRESS_DATA"  
+        }  
+      ]  
+    }  
+  }  
+}
+```
+
+warning
+
+Any update to the address, even a partial change, resets the `saveAddress` flag to its default behavior.
+To ensure the correct setting is applied, explicitly provide the `saveAddress` value with each update.
+
+* [Shipping](#shipping)
+  + [Adding Address Data](#adding-address-data)+ [Default Address](#default-address)+ [Listing Available Delivery Methods](#listing-available-delivery-methods)+ [Selecting the Delivery Method](#selecting-the-delivery-method)+ [Switching from C&C to Standard Delivery Method](#switching-from-cc-to-standard-delivery-method)* [Address Validation](#address-validation)* [Customer Address Saving Strategies](#customer-address-saving-strategies)
+      + [Use Cases:](#use-cases)+ [Applicable Checkout Mutations](#applicable-checkout-mutations)+ [Important Notes](#important-notes)

@@ -1,0 +1,6 @@
+{
+  "description": "Deliberately repeats one search forever to demonstrate the enforced cap. Offline model replay only.",
+  "decisions": [
+    {"action":"tool","tool":"knowledge.documents","arguments":{"query":"Find more voucher requirements"}}
+  ]
+}

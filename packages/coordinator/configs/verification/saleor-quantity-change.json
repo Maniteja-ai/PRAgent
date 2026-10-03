@@ -1,0 +1,22 @@
+{
+  "$schema": "../../schemas/additional-behavior.schema.json",
+  "schema_version": 1,
+  "graphql_url": "https://store-vlrmbn6z.saleor.cloud/graphql/",
+  "channel": "default-channel",
+  "product_slug": "ascii-tee",
+  "variant_name": "S",
+  "currency": "USD",
+  "state_directory": "../../runs/additional-behavior",
+  "scenario": {
+    "scenario": "quantity_change",
+    "voucher_code": "TSIGMA10",
+    "initial_quantity": 1,
+    "target_quantity": 2
+  },
+  "limits": {
+    "per_agent_tool": 5,
+    "total_calls": 20,
+    "retry_attempts": 1,
+    "max_run_seconds": 300
+  }
+}

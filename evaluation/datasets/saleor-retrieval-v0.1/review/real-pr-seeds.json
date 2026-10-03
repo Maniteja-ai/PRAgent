@@ -1,0 +1,71 @@
+{
+  "pr_url": "https://github.com/saleor/storefront/pull/1199",
+  "base_commit": "23bc49ccd22e13e182b30daff562d5e5c9af874c",
+  "head_commit": "221be2247f5b1a8ef94f007639fe83f53a6384b8",
+  "split": "development",
+  "contamination": "PR and manual behavior checks already inspected; not held-out.",
+  "status": "STATIC_EVIDENCE_SEEDS_PENDING_UI_MAPPING_REVIEW",
+  "files": [
+    {
+      "revision": "23bc49ccd22e13e182b30daff562d5e5c9af874c",
+      "repository_path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+      "file": "review/code/baseline/order-summary.tsx",
+      "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+    },
+    {
+      "revision": "23bc49ccd22e13e182b30daff562d5e5c9af874c",
+      "repository_path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+      "file": "review/code/baseline/saleor-checkout.tsx",
+      "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+    },
+    {
+      "revision": "221be2247f5b1a8ef94f007639fe83f53a6384b8",
+      "repository_path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+      "file": "review/code/patched/order-summary.tsx",
+      "sha256": "d9ac5df219117437b6986fe96f89981eb1b24ff51ecba156f36ea8053d7f2c4f"
+    },
+    {
+      "revision": "221be2247f5b1a8ef94f007639fe83f53a6384b8",
+      "repository_path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+      "file": "review/code/patched/saleor-checkout.tsx",
+      "sha256": "e9c9e76bc381bfa6924a0406163c1dd97048dfde9faaab3ac8d78dfc8c88ecc7"
+    }
+  ],
+  "observations": [
+    {
+      "id": "S01",
+      "claim": "The diff changes order-summary.tsx and saleor-checkout.tsx.",
+      "evidence_file": "review/code/pr-1199.diff"
+    },
+    {
+      "id": "S02",
+      "claim": "Baseline SaleorCheckout imports OrderSummary and renders it in both mobile and desktop layout locations.",
+      "evidence_file": "review/code/baseline/saleor-checkout.tsx"
+    },
+    {
+      "id": "S03",
+      "claim": "Baseline handleApplyPromo locally recognizes saleor10 and contains a TODO for the Saleor mutation.",
+      "evidence_file": "review/code/baseline/order-summary.tsx"
+    },
+    {
+      "id": "S04",
+      "claim": "The patched component wires add/remove promo mutations and the parent supplies onCheckoutChange callbacks.",
+      "evidence_file": "review/code/pr-1199.diff"
+    }
+  ],
+  "missing_for_real_impact_gold": [
+    "Versioned autonomous DOM/state/transition capture",
+    "Adjudicated UI-to-code mappings",
+    "Human-reviewed affected and unaffected flow inventory",
+    "Fresh fixture/backend provenance for behavior checks"
+  ],
+  "review": {
+    "status": "DRAFT",
+    "author": "assistant",
+    "evidence_checked_by": [
+      "assistant"
+    ],
+    "human_reviewers": [],
+    "approved": false
+  }
+}

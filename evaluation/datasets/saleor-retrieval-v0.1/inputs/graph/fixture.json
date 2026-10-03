@@ -1,0 +1,464 @@
+{
+  "id": "impact-topology-v1",
+  "origin": "SYNTHETIC_CONTRACT_FIXTURE_NOT_SALEOR_OBSERVATIONS",
+  "nodes": [
+    {
+      "id": "discount",
+      "kind": "CodeSymbol",
+      "name": "calculateDiscount",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "subtotal",
+      "kind": "CodeSymbol",
+      "name": "subtotal",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "summary",
+      "kind": "CodeSymbol",
+      "name": "summary",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "summary-alt",
+      "kind": "CodeSymbol",
+      "name": "summary-alt",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "caller",
+      "kind": "CodeSymbol",
+      "name": "caller",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "orphan",
+      "kind": "CodeSymbol",
+      "name": "orphan",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "homonym",
+      "kind": "CodeSymbol",
+      "name": "calculateDiscount",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "login-code",
+      "kind": "CodeSymbol",
+      "name": "login-code",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "total",
+      "kind": "UIElement",
+      "name": "total",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "apply",
+      "kind": "UIElement",
+      "name": "apply",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "remove",
+      "kind": "UIElement",
+      "name": "remove",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "login",
+      "kind": "UIElement",
+      "name": "login",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "candidate-control",
+      "kind": "UIElement",
+      "name": "candidate-control",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "rejected-control",
+      "kind": "UIElement",
+      "name": "rejected-control",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "flow-apply",
+      "kind": "UserFlow",
+      "name": "flow-apply",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "flow-remove",
+      "kind": "UserFlow",
+      "name": "flow-remove",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "flow-quantity",
+      "kind": "UserFlow",
+      "name": "flow-quantity",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "flow-login",
+      "kind": "UserFlow",
+      "name": "flow-login",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "flow-candidate",
+      "kind": "UserFlow",
+      "name": "flow-candidate",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "flow-rejected",
+      "kind": "UserFlow",
+      "name": "flow-rejected",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "req-total",
+      "kind": "Requirement",
+      "name": "req-total",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "req-voucher",
+      "kind": "Requirement",
+      "name": "req-voucher",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "req-login",
+      "kind": "Requirement",
+      "name": "req-login",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "other-summary",
+      "kind": "CodeSymbol",
+      "name": "other-summary",
+      "project_id": "other-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "other-ui",
+      "kind": "UIElement",
+      "name": "other-ui",
+      "project_id": "other-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "other-flow",
+      "kind": "UserFlow",
+      "name": "other-flow",
+      "project_id": "other-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "patched-summary",
+      "kind": "CodeSymbol",
+      "name": "patched-summary",
+      "project_id": "fixture-shop",
+      "revision": "fixture-patched",
+      "properties": {}
+    },
+    {
+      "id": "patched-ui",
+      "kind": "UIElement",
+      "name": "patched-ui",
+      "project_id": "fixture-shop",
+      "revision": "fixture-patched",
+      "properties": {}
+    },
+    {
+      "id": "patched-flow",
+      "kind": "UserFlow",
+      "name": "patched-flow",
+      "project_id": "fixture-shop",
+      "revision": "fixture-patched",
+      "properties": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "d1",
+      "source": "discount",
+      "type": "DEPENDS_ON",
+      "target": "subtotal",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "d2",
+      "source": "summary",
+      "type": "DEPENDS_ON",
+      "target": "discount",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "d3",
+      "source": "summary-alt",
+      "type": "DEPENDS_ON",
+      "target": "discount",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "d4",
+      "source": "caller",
+      "type": "DEPENDS_ON",
+      "target": "summary",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "d5",
+      "source": "discount",
+      "type": "DEPENDS_ON",
+      "target": "summary",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "m1",
+      "source": "summary",
+      "type": "RENDERS",
+      "target": "total",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "m2",
+      "source": "summary",
+      "type": "RENDERS",
+      "target": "apply",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "m3",
+      "source": "summary",
+      "type": "RENDERS",
+      "target": "remove",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "m4",
+      "source": "summary-alt",
+      "type": "RENDERS",
+      "target": "total",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "m5",
+      "source": "login-code",
+      "type": "RENDERS",
+      "target": "login",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "f1",
+      "source": "flow-apply",
+      "type": "CONTAINS",
+      "target": "total",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "f2",
+      "source": "flow-apply",
+      "type": "CONTAINS",
+      "target": "apply",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "f3",
+      "source": "flow-remove",
+      "type": "CONTAINS",
+      "target": "total",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "f4",
+      "source": "flow-remove",
+      "type": "CONTAINS",
+      "target": "remove",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "f5",
+      "source": "flow-quantity",
+      "type": "CONTAINS",
+      "target": "total",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "f6",
+      "source": "flow-login",
+      "type": "CONTAINS",
+      "target": "login",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "r1",
+      "source": "flow-apply",
+      "type": "CHECKS",
+      "target": "req-voucher",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "r2",
+      "source": "flow-apply",
+      "type": "CHECKS",
+      "target": "req-total",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "r3",
+      "source": "flow-remove",
+      "type": "CHECKS",
+      "target": "req-voucher",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "r4",
+      "source": "flow-remove",
+      "type": "CHECKS",
+      "target": "req-total",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "r5",
+      "source": "flow-quantity",
+      "type": "CHECKS",
+      "target": "req-total",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "r6",
+      "source": "flow-login",
+      "type": "CHECKS",
+      "target": "req-login",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "x1",
+      "source": "other-summary",
+      "type": "DEPENDS_ON",
+      "target": "discount",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "x2",
+      "source": "other-summary",
+      "type": "RENDERS",
+      "target": "other-ui",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "x3",
+      "source": "other-flow",
+      "type": "CONTAINS",
+      "target": "other-ui",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "v1",
+      "source": "patched-summary",
+      "type": "DEPENDS_ON",
+      "target": "discount",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "v2",
+      "source": "patched-summary",
+      "type": "RENDERS",
+      "target": "patched-ui",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "v3",
+      "source": "patched-flow",
+      "type": "CONTAINS",
+      "target": "patched-ui",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "c2",
+      "source": "flow-candidate",
+      "type": "CONTAINS",
+      "target": "candidate-control",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "z2",
+      "source": "flow-rejected",
+      "type": "CONTAINS",
+      "target": "rejected-control",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "c1",
+      "source": "summary",
+      "type": "RENDERS",
+      "target": "candidate-control",
+      "status": "CANDIDATE"
+    },
+    {
+      "id": "z1",
+      "source": "summary",
+      "type": "RENDERS",
+      "target": "rejected-control",
+      "status": "REJECTED"
+    }
+  ]
+}

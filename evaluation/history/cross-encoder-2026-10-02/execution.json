@@ -1,0 +1,562 @@
+[
+  {
+    "id": "V01",
+    "cached": false,
+    "setup_ms": 8578.155299997889,
+    "timings_ms": {
+      "retrieve": 0.12399999832268804,
+      "rerank": 322.14920000114944,
+      "select": 0.39089999336283654
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V02",
+    "cached": false,
+    "setup_ms": 0.17420000222045928,
+    "timings_ms": {
+      "retrieve": 0.13729999773204327,
+      "rerank": 392.6489000004949,
+      "select": 0.3946000069845468
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V03",
+    "cached": false,
+    "setup_ms": 0.15049999637994915,
+    "timings_ms": {
+      "retrieve": 0.07490000280085951,
+      "rerank": 257.88330000068527,
+      "select": 0.33510000503156334
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V04",
+    "cached": false,
+    "setup_ms": 0.1630000042496249,
+    "timings_ms": {
+      "retrieve": 0.13689999468624592,
+      "rerank": 320.4877999960445,
+      "select": 0.1942999952007085
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V05",
+    "cached": false,
+    "setup_ms": 0.12840000272262841,
+    "timings_ms": {
+      "retrieve": 0.11670000094454736,
+      "rerank": 318.1983999966178,
+      "select": 0.30590000096708536
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V06",
+    "cached": false,
+    "setup_ms": 0.3437999985180795,
+    "timings_ms": {
+      "retrieve": 0.12579999747686088,
+      "rerank": 268.6113999952795,
+      "select": 0.2131000073859468
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V07",
+    "cached": false,
+    "setup_ms": 0.15690000145696104,
+    "timings_ms": {
+      "retrieve": 0.11569999333005399,
+      "rerank": 288.61719999986235,
+      "select": 0.28279999969527125
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V08",
+    "cached": false,
+    "setup_ms": 0.15560000611003488,
+    "timings_ms": {
+      "retrieve": 0.10809999366756529,
+      "rerank": 286.1842999991495,
+      "select": 0.1835999864852056
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V09",
+    "cached": false,
+    "setup_ms": 0.1571000029798597,
+    "timings_ms": {
+      "retrieve": 0.11660000018309802,
+      "rerank": 285.274699999718,
+      "select": 0.18180000188294798
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V10",
+    "cached": false,
+    "setup_ms": 0.16560000949539244,
+    "timings_ms": {
+      "retrieve": 0.11310000263620168,
+      "rerank": 263.6558999947738,
+      "select": 0.24960000882856548
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V11",
+    "cached": false,
+    "setup_ms": 0.148899998748675,
+    "timings_ms": {
+      "retrieve": 0.13309999485500157,
+      "rerank": 555.8353999949759,
+      "select": 0.1863000070443377
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V12",
+    "cached": false,
+    "setup_ms": 0.13259999104775488,
+    "timings_ms": {
+      "retrieve": 0.0889999937498942,
+      "rerank": 552.6567000051728,
+      "select": 0.30860000697430223
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V13",
+    "cached": false,
+    "setup_ms": 0.1981000095838681,
+    "timings_ms": {
+      "retrieve": 0.1238000113517046,
+      "rerank": 320.0208000052953,
+      "select": 0.31230000604409724
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V14",
+    "cached": false,
+    "setup_ms": 0.14280001050792634,
+    "timings_ms": {
+      "retrieve": 0.12599999899975955,
+      "rerank": 543.4154999966267,
+      "select": 0.3591999993659556
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V15",
+    "cached": false,
+    "setup_ms": 0.1981000095838681,
+    "timings_ms": {
+      "retrieve": 0.155999994603917,
+      "rerank": 523.5061999992467,
+      "select": 0.29490000451914966
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V16",
+    "cached": false,
+    "setup_ms": 0.145500001963228,
+    "timings_ms": {
+      "retrieve": 0.11010000889655203,
+      "rerank": 339.1931999940425,
+      "select": 0.19950000569224358
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V17",
+    "cached": false,
+    "setup_ms": 0.13770000077784061,
+    "timings_ms": {
+      "retrieve": 0.10970000585075468,
+      "rerank": 509.4336000038311,
+      "select": 0.2936999953817576
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V18",
+    "cached": false,
+    "setup_ms": 0.14600000577047467,
+    "timings_ms": {
+      "retrieve": 0.11909999011550099,
+      "rerank": 517.343699990306,
+      "select": 0.18000000272877514
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V19",
+    "cached": false,
+    "setup_ms": 0.1568000006955117,
+    "timings_ms": {
+      "retrieve": 0.11850000009872019,
+      "rerank": 544.9539000110235,
+      "select": 0.29120000544935465
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V20",
+    "cached": false,
+    "setup_ms": 0.145800004247576,
+    "timings_ms": {
+      "retrieve": 0.11759999324567616,
+      "rerank": 496.981100004632,
+      "select": 0.3100000030826777
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V21",
+    "cached": false,
+    "setup_ms": 0.14689999807160348,
+    "timings_ms": {
+      "retrieve": 0.11039999662898481,
+      "rerank": 460.5141000065487,
+      "select": 0.3875999973388389
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V22",
+    "cached": false,
+    "setup_ms": 0.18170000112149864,
+    "timings_ms": {
+      "retrieve": 0.08080000407062471,
+      "rerank": 484.26820000167936,
+      "select": 0.19019999308511615
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V23",
+    "cached": false,
+    "setup_ms": 0.15110000094864517,
+    "timings_ms": {
+      "retrieve": 0.11389999417588115,
+      "rerank": 383.682100000442,
+      "select": 0.3112999984296039
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V24",
+    "cached": false,
+    "setup_ms": 0.15559999155811965,
+    "timings_ms": {
+      "retrieve": 0.09099999442696571,
+      "rerank": 526.927800005069,
+      "select": 0.28929999098181725
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V25",
+    "cached": false,
+    "setup_ms": 0.15500000154133886,
+    "timings_ms": {
+      "retrieve": 0.1154000055976212,
+      "rerank": 371.86639998981263,
+      "select": 0.19299999985378236
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V26",
+    "cached": false,
+    "setup_ms": 0.20540000696200877,
+    "timings_ms": {
+      "retrieve": 0.12850000348407775,
+      "rerank": 517.0733999984805,
+      "select": 0.3566999948816374
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V27",
+    "cached": false,
+    "setup_ms": 0.16460000188089907,
+    "timings_ms": {
+      "retrieve": 0.11959999392274767,
+      "rerank": 693.9199000044027,
+      "select": 0.3875999973388389
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V28",
+    "cached": false,
+    "setup_ms": 0.16739999409765005,
+    "timings_ms": {
+      "retrieve": 0.1255999959539622,
+      "rerank": 667.5890000042273,
+      "select": 0.18569998792372644
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V29",
+    "cached": false,
+    "setup_ms": 0.15610000991728157,
+    "timings_ms": {
+      "retrieve": 0.09169999975711107,
+      "rerank": 543.6174999922514,
+      "select": 0.3015999973285943
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V30",
+    "cached": false,
+    "setup_ms": 0.20809999841731042,
+    "timings_ms": {
+      "retrieve": 0.12149999383836985,
+      "rerank": 536.5881000034278,
+      "select": 0.29149999318178743
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V31",
+    "cached": false,
+    "setup_ms": 0.15039999561849982,
+    "timings_ms": {
+      "retrieve": 0.12379999679978937,
+      "rerank": 238.20590000832453,
+      "select": 0.1939000067068264
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V32",
+    "cached": false,
+    "setup_ms": 0.16429999959655106,
+    "timings_ms": {
+      "retrieve": 0.07690000347793102,
+      "rerank": 392.8470000100788,
+      "select": 0.19150000298395753
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V33",
+    "cached": false,
+    "setup_ms": 0.14819999341852963,
+    "timings_ms": {
+      "retrieve": 0.11479998647700995,
+      "rerank": 521.7475999961607,
+      "select": 0.3232000017305836
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V34",
+    "cached": false,
+    "setup_ms": 0.12009999772999436,
+    "timings_ms": {
+      "retrieve": 0.09220000356435776,
+      "rerank": 384.2603999946732,
+      "select": 0.2784999960567802
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V35",
+    "cached": false,
+    "setup_ms": 0.19209999300073832,
+    "timings_ms": {
+      "retrieve": 0.0788999896030873,
+      "rerank": 543.3042999939062,
+      "select": 0.3178000042680651
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V36",
+    "cached": false,
+    "setup_ms": 0.15069999790284783,
+    "timings_ms": {
+      "retrieve": 0.12060000153724104,
+      "rerank": 599.7618000110378,
+      "select": 0.31489999673794955
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V37",
+    "cached": false,
+    "setup_ms": 0.15150000399444252,
+    "timings_ms": {
+      "retrieve": 0.11670000094454736,
+      "rerank": 523.1053000024986,
+      "select": 0.2032999909715727
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V38",
+    "cached": false,
+    "setup_ms": 0.16739999409765005,
+    "timings_ms": {
+      "retrieve": 0.11760000779759139,
+      "rerank": 511.37070001277607,
+      "select": 0.2669000095920637
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V39",
+    "cached": false,
+    "setup_ms": 0.12560001050587744,
+    "timings_ms": {
+      "retrieve": 0.08610000077169389,
+      "rerank": 275.0658000004478,
+      "select": 0.2918999962275848
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  },
+  {
+    "id": "V40",
+    "cached": false,
+    "setup_ms": 0.14800000644754618,
+    "timings_ms": {
+      "retrieve": 0.11639999866019934,
+      "rerank": 229.5419000001857,
+      "select": 0.18730000010691583
+    },
+    "usage": {
+      "passages": 10,
+      "windows": 10
+    }
+  }
+]

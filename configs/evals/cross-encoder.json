@@ -1,0 +1,8 @@
+{
+  "retrieval_config": "../retrieval/cross-encoder.json",
+  "environment_file": "../../.env",
+  "inputs": "../../evaluation/datasets/saleor-retrieval-v0.1/inputs/vector",
+  "baseline": "../../evaluation/history/vector-baseline-2026-10-02",
+  "labels": "../../evaluation/datasets/saleor-retrieval-v0.1/labels/vector-cases.jsonl",
+  "output_directory": "../../artifacts/evaluation-runs/cross-encoder"
+}

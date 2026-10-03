@@ -1,0 +1,15 @@
+{
+  "$schema": "../../schemas/evals/evaluation.schema.json",
+  "dataset": "../../evaluation/datasets/saleor-retrieval-v0.1/labels/graph-cases.jsonl",
+  "predictions": "../../evaluation/local/graph-results.jsonl",
+  "output_directory": "../../artifacts/evaluation-runs",
+  "task": "set_retrieval",
+  "reference": {
+    "expected_ids": "reference.flow_ids",
+    "expected_status": "reference.status",
+    "complete": true
+  },
+  "prediction": {
+    "items": "flow_ids"
+  }
+}

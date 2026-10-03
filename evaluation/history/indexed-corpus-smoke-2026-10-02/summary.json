@@ -1,0 +1,26 @@
+{
+  "created_at": "2026-10-02T11:24:39.329232+00:00",
+  "status": "EVIDENCE_FOUND",
+  "scope": {
+    "project_id": "saleor-storefront",
+    "run_id": "44dd49dc16a84d2e82153ebd7d65c6ee"
+  },
+  "candidates": 10,
+  "selected": 2,
+  "selected_ids": [
+    "02d6cca4ffb1723cff220549c22b9b54",
+    "0e6b726aaa102a481ebe6eb8c51e38fb"
+  ],
+  "usage": {
+    "input_tokens": 4712,
+    "output_tokens": 615,
+    "total_tokens": 5327
+  },
+  "timings_ms": {
+    "retrieve": 1743.971000003512,
+    "rerank": 8515.256000013324,
+    "select": 0.20179999410174787
+  },
+  "coverage": "NOT_EVALUATED",
+  "gold_scored": false
+}

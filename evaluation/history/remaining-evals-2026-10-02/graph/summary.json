@@ -1,0 +1,74 @@
+{
+  "ui_ids": {
+    "report": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\artifacts\\evaluation-runs\\graph\\20261002T122707Z-5429447b\\scores\\ffe250f255e5428287a23031fc4a923d\\report.json",
+    "summary": {
+      "cases": 20,
+      "completed": 20,
+      "completion_rate": 1.0,
+      "positive_cases": 11,
+      "empty_reference_cases": 9,
+      "aggregation_scope": "all scoped cases",
+      "tp": 32,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "evidence_status": "DRAFT_PROVISIONAL",
+      "unjudged_count": 0,
+      "status_mismatches": 0,
+      "quality_gate": "NOT_CONFIGURED",
+      "release_pass": false
+    }
+  },
+  "flow_ids": {
+    "report": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\artifacts\\evaluation-runs\\graph\\20261002T122707Z-5429447b\\scores\\11ee837ac8f344638a651ff7503e1f1b\\report.json",
+    "summary": {
+      "cases": 20,
+      "completed": 20,
+      "completion_rate": 1.0,
+      "positive_cases": 11,
+      "empty_reference_cases": 9,
+      "aggregation_scope": "all scoped cases",
+      "tp": 32,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "evidence_status": "DRAFT_PROVISIONAL",
+      "unjudged_count": 0,
+      "status_mismatches": 0,
+      "quality_gate": "NOT_CONFIGURED",
+      "release_pass": false
+    }
+  },
+  "requirement_ids": {
+    "report": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\artifacts\\evaluation-runs\\graph\\20261002T122707Z-5429447b\\scores\\eecde700034c4c4cbfe4f601d80c1ca7\\report.json",
+    "summary": {
+      "cases": 20,
+      "completed": 20,
+      "completion_rate": 1.0,
+      "positive_cases": 11,
+      "empty_reference_cases": 9,
+      "aggregation_scope": "all scoped cases",
+      "tp": 22,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "evidence_status": "DRAFT_PROVISIONAL",
+      "unjudged_count": 0,
+      "status_mismatches": 0,
+      "quality_gate": "NOT_CONFIGURED",
+      "release_pass": false
+    }
+  },
+  "checks": {
+    "idempotent_publication": true,
+    "immutable_snapshot": true,
+    "witness_validation": "PASS",
+    "fixture_only": true
+  }
+}

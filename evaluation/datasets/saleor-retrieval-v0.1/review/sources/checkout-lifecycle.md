@@ -1,0 +1,155 @@
+[View Markdown](/developer/checkout/lifecycle.md)
+
+## Checkout Creation[​](#checkout-creation "Direct link to Checkout Creation")
+
+Upon creation, `checkout` is assigned to a channel that influences product stock, availability, and price. The channel can not be changed after the checkout is created. Learn more about [Channels](/developer/channels/overview).
+
+Checkout can be created from [existing orders](/developer/order/order-to-checkout), which is helpful for re-order functionality.
+
+## Authentication in Checkout[​](#authentication-in-checkout "Direct link to Authentication in Checkout")
+
+Saleor allows you to manage both logged-in customers and guest users using the same API mutations.
+You do not need separate logic branches for different user states; instead, Saleor determines the checkout ownership based on the request's authentication context.
+
+* **With Auth Header:** If the checkout creation request includes a valid user token, the new checkout is automatically "Signed" (linked to that specific User ID).
+* **Without Auth Header:** The checkout is created as "Anonymous" (guest). It is identified solely by a unique token and is not linked to any user profile.
+
+### Attaching a Guest Checkout to a User[​](#attaching-a-guest-checkout-to-a-user "Direct link to Attaching a Guest Checkout to a User")
+
+If a guest user logs in midway through their shopping experience, you can convert their anonymous checkout into a signed one using the [`checkoutCustomerAttach`](/api-reference/checkout/mutations/checkout-customer-attach) mutation.
+This ensures their items are preserved and linked to their account history.
+
+## Updating Checkout[​](#updating-checkout "Direct link to Updating Checkout")
+
+* **Updating lines**. Each line (product variant) should have at least a quantity of 1; if the line reaches a quantity of 0, it will be automatically removed. Optionally [Price overwrites](/developer/checkout/api-guide#setting-custom-line-prices) and [Line Stacking](/developer/checkout/api-guide#creating-two-lines-using-a-single-variant) can be controlled via API.
+
+## Completing Checkout[​](#completing-checkout "Direct link to Completing Checkout")
+
+When checkout is finalized/completed, it is converted into an order.
+
+The following are the requirements to finalize the checkout:
+
+1. The required addresses are valid, except when [`skipValidation`](/developer/address#skipping-the-address-validation) is used.
+2. Delivery options and addresses are valid. [Learn more](/developer/checkout/address).
+3. All selected products are in stock (while purchasing, another user could already buy the last available item). See [`Allocations`](/developer/stock/stock-allocation) and [`Reservations`](/developer/stock/stock-reservation).
+4. The [payments](/developer/payments/overview) are processed unless the `Channel` setting of the checkout has [`allowUnpaidOrders`](/api-reference/miscellaneous/objects/order-settings#allow-unpaid-orders) setting enabled or checkout's total is `0`. If you need to bypass this setting, you use [`orderCreateFromCheckout`](/api-reference/orders/mutations/order-create-from-checkout).
+
+note
+
+If case an order is overcharged, it will still be created. The overcharge must be handled manually.
+
+### Completing Anonymous Orders[​](#completing-anonymous-orders "Direct link to Completing Anonymous Orders")
+
+When a guest checkout is completed, Saleor performs an automatic lookup using the provided email address.
+
+* If a user account with that email already exists, Saleor assigns the resulting order to that user automatically.
+* If the email does not exist at the time of purchase, Saleor still tracks the association. When a user later creates and confirms an account with that email,
+  their previous guest orders are automatically attached to their new profile.
+
+## Checkout Expiration and Deletion[​](#checkout-expiration-and-deletion "Direct link to Checkout Expiration and Deletion")
+
+To avoid overloading the database, unfinished and unpaid checkouts are automatically deleted after a specified period from their last modification:
+
+* checkouts without lines after 6 hours,
+* anonymous checkouts (neither user nor email is set) with lines after 30 days,
+* user checkouts (either user or email is set) with lines after 90 days.
+
+## Releasing Funds for Abandoned Checkouts[​](#releasing-funds-for-abandoned-checkouts "Direct link to Releasing Funds for Abandoned Checkouts")
+
+Payments for items left in the cart by customers who did not complete the purchase can be released back to the customer's payment method automatically. This is opt-in and controlled **per channel**, not globally.
+
+Each channel exposes the following settings under [`Channel.paymentSettings`](/api-reference/miscellaneous/objects/payment-settings):
+
+* **`releaseFundsForExpiredCheckouts`** (Boolean, default `false`) — master switch for this channel. The release action described below only runs for checkouts in channels where this is `true`.
+* **`checkoutTtlBeforeReleasingFunds`** (Hour, default 6 hours) — how long a checkout must remain unchanged before it is considered abandoned.
+* **`checkoutReleaseFundsCutOffDate`** (DateTime, optional) — an optional floor date; checkouts created before this date are never auto-released. Regardless of this setting, checkouts older than one year are never released.
+
+These are readable and writable via the [`channelUpdate`](/api-reference/channels/mutations/channel-update) mutation, and in the Dashboard under **Configuration → Channels → [channel] → Payments & checkout**.
+
+To check the current setting per channel:
+
+```
+query {  
+  channels {  
+    slug  
+    paymentSettings {  
+      releaseFundsForExpiredCheckouts  
+      checkoutTtlBeforeReleasingFunds  
+      checkoutReleaseFundsCutOffDate  
+    }  
+  }  
+}
+```
+
+For any [`transactionItem`](/api-reference/payments/objects/transaction-item) with processed funds (`authorizedAmount` or `chargeAmount`) assigned to an abandoned checkout **in a channel with `releaseFundsForExpiredCheckouts` enabled**, Saleor will trigger the release action.
+
+The release action is:
+
+* webhook with the event:`TRANSACTION_CANCELATION_REQUESTED` triggered when [`transactionItem`](/api-reference/payments/objects/transaction-item) contains authorized funds
+* webhook with the event: `TRANSACTION_REFUND_REQUESTED` triggered when [`transactionItem`](/api-reference/payments/objects/transaction-item) contains charged funds.
+
+The release action is triggered only once. If a subscription for a release event is missing or the app fails to process the action, the release action needs to be handled manually.
+
+To fetch paid checkouts, use the below query:
+
+* Mutation* Variables* Result
+
+```
+query checkouts($first: Int, $filter: CheckoutFilterInput) {  
+  checkouts(first: $first, filter: $filter) {  
+    totalCount  
+    edges {  
+      node {  
+        id  
+        totalBalance {  
+          amount  
+        }  
+      }  
+    }  
+  }  
+}
+```
+
+```
+{  
+  "first": 2,  
+  "filter": {  
+    "authorizeStatus": [  
+      "PARTIAL",  
+      "FULL"  
+    ]  
+  }  
+}
+```
+
+```
+{  
+  "data": {  
+    "checkouts": {  
+      "totalCount": 8,  
+      "edges": [  
+        {  
+          "node": {  
+            "id": "Q2hlY2tvdXQ6NjljMjZmM2ItNzEzYy00YWI4LTk4MWMtMGJkYWJhZGQ4N2Yx",  
+            "totalBalance": {  
+              "amount": 90  
+            }  
+          }  
+        },  
+        {  
+          "node": {  
+            "id": "Q2hlY2tvdXQ6MjMzNjllMDYtM2ZlYi00MWEzLWFjMTYtMTE2NjE3ZWIzYTQ5",  
+            "totalBalance": {  
+              "amount": 117.51  
+            }  
+          }  
+        }  
+      ]  
+    }  
+  }  
+}
+```
+
+* [Checkout Creation](#checkout-creation)* [Authentication in Checkout](#authentication-in-checkout)
+    + [Attaching a Guest Checkout to a User](#attaching-a-guest-checkout-to-a-user)* [Updating Checkout](#updating-checkout)* [Completing Checkout](#completing-checkout)
+        + [Completing Anonymous Orders](#completing-anonymous-orders)* [Checkout Expiration and Deletion](#checkout-expiration-and-deletion)* [Releasing Funds for Abandoned Checkouts](#releasing-funds-for-abandoned-checkouts)

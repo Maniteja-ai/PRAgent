@@ -1,0 +1,92 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "report_file": {
+      "title": "Report File",
+      "type": "string"
+    },
+    "evaluation_report_file": {
+      "title": "Evaluation Report File",
+      "type": "string"
+    },
+    "llm_evaluation_report_file": {
+      "title": "Llm Evaluation Report File",
+      "type": "string"
+    },
+    "junit_file": {
+      "title": "Junit File",
+      "type": "string"
+    },
+    "coverage_file": {
+      "title": "Coverage File",
+      "type": "string"
+    },
+    "minimum_tests": {
+      "default": 200,
+      "minimum": 1,
+      "title": "Minimum Tests",
+      "type": "integer"
+    },
+    "minimum_coverage_percent": {
+      "default": 90,
+      "maximum": 100,
+      "minimum": 0,
+      "title": "Minimum Coverage Percent",
+      "type": "number"
+    },
+    "required_behavior_checks": {
+      "additionalProperties": {
+        "enum": [
+          "PASS",
+          "FAIL",
+          "BLOCKED",
+          "NOT_RUN"
+        ],
+        "type": "string"
+      },
+      "title": "Required Behavior Checks",
+      "type": "object"
+    },
+    "required_requirements": {
+      "additionalProperties": {
+        "enum": [
+          "PASS",
+          "FAIL",
+          "BLOCKED"
+        ],
+        "type": "string"
+      },
+      "title": "Required Requirements",
+      "type": "object"
+    }
+  },
+  "required": [
+    "report_file",
+    "evaluation_report_file",
+    "llm_evaluation_report_file",
+    "junit_file",
+    "coverage_file",
+    "required_behavior_checks"
+  ],
+  "title": "Coordinator production gate",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

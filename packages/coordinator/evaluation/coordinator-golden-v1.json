@@ -1,0 +1,97 @@
+{
+  "$schema": "../schemas/golden-dataset.schema.json",
+  "schema_version": 1,
+  "id": "saleor-coordinator-contract-v1",
+  "review": {
+    "status": "APPROVED",
+    "reviewed_by": "Codex implementation review",
+    "reviewed_at": "2026-10-02",
+    "basis": "The expected voucher impact, evidence rules, citation repair and bounded-stop outcomes follow the user-approved coordinator design and deterministic Saleor voucher requirement contracts."
+  },
+  "limits": {
+    "per_agent_tool": 5,
+    "total_calls": 30,
+    "max_rounds": 4,
+    "max_review_requests": 0,
+    "max_validation_repairs": 1,
+    "max_run_seconds": 120,
+    "retry_attempts": 1,
+    "retry_delay_seconds": 0
+  },
+  "minimum_precision": 1.0,
+  "minimum_recall": 1.0,
+  "minimum_case_pass_rate": 1.0,
+  "cases": [
+    {
+      "id": "cited-voucher-impact",
+      "request": {
+        "schema_version": 1,
+        "project_id": "golden-saleor",
+        "repository": "saleor/storefront",
+        "pull_request": 1199,
+        "question": "Which voucher UI flow is affected?"
+      },
+      "tools": {
+        "github.diff": {"evidence": [{"id": "diff-golden", "project_id": "golden-saleor", "kind": "diff", "summary": "Voucher handlers changed in OrderSummary.", "source": "golden:diff", "metadata": {"synthetic": true}}]},
+        "knowledge.graph": {"evidence": [{"id": "graph-golden", "project_id": "golden-saleor", "kind": "graph", "summary": "OrderSummary renders Discount code and Apply in checkout flow.", "source": "golden:graph", "metadata": {"synthetic": true}}]},
+        "knowledge.documents": {"evidence": [{"id": "requirement-golden", "project_id": "golden-saleor", "kind": "document", "summary": "An eligible voucher changes the checkout total.", "source": "golden:requirement", "metadata": {"synthetic": true}}]}
+      },
+      "decisions": [{"action": "finish", "findings": [{"title": "Voucher checkout impact", "explanation": "Changed voucher handlers connect to the checkout controls and total requirement.", "evidence_ids": ["diff-golden", "graph-golden", "requirement-golden"], "checks": ["Apply and remove an eligible voucher"]}]}],
+      "expected": {"status": "COMPLETED", "stop_reason": "ANALYSIS_FINISHED", "findings": [{"title": "Voucher checkout impact", "evidence_ids": ["diff-golden", "graph-golden", "requirement-golden"]}], "max_total_calls": 4}
+    },
+    {
+      "id": "citation-repair",
+      "request": {
+        "schema_version": 1,
+        "project_id": "golden-saleor",
+        "repository": "saleor/storefront",
+        "pull_request": 1199,
+        "question": "Which voucher UI flow is affected?"
+      },
+      "tools": {
+        "github.diff": {"evidence": [{"id": "diff-golden", "project_id": "golden-saleor", "kind": "diff", "summary": "Voucher handlers changed in OrderSummary.", "source": "golden:diff", "metadata": {"synthetic": true}}]},
+        "knowledge.graph": {"evidence": [{"id": "graph-golden", "project_id": "golden-saleor", "kind": "graph", "summary": "OrderSummary renders Discount code and Apply.", "source": "golden:graph", "metadata": {"synthetic": true}}]},
+        "knowledge.documents": {"evidence": [{"id": "requirement-golden", "project_id": "golden-saleor", "kind": "document", "summary": "An eligible voucher changes the checkout total.", "source": "golden:requirement", "metadata": {"synthetic": true}}]}
+      },
+      "decisions": [
+        {"action": "finish", "findings": [{"title": "Unsupported", "explanation": "This citation does not exist.", "evidence_ids": ["invented"], "checks": []}]},
+        {"action": "finish", "findings": [{"title": "Voucher checkout impact", "explanation": "The repaired finding uses exact evidence IDs.", "evidence_ids": ["diff-golden", "graph-golden", "requirement-golden"], "checks": ["Apply an eligible voucher"]}]}
+      ],
+      "expected": {"status": "COMPLETED", "stop_reason": "ANALYSIS_FINISHED", "findings": [{"title": "Voucher checkout impact", "evidence_ids": ["diff-golden", "graph-golden", "requirement-golden"]}], "max_total_calls": 5}
+    },
+    {
+      "id": "no-supported-finding",
+      "request": {
+        "schema_version": 1,
+        "project_id": "golden-saleor",
+        "repository": "saleor/storefront",
+        "pull_request": 1199,
+        "question": "What is affected?"
+      },
+      "tools": {
+        "github.diff": {"evidence": [{"id": "diff-golden", "project_id": "golden-saleor", "kind": "diff", "summary": "A change exists.", "source": "golden:diff", "metadata": {"synthetic": true}}]},
+        "knowledge.graph": {"evidence": [{"id": "graph-golden", "project_id": "golden-saleor", "kind": "graph", "summary": "No supported mapping.", "source": "golden:graph", "metadata": {"synthetic": true}}]},
+        "knowledge.documents": {"evidence": [{"id": "requirement-golden", "project_id": "golden-saleor", "kind": "document", "summary": "No matching requirement.", "source": "golden:requirement", "metadata": {"synthetic": true}}]}
+      },
+      "decisions": [{"action": "finish", "findings": []}],
+      "expected": {"status": "COMPLETED", "stop_reason": "ANALYSIS_FINISHED", "findings": [], "max_total_calls": 4}
+    },
+    {
+      "id": "bounded-retrieval-loop",
+      "request": {
+        "schema_version": 1,
+        "project_id": "golden-saleor",
+        "repository": "saleor/storefront",
+        "pull_request": 1199,
+        "question": "Keep searching."
+      },
+      "tools": {
+        "github.diff": {"evidence": [{"id": "diff-golden", "project_id": "golden-saleor", "kind": "diff", "summary": "A change exists.", "source": "golden:diff", "metadata": {"synthetic": true}}]},
+        "knowledge.graph": {"evidence": [{"id": "graph-golden", "project_id": "golden-saleor", "kind": "graph", "summary": "Graph context.", "source": "golden:graph", "metadata": {"synthetic": true}}]},
+        "knowledge.documents": {"evidence": [{"id": "requirement-golden", "project_id": "golden-saleor", "kind": "document", "summary": "Document context.", "source": "golden:requirement", "metadata": {"synthetic": true}}]}
+      },
+      "decisions": [{"action": "tool", "tool": "knowledge.documents", "arguments": {"query": "again"}}],
+      "expected": {"status": "STOPPED", "stop_reason": "LimitReached", "findings": [], "max_total_calls": 11}
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "base_revision": "56f021d42196eaa78b997df010430d8ea7842e99",
+  "evidence": [
+    {
+      "additions": 5,
+      "deletions": 1,
+      "id": "github:pr:1242:file:src/lib/graphql.ts",
+      "patch": "@@ -1,6 +1,9 @@\n import { io } from \"next/cache\";\n+import packageJson from \"../../package.json\";\n import { type TypedDocumentString } from \"../gql/graphql\";\n \n+const USER_AGENT = `${packageJson.name}/${packageJson.version}`;\n+\n // ============================================================================\n // Result Types - Explicit error handling without exceptions\n // ============================================================================\n@@ -335,6 +338,7 @@ async function executeGraphQL<Result, Variables>(\n \n \tconst requestHeaders: Record<string, string> = {\n \t\t\"Content-Type\": \"application/json\",\n+\t\t\"User-Agent\": USER_AGENT,\n \t\t...(headers as Record<string, string> | undefined),\n \t};\n \n@@ -465,7 +469,7 @@ export async function executeRawGraphQL<T = unknown>(options: RawGraphQLOptions)\n \ttry {\n \t\tconst response = await fetch(url, {\n \t\t\tmethod: \"POST\",\n-\t\t\theaders: { \"Content-Type\": \"application/json\", ...headers },\n+\t\t\theaders: { \"Content-Type\": \"application/json\", \"User-Agent\": USER_AGENT, ...headers },\n \t\t\tbody: JSON.stringify({ query, variables }),\n \t\t});\n ",
+      "path": "src/lib/graphql.ts",
+      "status": "modified"
+    }
+  ],
+  "head_revision": "64917a8cc3eda263ce2d4269f5203db5bc5c98f6",
+  "merged_at": "2026-09-01T09:58:26Z",
+  "pull_request": 1242,
+  "repository": "saleor/storefront",
+  "title": "Add explicit user agent for /graphql requests",
+  "url": "https://github.com/saleor/storefront/pull/1242"
+}

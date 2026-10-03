@@ -1,0 +1,11 @@
+{
+  "query_seconds": {
+    "mean": 0.4305471950006904,
+    "median": 0.5149286000087159,
+    "max": 0.9269002999935765
+  },
+  "queries": 20,
+  "fixture": "Synthetic 29 nodes and 32 edges; no real Saleor UI mappings",
+  "witness_checks": "Returned paths validated against input edges independently of answer labels",
+  "release_quality": "NOT_ESTABLISHED"
+}

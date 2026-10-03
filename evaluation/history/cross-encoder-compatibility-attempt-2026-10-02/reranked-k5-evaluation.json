@@ -1,0 +1,14 @@
+{
+  "dataset": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\evaluation\\datasets\\saleor-retrieval-v0.1\\labels\\vector-cases.jsonl",
+  "output_directory": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\artifacts\\evaluation-runs\\cross-encoder\\20261002T114031Z-9ee43712\\scores",
+  "reference": {
+    "expected_ids": null,
+    "relevance_grades": "reference.relevance_grades",
+    "candidate_universe": "reference.candidate_universe",
+    "evidence_units": "reference.evidence_units",
+    "complete": true
+  },
+  "task": "ranked_retrieval",
+  "k": 5,
+  "predictions": "C:\\Users\\manit\\Documents\\Codex\\2026-10-01\\class-solution-int-mod-1000000007-public-2\\outputs\\testsigma-impact-agent\\artifacts\\evaluation-runs\\cross-encoder\\20261002T114031Z-9ee43712\\ranked.jsonl"
+}

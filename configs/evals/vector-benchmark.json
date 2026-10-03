@@ -1,0 +1,13 @@
+{
+  "project": "../ingestion/saleor/project.json",
+  "environment_file": "../../.env",
+  "inputs": "../../evaluation/datasets/saleor-retrieval-v0.1/inputs/vector",
+  "labels": "../../evaluation/datasets/saleor-retrieval-v0.1/labels/vector-cases.jsonl",
+  "output_directory": "../../artifacts/evaluation-runs/live-vector",
+  "vector_cache_directory": "../../evaluation/local/vector-indexes",
+  "k": [
+    3,
+    5,
+    10
+  ]
+}

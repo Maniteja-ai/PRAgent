@@ -1,0 +1,5 @@
+*.pdf binary
+
+# These are immutable upstream evidence captures. Preserve their original whitespace.
+evaluation/datasets/saleor-retrieval-v0.1/review/** -whitespace
+evaluation/history/**/*.xml -whitespace

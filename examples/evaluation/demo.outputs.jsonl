@@ -1,0 +1,3 @@
+{"case":"demo-1","result":{"hits":[{"symbol_id":"discount-handler"},{"symbol_id":"unrelated-login"}]}}
+{"case":"demo-2","result":{"hits":[{"symbol_id":"attach-customer"}]}}
+{"case":"demo-3","result":{"hits":[]}}

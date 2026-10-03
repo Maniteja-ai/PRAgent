@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="3.690" timestamp="2026-10-02T17:57:18.548588+05:30" hostname="Maniteja_ch"><testcase classname="tests.test_graph" name="test_live_neo4j_roundtrip_is_idempotent" time="3.198" /></testsuite></testsuites>

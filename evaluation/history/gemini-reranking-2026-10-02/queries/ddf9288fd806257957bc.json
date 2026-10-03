@@ -1,0 +1,234 @@
+{
+  "query": "Is promoCode required for both add-promo and remove-promo GraphQL mutations?",
+  "scope": {
+    "project_id": "saleor-excerpt-evaluation",
+    "run_id": "saleor-excerpts-v1"
+  },
+  "candidates": [
+    {
+      "id": "P22",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "## Apply a Voucher Code[\u200b](#apply-a-voucher-code \"Direct link to Apply a Voucher Code\")\n\nTo apply the voucher on checkout use [`checkoutAddPromoCode`](/api-reference/checkout/mutations/checkout-add-promo-code)\nmutation. The discount will be visible both in the line prices and in the `checkout.discount` field.\nTo apply the voucher on draft order use [`draftOrderCreate`](/api-reference/orders/mutations/draft-order-create) or [`draftOrderUpdate`](/api-reference/orders/mutations/draft-order-update)\nand pass `voucherCode` as an argument.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.7198449913974876,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P27",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "add-promo-api",
+      "text": "Adds a gift card or a voucher to a checkout.\n\nTriggers the following webhook events:\n\n* CHECKOUT\\_UPDATED (async): A checkout was updated.\n\n```\ncheckoutAddPromoCode(  \n  checkoutId: ID  \n  id: ID  \n  promoCode: String!  \n  token: UUID  \n): CheckoutAddPromoCode\n```\n\nDetails\n\n```\ntype CheckoutAddPromoCode {  \n  checkout: Checkout  \n  checkoutErrors: [CheckoutError!]! @deprecated  \n  errors: [CheckoutError!]!  \n}\n```\n",
+      "artifact_path": "review/sources/add-promo-api.md",
+      "retrieval_score": 0.7193464018278745,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-add-promo-code",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P29",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "remove-promo-api",
+      "text": "Remove a gift card or a voucher from a checkout.\n\nTriggers the following webhook events:\n\n* CHECKOUT\\_UPDATED (async): A checkout was updated.\n\n```\ncheckoutRemovePromoCode(  \n  checkoutId: ID  \n  id: ID  \n  promoCode: String  \n  promoCodeId: ID  \n  token: UUID  \n): CheckoutRemovePromoCode\n```\n\nDetails\n\n```\ntype CheckoutRemovePromoCode {  \n  checkout: Checkout  \n  checkoutErrors: [CheckoutError!]! @deprecated  \n  errors: [CheckoutError!]!  \n}\n",
+      "artifact_path": "review/sources/remove-promo-api.md",
+      "retrieval_score": 0.717118527708584,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-remove-promo-code",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P28",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "add-promo-api",
+      "text": "#### [`id`](#id)\u00a0\u25cf\u00a0[`ID`](/api-reference/miscellaneous/scalars/id)[\u200b](#id \"Direct link to id\")\n\nThe checkout's ID.\n\n#### [`promoCode`](#promo-code)\u00a0\u25cf\u00a0[`String!`](/api-reference/miscellaneous/scalars/string)[\u200b](#promo-code \"Direct link to promo-code\")\n\nGift card code or voucher code.\n\nShow deprecatedHide deprecated\n\n#### [`checkoutId`](#checkout-id)\u00a0\u25cf\u00a0[`ID`](/api-reference/miscellaneous/scalars/id)[\u200b](#checkout-id \"Direct link to checkout-id\")\n\nDEPRECATED\n\nUse `id` instead.\n\nThe ID of the checkout.\n\n#### [`token`](#token)\u00a0\u25cf\u00a0[`UUID`](/api-reference/miscellaneous/scalars/uuid)[\u200b](#token \"Direct link to token\")\n\nDEPRECATED\n\nUse `id` instead.\n\nCheckout token.\n",
+      "artifact_path": "review/sources/add-promo-api.md",
+      "retrieval_score": 0.7000489613875391,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-add-promo-code",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P30",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "remove-promo-api",
+      "text": "#### [`id`](#id)\u00a0\u25cf\u00a0[`ID`](/api-reference/miscellaneous/scalars/id)[\u200b](#id \"Direct link to id\")\n\nThe checkout's ID.\n\n#### [`promoCode`](#promo-code)\u00a0\u25cf\u00a0[`String`](/api-reference/miscellaneous/scalars/string)[\u200b](#promo-code \"Direct link to promo-code\")\n\nGift card code or voucher code.\n\n#### [`promoCodeId`](#promo-code-id)\u00a0\u25cf\u00a0[`ID`](/api-reference/miscellaneous/scalars/id)[\u200b](#promo-code-id \"Direct link to promo-code-id\")\n\nGift card or voucher ID.\n\nShow deprecatedHide deprecated\n\n#### [`checkoutId`](#checkout-id)\u00a0\u25cf\u00a0[`ID`](/api-reference/miscellaneous/scalars/id)[\u200b](#checkout-id \"Direct link to checkout-id\")\n\nDEPRECATED\n\nUse `id` instead.\n\nThe ID of the checkout.\n\n#### [`token`](#token)\u00a0\u25cf\u00a0[`UUID`](/api-reference/miscellaneous/scalars/uuid)[\u200b](#token \"Direct link to token\")\n\nDEPRECATED\n\nUse `id` instead.\n\nCheckout token.\n",
+      "artifact_path": "review/sources/remove-promo-api.md",
+      "retrieval_score": 0.69938497079882,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-remove-promo-code",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P26",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "## Combining Promotions and Vouchers[\u200b](#combining-promotions-and-vouchers \"Direct link to Combining Promotions and Vouchers\")\n\nCatalogue promotions and vouchers can be combined. In this case, the voucher discount\nis applied to the price after the promotion discount.\nLet's consider an example: the checkout has two items, and the first item is on **$5** fixed promotion.\nA percentage discount of **50%** is being applied to the entire order.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.6562021531575424,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P17",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "note\n\n**Vouchers vs Gift Cards**\n\nVouchers discount the subtotal, unit price, or shipping based on their type and are scoped to channels.\nGift cards reduce the total price and are currency-based, usable across channels with the same currency.\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.6545640314212476,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P16",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "## Types[\u200b](#types \"Direct link to Types\")\n\nVouchers come in three types:\n\n* `ENTIRE_ORDER`: Applies discount to the checkout subtotal\n* `SPECIFIC_PRODUCT`: Applies discount to eligible product unit prices. You define eligibility by linking products, variants, categories, or collections.\n* `SHIPPING`: Applies discount to shipping costs. To apply a shipping voucher, the checkout must include shippable products, shipping address, and a shipping method assigned.\n\nVouchers also have two value types:\n\n* `FIXED`: Reduces price by a specific amount\n* `PERCENTAGE`: Reduces price by a specific percentage\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.6448259798807694,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P13",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "shipping-address",
+      "text": "#### Shipping Methods[\u200b](#shipping-methods \"Direct link to Shipping Methods\")\n\nAfter choosing the shipping address, use the [`deliveryOptionsCalculate`](/api-reference/shipping/mutations/delivery-options-calculate) mutation to explicitly fetch available delivery methods.\n",
+      "artifact_path": "review/sources/shipping-address.md",
+      "retrieval_score": 0.642853348188132,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/checkout/address",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P19",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "### Minimal Order Value[\u200b](#minimal-order-value \"Direct link to Minimal Order Value\")\n\nSpecifies the minimum checkout subtotal required for the voucher to be applicable.\nThe value is defined per sales channel via `VoucherChannelListing.minSpent`.\n\nIf the subtotal does not meet this threshold, the voucher will not be applied.\n\n**Example:** If `minSpent` is set to 100.00, and the subtotal is 95.96 with 10.00 shipping (total 105.96), the voucher will not be applied.\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.6354672351422233,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    }
+  ],
+  "ranking": {
+    "score_kind": "gemini-relevance-v1",
+    "scores": [
+      {
+        "id": "P27",
+        "score": 3.0,
+        "quote": "  promoCode: String!  "
+      },
+      {
+        "id": "P29",
+        "score": 3.0,
+        "quote": "  promoCode: String  "
+      },
+      {
+        "id": "P28",
+        "score": 2.0,
+        "quote": ""
+      },
+      {
+        "id": "P30",
+        "score": 2.0,
+        "quote": ""
+      },
+      {
+        "id": "P22",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "P26",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P17",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P16",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P13",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P19",
+        "score": 0.0,
+        "quote": ""
+      }
+    ],
+    "usage": {
+      "input_tokens": 1875,
+      "output_tokens": 327,
+      "total_tokens": 2202
+    }
+  },
+  "selection": {
+    "ids": [
+      "P27",
+      "P29"
+    ],
+    "reason": "relevance_threshold",
+    "limit_reached": false
+  },
+  "status": "EVIDENCE_FOUND",
+  "coverage": "NOT_EVALUATED",
+  "timings_ms": {
+    "retrieve": 0.08040000102482736,
+    "rerank": 12180.159400013508,
+    "select": 0.7303000020328909
+  }
+}

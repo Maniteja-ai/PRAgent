@@ -1,0 +1,15 @@
+{
+  "$schema": "../../schemas/evals/evaluation.schema.json",
+  "dataset": "demo.dataset.jsonl",
+  "predictions": "demo.outputs.jsonl",
+  "output_directory": "../../artifacts/evaluation-runs",
+  "task": "set_retrieval",
+  "reference": {
+    "complete": true
+  },
+  "prediction": {
+    "case_id": "case",
+    "items": "result.hits",
+    "item_id": "symbol_id"
+  }
+}

@@ -1,0 +1,497 @@
+{
+  "id": "integration-impact-e90e5b0521ae4db7a00e3d1e62275595",
+  "origin": "SYNTHETIC_CONTRACT_FIXTURE_NOT_SALEOR_OBSERVATIONS",
+  "nodes": [
+    {
+      "id": "discount",
+      "kind": "CodeSymbol",
+      "name": "calculateDiscount",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "subtotal",
+      "kind": "CodeSymbol",
+      "name": "subtotal",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "summary",
+      "kind": "CodeSymbol",
+      "name": "summary",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "summary-alt",
+      "kind": "CodeSymbol",
+      "name": "summary-alt",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "caller",
+      "kind": "CodeSymbol",
+      "name": "caller",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "orphan",
+      "kind": "CodeSymbol",
+      "name": "orphan",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "homonym",
+      "kind": "CodeSymbol",
+      "name": "calculateDiscount",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "login-code",
+      "kind": "CodeSymbol",
+      "name": "login-code",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "total",
+      "kind": "UIElement",
+      "name": "total",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "apply",
+      "kind": "UIElement",
+      "name": "apply",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "remove",
+      "kind": "UIElement",
+      "name": "remove",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "login",
+      "kind": "UIElement",
+      "name": "login",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "candidate-control",
+      "kind": "UIElement",
+      "name": "candidate-control",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "rejected-control",
+      "kind": "UIElement",
+      "name": "rejected-control",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "flow-apply",
+      "kind": "UserFlow",
+      "name": "flow-apply",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "flow-remove",
+      "kind": "UserFlow",
+      "name": "flow-remove",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "flow-quantity",
+      "kind": "UserFlow",
+      "name": "flow-quantity",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "flow-login",
+      "kind": "UserFlow",
+      "name": "flow-login",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "flow-candidate",
+      "kind": "UserFlow",
+      "name": "flow-candidate",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "flow-rejected",
+      "kind": "UserFlow",
+      "name": "flow-rejected",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "req-total",
+      "kind": "Requirement",
+      "name": "req-total",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "req-voucher",
+      "kind": "Requirement",
+      "name": "req-voucher",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "req-login",
+      "kind": "Requirement",
+      "name": "req-login",
+      "project_id": "fixture-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "other-summary",
+      "kind": "CodeSymbol",
+      "name": "other-summary",
+      "project_id": "other-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "other-ui",
+      "kind": "UIElement",
+      "name": "other-ui",
+      "project_id": "other-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "other-flow",
+      "kind": "UserFlow",
+      "name": "other-flow",
+      "project_id": "other-shop",
+      "revision": "fixture-base",
+      "properties": {}
+    },
+    {
+      "id": "patched-summary",
+      "kind": "CodeSymbol",
+      "name": "patched-summary",
+      "project_id": "fixture-shop",
+      "revision": "fixture-patched",
+      "properties": {}
+    },
+    {
+      "id": "patched-ui",
+      "kind": "UIElement",
+      "name": "patched-ui",
+      "project_id": "fixture-shop",
+      "revision": "fixture-patched",
+      "properties": {}
+    },
+    {
+      "id": "patched-flow",
+      "kind": "UserFlow",
+      "name": "patched-flow",
+      "project_id": "fixture-shop",
+      "revision": "fixture-patched",
+      "properties": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "d1",
+      "source": "discount",
+      "target": "subtotal",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "d2",
+      "source": "summary",
+      "target": "discount",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "d3",
+      "source": "summary-alt",
+      "target": "discount",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "d4",
+      "source": "caller",
+      "target": "summary",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "d5",
+      "source": "discount",
+      "target": "summary",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "m1",
+      "source": "summary",
+      "target": "total",
+      "type": "RENDERS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "m2",
+      "source": "summary",
+      "target": "apply",
+      "type": "RENDERS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "m3",
+      "source": "summary",
+      "target": "remove",
+      "type": "RENDERS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "m4",
+      "source": "summary-alt",
+      "target": "total",
+      "type": "RENDERS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "m5",
+      "source": "login-code",
+      "target": "login",
+      "type": "RENDERS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "f1",
+      "source": "flow-apply",
+      "target": "total",
+      "type": "CONTAINS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "f2",
+      "source": "flow-apply",
+      "target": "apply",
+      "type": "CONTAINS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "f3",
+      "source": "flow-remove",
+      "target": "total",
+      "type": "CONTAINS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "f4",
+      "source": "flow-remove",
+      "target": "remove",
+      "type": "CONTAINS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "f5",
+      "source": "flow-quantity",
+      "target": "total",
+      "type": "CONTAINS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "f6",
+      "source": "flow-login",
+      "target": "login",
+      "type": "CONTAINS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "r1",
+      "source": "flow-apply",
+      "target": "req-voucher",
+      "type": "CHECKS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "r2",
+      "source": "flow-apply",
+      "target": "req-total",
+      "type": "CHECKS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "r3",
+      "source": "flow-remove",
+      "target": "req-voucher",
+      "type": "CHECKS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "r4",
+      "source": "flow-remove",
+      "target": "req-total",
+      "type": "CHECKS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "r5",
+      "source": "flow-quantity",
+      "target": "req-total",
+      "type": "CHECKS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "r6",
+      "source": "flow-login",
+      "target": "req-login",
+      "type": "CHECKS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "x1",
+      "source": "other-summary",
+      "target": "discount",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "x2",
+      "source": "other-summary",
+      "target": "other-ui",
+      "type": "RENDERS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "x3",
+      "source": "other-flow",
+      "target": "other-ui",
+      "type": "CONTAINS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "v1",
+      "source": "patched-summary",
+      "target": "discount",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "v2",
+      "source": "patched-summary",
+      "target": "patched-ui",
+      "type": "RENDERS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "v3",
+      "source": "patched-flow",
+      "target": "patched-ui",
+      "type": "CONTAINS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "c2",
+      "source": "flow-candidate",
+      "target": "candidate-control",
+      "type": "CONTAINS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "z2",
+      "source": "flow-rejected",
+      "target": "rejected-control",
+      "type": "CONTAINS",
+      "status": "CONFIRMED",
+      "properties": {}
+    },
+    {
+      "id": "c1",
+      "source": "summary",
+      "target": "candidate-control",
+      "type": "RENDERS",
+      "status": "CANDIDATE",
+      "properties": {}
+    },
+    {
+      "id": "z1",
+      "source": "summary",
+      "target": "rejected-control",
+      "type": "RENDERS",
+      "status": "REJECTED",
+      "properties": {}
+    }
+  ],
+  "diagnostics": []
+}

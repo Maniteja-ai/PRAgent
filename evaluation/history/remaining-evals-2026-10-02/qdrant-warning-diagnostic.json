@@ -1,0 +1,12 @@
+{
+  "qdrant_client_version": "1.19.1",
+  "client_explicitly_closed": true,
+  "warnings": [
+    {
+      "category": "ResourceWarning",
+      "message": "unclosed database in <sqlite3.Connection object"
+    }
+  ],
+  "source_observation": "qdrant_client/local/persistence.py CollectionPersistence.__init__ opens temporary sqlite3 :memory: with transaction context manager but no explicit close. Its persistent storage connection has an explicit close method.",
+  "library_files_modified": false
+}

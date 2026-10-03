@@ -1,0 +1,1090 @@
+{
+  "status": "UNMAPPED",
+  "symbol_ids": [
+    "src/checkout/root.tsx#597:Root",
+    "src/checkout/root.tsx#module",
+    "src/checkout/views/order-confirmation/index.tsx#module",
+    "src/checkout/views/order-confirmation/order-confirmation.tsx#930:OrderConfirmation",
+    "src/checkout/views/order-confirmation/order-confirmation.tsx#module",
+    "src/checkout/views/root-views.tsx#358:RootViews",
+    "src/checkout/views/root-views.tsx#module",
+    "src/checkout/views/saleor-checkout/index.tsx#module",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#1253:extractCheckoutData",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#1337:lines",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#1396:variantImage",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#1473:productImage",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#1559:image",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#1605:attributes",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#2363:extractOrderData",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#2438:lines",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#2494:attributes",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#2887:discount",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#3475:OrderSummary",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#3801:data",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#4009:isEditable",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#4056:itemCount",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#4129:formatMoney",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#4288:handleApplyPromo",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#4530:thumbnails",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#4569:remainingCount",
+    "src/checkout/views/saleor-checkout/order-summary.tsx#module",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1348:SaleorCheckout",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1384:router",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1413:searchParams",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1873:isShippingRequired",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1976:currentStep",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2058:stepRef",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2394:isCheckoutInvalid",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2494:isEmptyCart",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2616:showInitialSkeleton",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2893:goToStep",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2946:steps",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3000:targetStep",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3080:newQuery",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3532:steps",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3589:step",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx#module"
+  ],
+  "code_files": [
+    "src/checkout/root.tsx",
+    "src/checkout/views/order-confirmation/index.tsx",
+    "src/checkout/views/order-confirmation/order-confirmation.tsx",
+    "src/checkout/views/root-views.tsx",
+    "src/checkout/views/saleor-checkout/index.tsx",
+    "src/checkout/views/saleor-checkout/order-summary.tsx",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx"
+  ],
+  "ui_ids": [],
+  "flow_ids": [],
+  "requirement_ids": [],
+  "witness_paths": [
+    {
+      "target_id": "src/checkout/root.tsx#597:Root",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1348:SaleorCheckout",
+        "src/checkout/views/root-views.tsx#358:RootViews",
+        "src/checkout/root.tsx#597:Root"
+      ],
+      "edge_ids": [
+        "DEPENDS_ON:src/checkout/views/root-views.tsx#358:RootViews->src/checkout/views/saleor-checkout/saleor-checkout.tsx#1348:SaleorCheckout",
+        "DEPENDS_ON:src/checkout/root.tsx#597:Root->src/checkout/views/root-views.tsx#358:RootViews"
+      ]
+    },
+    {
+      "target_id": "src/checkout/root.tsx#module",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#module",
+        "src/checkout/views/saleor-checkout/index.tsx#module",
+        "src/checkout/views/root-views.tsx#module",
+        "src/checkout/root.tsx#module"
+      ],
+      "edge_ids": [
+        "DEPENDS_ON:src/checkout/views/saleor-checkout/index.tsx#module->src/checkout/views/saleor-checkout/saleor-checkout.tsx#module",
+        "DEPENDS_ON:src/checkout/views/root-views.tsx#module->src/checkout/views/saleor-checkout/index.tsx#module",
+        "DEPENDS_ON:src/checkout/root.tsx#module->src/checkout/views/root-views.tsx#module"
+      ]
+    },
+    {
+      "target_id": "src/checkout/views/order-confirmation/index.tsx#module",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#module",
+        "src/checkout/views/order-confirmation/order-confirmation.tsx#module",
+        "src/checkout/views/order-confirmation/index.tsx#module"
+      ],
+      "edge_ids": [
+        "DEPENDS_ON:src/checkout/views/order-confirmation/order-confirmation.tsx#module->src/checkout/views/saleor-checkout/order-summary.tsx#module",
+        "DEPENDS_ON:src/checkout/views/order-confirmation/index.tsx#module->src/checkout/views/order-confirmation/order-confirmation.tsx#module"
+      ]
+    },
+    {
+      "target_id": "src/checkout/views/order-confirmation/order-confirmation.tsx#930:OrderConfirmation",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#3475:OrderSummary",
+        "src/checkout/views/order-confirmation/order-confirmation.tsx#930:OrderConfirmation"
+      ],
+      "edge_ids": [
+        "DEPENDS_ON:src/checkout/views/order-confirmation/order-confirmation.tsx#930:OrderConfirmation->src/checkout/views/saleor-checkout/order-summary.tsx#3475:OrderSummary"
+      ]
+    },
+    {
+      "target_id": "src/checkout/views/order-confirmation/order-confirmation.tsx#module",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#module",
+        "src/checkout/views/order-confirmation/order-confirmation.tsx#module"
+      ],
+      "edge_ids": [
+        "DEPENDS_ON:src/checkout/views/order-confirmation/order-confirmation.tsx#module->src/checkout/views/saleor-checkout/order-summary.tsx#module"
+      ]
+    },
+    {
+      "target_id": "src/checkout/views/root-views.tsx#358:RootViews",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1348:SaleorCheckout",
+        "src/checkout/views/root-views.tsx#358:RootViews"
+      ],
+      "edge_ids": [
+        "DEPENDS_ON:src/checkout/views/root-views.tsx#358:RootViews->src/checkout/views/saleor-checkout/saleor-checkout.tsx#1348:SaleorCheckout"
+      ]
+    },
+    {
+      "target_id": "src/checkout/views/root-views.tsx#module",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#module",
+        "src/checkout/views/saleor-checkout/index.tsx#module",
+        "src/checkout/views/root-views.tsx#module"
+      ],
+      "edge_ids": [
+        "DEPENDS_ON:src/checkout/views/saleor-checkout/index.tsx#module->src/checkout/views/saleor-checkout/saleor-checkout.tsx#module",
+        "DEPENDS_ON:src/checkout/views/root-views.tsx#module->src/checkout/views/saleor-checkout/index.tsx#module"
+      ]
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/index.tsx#module",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#module",
+        "src/checkout/views/saleor-checkout/index.tsx#module"
+      ],
+      "edge_ids": [
+        "DEPENDS_ON:src/checkout/views/saleor-checkout/index.tsx#module->src/checkout/views/saleor-checkout/saleor-checkout.tsx#module"
+      ]
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#1253:extractCheckoutData",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#1253:extractCheckoutData"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#1337:lines",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#1337:lines"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#1396:variantImage",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#1396:variantImage"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#1473:productImage",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#1473:productImage"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#1559:image",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#1559:image"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#1605:attributes",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#1605:attributes"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#2363:extractOrderData",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#2363:extractOrderData"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#2438:lines",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#2438:lines"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#2494:attributes",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#2494:attributes"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#2887:discount",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#2887:discount"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#3475:OrderSummary",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#3475:OrderSummary"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#3801:data",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#3801:data"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#4009:isEditable",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#4009:isEditable"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#4056:itemCount",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#4056:itemCount"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#4129:formatMoney",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#4129:formatMoney"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#4288:handleApplyPromo",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#4288:handleApplyPromo"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#4530:thumbnails",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#4530:thumbnails"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#4569:remainingCount",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#4569:remainingCount"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/order-summary.tsx#module",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/order-summary.tsx#module"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1348:SaleorCheckout",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1348:SaleorCheckout"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1384:router",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1384:router"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1413:searchParams",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1413:searchParams"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1873:isShippingRequired",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1873:isShippingRequired"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1976:currentStep",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1976:currentStep"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2058:stepRef",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2058:stepRef"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2394:isCheckoutInvalid",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2394:isCheckoutInvalid"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2494:isEmptyCart",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2494:isEmptyCart"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2616:showInitialSkeleton",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2616:showInitialSkeleton"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2893:goToStep",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2893:goToStep"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2946:steps",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2946:steps"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3000:targetStep",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3000:targetStep"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3080:newQuery",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3080:newQuery"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3532:steps",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3532:steps"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3589:step",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3589:step"
+      ],
+      "edge_ids": []
+    },
+    {
+      "target_id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#module",
+      "node_ids": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx#module"
+      ],
+      "edge_ids": []
+    }
+  ],
+  "evidence_nodes": [
+    {
+      "id": "src/checkout/root.tsx#597:Root",
+      "kind": "CodeSymbol",
+      "name": "Root",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/root.tsx",
+        "start_line": 21,
+        "end_line": 60,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "b49891d9eeb8ac09fee18e655156ee603a7085956d466e46281cbe928687941c"
+      }
+    },
+    {
+      "id": "src/checkout/root.tsx#module",
+      "kind": "CodeSymbol",
+      "name": "<module>",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/root.tsx",
+        "start_line": 1,
+        "end_line": 61,
+        "sha256": "b49891d9eeb8ac09fee18e655156ee603a7085956d466e46281cbe928687941c"
+      }
+    },
+    {
+      "id": "src/checkout/views/order-confirmation/index.tsx#module",
+      "kind": "CodeSymbol",
+      "name": "<module>",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/order-confirmation/index.tsx",
+        "start_line": 1,
+        "end_line": 3,
+        "sha256": "b5338c4b78e8f82dcad290f8ff67618ca840fe2ce95bb54c24df440dbd277546"
+      }
+    },
+    {
+      "id": "src/checkout/views/order-confirmation/order-confirmation.tsx#930:OrderConfirmation",
+      "kind": "CodeSymbol",
+      "name": "OrderConfirmation",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/order-confirmation/order-confirmation.tsx",
+        "start_line": 27,
+        "end_line": 142,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "24799e4dc7f07ecf0c985b37a24594f4886bf2c50331833d8c50799c4ac44328"
+      }
+    },
+    {
+      "id": "src/checkout/views/order-confirmation/order-confirmation.tsx#module",
+      "kind": "CodeSymbol",
+      "name": "<module>",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/order-confirmation/order-confirmation.tsx",
+        "start_line": 1,
+        "end_line": 143,
+        "sha256": "24799e4dc7f07ecf0c985b37a24594f4886bf2c50331833d8c50799c4ac44328"
+      }
+    },
+    {
+      "id": "src/checkout/views/root-views.tsx#358:RootViews",
+      "kind": "CodeSymbol",
+      "name": "RootViews",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/root-views.tsx",
+        "start_line": 9,
+        "end_line": 26,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "096192f533b2cf93f0e45155cf3a04b1d072df0c06b1f3b769ab7558f0aa2b48"
+      }
+    },
+    {
+      "id": "src/checkout/views/root-views.tsx#module",
+      "kind": "CodeSymbol",
+      "name": "<module>",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/root-views.tsx",
+        "start_line": 1,
+        "end_line": 27,
+        "sha256": "096192f533b2cf93f0e45155cf3a04b1d072df0c06b1f3b769ab7558f0aa2b48"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/index.tsx#module",
+      "kind": "CodeSymbol",
+      "name": "<module>",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/index.tsx",
+        "start_line": 1,
+        "end_line": 3,
+        "sha256": "765f12a62acb46d6d9cf15776d7f3ca0aa42074124d6ad00bc7e2e2c500370e3"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#1253:extractCheckoutData",
+      "kind": "CodeSymbol",
+      "name": "extractCheckoutData",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 47,
+        "end_line": 78,
+        "declaration_kind": "FunctionDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#1337:lines",
+      "kind": "CodeSymbol",
+      "name": "lines",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 48,
+        "end_line": 66,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#1396:variantImage",
+      "kind": "CodeSymbol",
+      "name": "variantImage",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 49,
+        "end_line": 49,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#1473:productImage",
+      "kind": "CodeSymbol",
+      "name": "productImage",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 50,
+        "end_line": 50,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#1559:image",
+      "kind": "CodeSymbol",
+      "name": "image",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 51,
+        "end_line": 51,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#1605:attributes",
+      "kind": "CodeSymbol",
+      "name": "attributes",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 52,
+        "end_line": 55,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#2363:extractOrderData",
+      "kind": "CodeSymbol",
+      "name": "extractOrderData",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 80,
+        "end_line": 110,
+        "declaration_kind": "FunctionDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#2438:lines",
+      "kind": "CodeSymbol",
+      "name": "lines",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 81,
+        "end_line": 96,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#2494:attributes",
+      "kind": "CodeSymbol",
+      "name": "attributes",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 82,
+        "end_line": 85,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#2887:discount",
+      "kind": "CodeSymbol",
+      "name": "discount",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 98,
+        "end_line": 98,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#3475:OrderSummary",
+      "kind": "CodeSymbol",
+      "name": "OrderSummary",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 116,
+        "end_line": 383,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#3801:data",
+      "kind": "CodeSymbol",
+      "name": "data",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 123,
+        "end_line": 123,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#4009:isEditable",
+      "kind": "CodeSymbol",
+      "name": "isEditable",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 130,
+        "end_line": 130,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#4056:itemCount",
+      "kind": "CodeSymbol",
+      "name": "itemCount",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 131,
+        "end_line": 131,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#4129:formatMoney",
+      "kind": "CodeSymbol",
+      "name": "formatMoney",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 133,
+        "end_line": 138,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#4288:handleApplyPromo",
+      "kind": "CodeSymbol",
+      "name": "handleApplyPromo",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 140,
+        "end_line": 145,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#4530:thumbnails",
+      "kind": "CodeSymbol",
+      "name": "thumbnails",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 148,
+        "end_line": 148,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#4569:remainingCount",
+      "kind": "CodeSymbol",
+      "name": "remainingCount",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 149,
+        "end_line": 149,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/order-summary.tsx#module",
+      "kind": "CodeSymbol",
+      "name": "<module>",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/order-summary.tsx",
+        "start_line": 1,
+        "end_line": 384,
+        "sha256": "f40fd2a9dc04c81129e50771275621a38cbdd476f7f073b74ef7c881ac3b2476"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1348:SaleorCheckout",
+      "kind": "CodeSymbol",
+      "name": "SaleorCheckout",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 31,
+        "end_line": 150,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1384:router",
+      "kind": "CodeSymbol",
+      "name": "router",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 32,
+        "end_line": 32,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1413:searchParams",
+      "kind": "CodeSymbol",
+      "name": "searchParams",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 33,
+        "end_line": 33,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1873:isShippingRequired",
+      "kind": "CodeSymbol",
+      "name": "isShippingRequired",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 42,
+        "end_line": 42,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1976:currentStep",
+      "kind": "CodeSymbol",
+      "name": "currentStep",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 45,
+        "end_line": 45,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2058:stepRef",
+      "kind": "CodeSymbol",
+      "name": "stepRef",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 47,
+        "end_line": 47,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2394:isCheckoutInvalid",
+      "kind": "CodeSymbol",
+      "name": "isCheckoutInvalid",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 56,
+        "end_line": 56,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2494:isEmptyCart",
+      "kind": "CodeSymbol",
+      "name": "isEmptyCart",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 57,
+        "end_line": 57,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2616:showInitialSkeleton",
+      "kind": "CodeSymbol",
+      "name": "showInitialSkeleton",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 60,
+        "end_line": 60,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2893:goToStep",
+      "kind": "CodeSymbol",
+      "name": "goToStep",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 75,
+        "end_line": 83,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#2946:steps",
+      "kind": "CodeSymbol",
+      "name": "steps",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 76,
+        "end_line": 76,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3000:targetStep",
+      "kind": "CodeSymbol",
+      "name": "targetStep",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 77,
+        "end_line": 77,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3080:newQuery",
+      "kind": "CodeSymbol",
+      "name": "newQuery",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 79,
+        "end_line": 79,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3532:steps",
+      "kind": "CodeSymbol",
+      "name": "steps",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 92,
+        "end_line": 92,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#3589:step",
+      "kind": "CodeSymbol",
+      "name": "step",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 93,
+        "end_line": 93,
+        "declaration_kind": "VariableDeclaration",
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    },
+    {
+      "id": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#module",
+      "kind": "CodeSymbol",
+      "name": "<module>",
+      "project_id": "saleor-storefront",
+      "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+      "properties": {
+        "path": "src/checkout/views/saleor-checkout/saleor-checkout.tsx",
+        "start_line": 1,
+        "end_line": 151,
+        "sha256": "0944855d98b69dcd63307764a726a37a3d9aa6aeb2f3a8beec660b7960e147eb"
+      }
+    }
+  ],
+  "evidence_edges": [
+    {
+      "id": "DEPENDS_ON:src/checkout/root.tsx#597:Root->src/checkout/views/root-views.tsx#358:RootViews",
+      "source": "src/checkout/root.tsx#597:Root",
+      "target": "src/checkout/views/root-views.tsx#358:RootViews",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {
+        "method": "resolved-identifier",
+        "path": "src/checkout/root.tsx",
+        "line": 55
+      }
+    },
+    {
+      "id": "DEPENDS_ON:src/checkout/root.tsx#module->src/checkout/views/root-views.tsx#module",
+      "source": "src/checkout/root.tsx#module",
+      "target": "src/checkout/views/root-views.tsx#module",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {
+        "method": "module-import",
+        "path": "src/checkout/root.tsx"
+      }
+    },
+    {
+      "id": "DEPENDS_ON:src/checkout/views/order-confirmation/index.tsx#module->src/checkout/views/order-confirmation/order-confirmation.tsx#module",
+      "source": "src/checkout/views/order-confirmation/index.tsx#module",
+      "target": "src/checkout/views/order-confirmation/order-confirmation.tsx#module",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {
+        "method": "module-import",
+        "path": "src/checkout/views/order-confirmation/index.tsx"
+      }
+    },
+    {
+      "id": "DEPENDS_ON:src/checkout/views/order-confirmation/order-confirmation.tsx#930:OrderConfirmation->src/checkout/views/saleor-checkout/order-summary.tsx#3475:OrderSummary",
+      "source": "src/checkout/views/order-confirmation/order-confirmation.tsx#930:OrderConfirmation",
+      "target": "src/checkout/views/saleor-checkout/order-summary.tsx#3475:OrderSummary",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {
+        "method": "resolved-identifier",
+        "path": "src/checkout/views/order-confirmation/order-confirmation.tsx",
+        "line": 135
+      }
+    },
+    {
+      "id": "DEPENDS_ON:src/checkout/views/order-confirmation/order-confirmation.tsx#module->src/checkout/views/saleor-checkout/order-summary.tsx#module",
+      "source": "src/checkout/views/order-confirmation/order-confirmation.tsx#module",
+      "target": "src/checkout/views/saleor-checkout/order-summary.tsx#module",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {
+        "method": "module-import",
+        "path": "src/checkout/views/order-confirmation/order-confirmation.tsx"
+      }
+    },
+    {
+      "id": "DEPENDS_ON:src/checkout/views/root-views.tsx#358:RootViews->src/checkout/views/saleor-checkout/saleor-checkout.tsx#1348:SaleorCheckout",
+      "source": "src/checkout/views/root-views.tsx#358:RootViews",
+      "target": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#1348:SaleorCheckout",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {
+        "method": "resolved-identifier",
+        "path": "src/checkout/views/root-views.tsx",
+        "line": 23
+      }
+    },
+    {
+      "id": "DEPENDS_ON:src/checkout/views/root-views.tsx#module->src/checkout/views/saleor-checkout/index.tsx#module",
+      "source": "src/checkout/views/root-views.tsx#module",
+      "target": "src/checkout/views/saleor-checkout/index.tsx#module",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {
+        "method": "module-import",
+        "path": "src/checkout/views/root-views.tsx"
+      }
+    },
+    {
+      "id": "DEPENDS_ON:src/checkout/views/saleor-checkout/index.tsx#module->src/checkout/views/saleor-checkout/saleor-checkout.tsx#module",
+      "source": "src/checkout/views/saleor-checkout/index.tsx#module",
+      "target": "src/checkout/views/saleor-checkout/saleor-checkout.tsx#module",
+      "type": "DEPENDS_ON",
+      "status": "CONFIRMED",
+      "properties": {
+        "method": "module-import",
+        "path": "src/checkout/views/saleor-checkout/index.tsx"
+      }
+    }
+  ],
+  "dependency_budget_reached": false,
+  "result_semantics": "reachable_risk_candidates_not_confirmed_breakage",
+  "mapping_coverage": "NOT_EVALUATED"
+}

@@ -9,29 +9,52 @@ description = "Evidence-backed requirements ingestion for UI and code impact ana
 requires-python = ">=3.11,<3.15"
 dependencies = [
   "beautifulsoup4>=4.13,<5", "httpx>=0.28,<1", "markdownify>=1.2,<2",
-  "markdown-it-py>=4,<5", "neo4j>=6,<7", "pydantic>=2.11,<3",
+  "markdown-it-py>=4,<5", "neo4j>=6,<7", "pydantic>=2.12,<3",
   "python-dotenv>=1.1,<2", "filelock>=3.20,<4", "PyYAML>=6,<7",
 ]
 
 [project.optional-dependencies]
+evals = ["jsonschema>=4,<5"]
 openai = ["langchain-openai>=1,<2"]
 vector = ["qdrant-client>=1.15,<2"]
 gemini = [
     "langchain-google-genai>=4,<5",
+    "google-genai==2.27.0",
+]
+reranking = [
+    "torch>=2.10,<3",
+    "transformers>=4.57,<5",
 ]
 
 [dependency-groups]
-dev = ["pytest>=8,<10", "ruff>=0.12,<1"]
+dev = [
+    "jsonschema>=4,<5",
+    "pytest>=8,<10",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.12,<1",
+]
 
 [project.scripts]
 trace-impact = "trace_impact.cli:main"
+trace-eval = "trace_impact.evals.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/trace_impact"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["integration: needs an explicitly configured live Neo4j instance"]
+markers = ["integration: opt-in real external services (Neo4j and/or Gemini); may consume API quota"]
+
+[tool.coverage.run]
+relative_files = true
+branch = true
+# Experiment drivers previously lived in examples/. Their live execution is
+# reported separately from offline library coverage; do not mix the scopes.
+omit = ["src/trace_impact/evals/runners/*"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
 
 [tool.ruff]
 line-length = 110
@@ -39,3 +62,12 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
+
+# Linux CI uses CPU wheels; Windows PyPI wheels already contain the CPU runtime.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

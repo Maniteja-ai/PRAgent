@@ -1,0 +1,117 @@
+[
+  {
+    "id": "C01",
+    "graph_case_id": "G02",
+    "vector_case_id": "V01",
+    "expected_rule": "Graph identifies synthetic voucher flows; documents supply shipping prerequisites. Do not claim Saleor has these fixture mappings.",
+    "mode": "component_output_audit_not_combined_pipeline_execution",
+    "end_to_end_status": "NOT_IMPLEMENTED",
+    "graph_status": "OK",
+    "graph_sets_and_status_match": true,
+    "selected_document_ids": [
+      "P23",
+      "P21",
+      "P24",
+      "P19",
+      "P25"
+    ],
+    "evidence_units_expected": 1,
+    "evidence_units_found": 1,
+    "document_answerability_reference": "ANSWERABLE",
+    "answer_correctness": "NOT_EVALUATED",
+    "ui_mapping_origin": "SYNTHETIC_FIXTURE_ONLY",
+    "note": "Raw vector neighbors are context, not a verified answer. No cross-store join or generated claim was executed."
+  },
+  {
+    "id": "C02",
+    "graph_case_id": "G03",
+    "vector_case_id": "V31",
+    "expected_rule": "Both minimum-spend and item-count evidence units are required; a single passage is incomplete.",
+    "mode": "component_output_audit_not_combined_pipeline_execution",
+    "end_to_end_status": "NOT_IMPLEMENTED",
+    "graph_status": "OK",
+    "graph_sets_and_status_match": true,
+    "selected_document_ids": [
+      "P19",
+      "P20",
+      "P25",
+      "P26",
+      "P18"
+    ],
+    "evidence_units_expected": 2,
+    "evidence_units_found": 2,
+    "document_answerability_reference": "ANSWERABLE",
+    "answer_correctness": "NOT_EVALUATED",
+    "ui_mapping_origin": "SYNTHETIC_FIXTURE_ONLY",
+    "note": "Raw vector neighbors are context, not a verified answer. No cross-store join or generated claim was executed."
+  },
+  {
+    "id": "C03",
+    "graph_case_id": "G06",
+    "vector_case_id": "V01",
+    "expected_rule": "Relevant documentation does not repair a missing code-to-UI mapping; retain UNMAPPED.",
+    "mode": "component_output_audit_not_combined_pipeline_execution",
+    "end_to_end_status": "NOT_IMPLEMENTED",
+    "graph_status": "UNMAPPED",
+    "graph_sets_and_status_match": true,
+    "selected_document_ids": [
+      "P23",
+      "P21",
+      "P24",
+      "P19",
+      "P25"
+    ],
+    "evidence_units_expected": 1,
+    "evidence_units_found": 1,
+    "document_answerability_reference": "ANSWERABLE",
+    "answer_correctness": "NOT_EVALUATED",
+    "ui_mapping_origin": "SYNTHETIC_FIXTURE_ONLY",
+    "note": "Raw vector neighbors are context, not a verified answer. No cross-store join or generated claim was executed."
+  },
+  {
+    "id": "C04",
+    "graph_case_id": "G02",
+    "vector_case_id": "V36",
+    "expected_rule": "A synthetic graph path does not establish the current DOM selector of the deployed Saleor application.",
+    "mode": "component_output_audit_not_combined_pipeline_execution",
+    "end_to_end_status": "NOT_IMPLEMENTED",
+    "graph_status": "OK",
+    "graph_sets_and_status_match": true,
+    "selected_document_ids": [
+      "P24",
+      "P25",
+      "P29",
+      "P22",
+      "P18"
+    ],
+    "evidence_units_expected": 0,
+    "evidence_units_found": 0,
+    "document_answerability_reference": "UNANSWERABLE_IN_BOUNDED_CORPUS",
+    "answer_correctness": "NOT_EVALUATED",
+    "ui_mapping_origin": "SYNTHETIC_FIXTURE_ONLY",
+    "note": "Raw vector neighbors are context, not a verified answer. No cross-store join or generated claim was executed."
+  },
+  {
+    "id": "C05",
+    "graph_case_id": "G16",
+    "vector_case_id": "V38",
+    "expected_rule": "A login graph result does not establish a returns policy; do not invent documentary support.",
+    "mode": "component_output_audit_not_combined_pipeline_execution",
+    "end_to_end_status": "NOT_IMPLEMENTED",
+    "graph_status": "OK",
+    "graph_sets_and_status_match": true,
+    "selected_document_ids": [
+      "P03",
+      "P02",
+      "P13",
+      "P11",
+      "P01"
+    ],
+    "evidence_units_expected": 0,
+    "evidence_units_found": 0,
+    "document_answerability_reference": "UNANSWERABLE_IN_BOUNDED_CORPUS",
+    "answer_correctness": "NOT_EVALUATED",
+    "ui_mapping_origin": "SYNTHETIC_FIXTURE_ONLY",
+    "note": "Raw vector neighbors are context, not a verified answer. No cross-store join or generated claim was executed."
+  }
+]

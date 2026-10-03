@@ -1,0 +1,288 @@
+{
+  "$defs": {
+    "BehaviorRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Z0-9_-]{2,79}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "statement": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        },
+        "environment": {
+          "default": "patched",
+          "enum": [
+            "baseline",
+            "patched"
+          ],
+          "title": "Environment",
+          "type": "string"
+        },
+        "check_names": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "minItems": 1,
+          "title": "Check Names",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "statement",
+        "check_names"
+      ],
+      "title": "BehaviorRequirement",
+      "type": "object"
+    },
+    "CallLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "per_agent_tool": {
+          "default": 5,
+          "description": "Maximum executed attempts per run, stable agent identity and canonical tool. Includes failures and retries; resume never resets it.",
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Per Agent Tool",
+          "type": "integer"
+        },
+        "overrides": {
+          "additionalProperties": {
+            "additionalProperties": {
+              "maximum": 5,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "description": "Optional lower limits: agent ID -> canonical tool ID -> limit (1 to default).",
+          "title": "Overrides",
+          "type": "object"
+        },
+        "total_calls": {
+          "default": 30,
+          "description": "Combined tool and model attempts per run.",
+          "maximum": 1000,
+          "minimum": 1,
+          "title": "Total Calls",
+          "type": "integer"
+        },
+        "max_rounds": {
+          "default": 10,
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Max Rounds",
+          "type": "integer"
+        },
+        "max_review_requests": {
+          "default": 2,
+          "maximum": 10,
+          "minimum": 0,
+          "title": "Max Review Requests",
+          "type": "integer"
+        },
+        "max_validation_repairs": {
+          "default": 1,
+          "description": "Bounded citation correction turns; each consumes model.decide and round budgets.",
+          "maximum": 2,
+          "minimum": 0,
+          "title": "Max Validation Repairs",
+          "type": "integer"
+        },
+        "max_run_seconds": {
+          "default": 900,
+          "maximum": 86400,
+          "minimum": 1,
+          "title": "Max Run Seconds",
+          "type": "integer"
+        },
+        "retry_attempts": {
+          "default": 2,
+          "description": "Total attempts, including the first.",
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Retry Attempts",
+          "type": "integer"
+        },
+        "retry_delay_seconds": {
+          "default": 1,
+          "maximum": 30,
+          "minimum": 0,
+          "title": "Retry Delay Seconds",
+          "type": "number"
+        }
+      },
+      "title": "CallLimits",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "provider": {
+      "const": "saleor_playwright",
+      "default": "saleor_playwright",
+      "title": "Provider",
+      "type": "string"
+    },
+    "application_file": {
+      "title": "Application File",
+      "type": "string"
+    },
+    "state_directory": {
+      "title": "State Directory",
+      "type": "string"
+    },
+    "graphql_url": {
+      "description": "Public sandbox API; no staff token is required.",
+      "title": "Graphql Url",
+      "type": "string"
+    },
+    "channel": {
+      "minLength": 1,
+      "title": "Channel",
+      "type": "string"
+    },
+    "product_slug": {
+      "minLength": 1,
+      "title": "Product Slug",
+      "type": "string"
+    },
+    "variant_name": {
+      "minLength": 1,
+      "title": "Variant Name",
+      "type": "string"
+    },
+    "quantity": {
+      "default": 1,
+      "maximum": 5,
+      "minimum": 1,
+      "title": "Quantity",
+      "type": "integer"
+    },
+    "voucher_code": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Voucher Code",
+      "type": "string"
+    },
+    "discount_percent": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0.0,
+          "maximum": 100.0,
+          "type": "number"
+        },
+        {
+          "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+          "type": "string"
+        }
+      ],
+      "description": "Fixture oracle, checked against a separate API control cart.",
+      "title": "Discount Percent"
+    },
+    "currency": {
+      "default": "USD",
+      "pattern": "^[A-Z]{3}$",
+      "title": "Currency",
+      "type": "string"
+    },
+    "money_locale": {
+      "default": "en-US",
+      "description": "Locale used by the storefront to format the visible total.",
+      "maxLength": 30,
+      "minLength": 2,
+      "title": "Money Locale",
+      "type": "string"
+    },
+    "input_name": {
+      "default": "Discount code",
+      "title": "Input Name",
+      "type": "string"
+    },
+    "apply_name": {
+      "default": "Apply",
+      "title": "Apply Name",
+      "type": "string"
+    },
+    "remove_name": {
+      "default": "Remove discount code",
+      "title": "Remove Name",
+      "type": "string"
+    },
+    "total_selector": {
+      "description": "Read-only CSS selector for the visible total data element; must match exactly once.",
+      "title": "Total Selector",
+      "type": "string"
+    },
+    "checkout_path": {
+      "default": "/checkout",
+      "title": "Checkout Path",
+      "type": "string"
+    },
+    "assertion_timeout_seconds": {
+      "default": 10,
+      "maximum": 30,
+      "minimum": 1,
+      "title": "Assertion Timeout Seconds",
+      "type": "integer"
+    },
+    "api_timeout_seconds": {
+      "default": 30,
+      "maximum": 60,
+      "minimum": 1,
+      "title": "Api Timeout Seconds",
+      "type": "integer"
+    },
+    "requirements": {
+      "default": [],
+      "description": "Reviewed requirement contracts mapped to deterministic check names.",
+      "items": {
+        "$ref": "#/$defs/BehaviorRequirement"
+      },
+      "maxItems": 20,
+      "title": "Requirements",
+      "type": "array"
+    },
+    "limits": {
+      "$ref": "#/$defs/CallLimits"
+    }
+  },
+  "required": [
+    "application_file",
+    "state_directory",
+    "graphql_url",
+    "channel",
+    "product_slug",
+    "variant_name",
+    "voucher_code",
+    "discount_percent",
+    "total_selector"
+  ],
+  "title": "VoucherVerificationConfig",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

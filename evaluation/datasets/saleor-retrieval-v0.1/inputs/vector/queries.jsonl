@@ -1,0 +1,40 @@
+{"id": "V01", "query": "What must be present before a shipping voucher can be applied?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V02", "query": "I entered my address but have not picked delivery. Can I redeem a postage discount?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V03", "query": "Does shipping count toward the minimum spend for a voucher?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V04", "query": "Does minimum item quantity mean distinct products or the total number of units?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V05", "query": "With applyOncePerOrder enabled, is the discount applied to the whole line?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V06", "query": "What does an empty shipping-voucher country list mean?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V07", "query": "How do vouchers and gift cards differ in price target and channel scope?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V08", "query": "Is a voucher applied before or after a catalogue promotion?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V09", "query": "If deleting a cart line invalidates and removes the shipping method, what happens to its shipping voucher?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V10", "query": "If a removed line drops subtotal below voucher minimum spend, must the shipping method also disappear?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V11", "query": "Can the channel of an existing checkout be changed?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V12", "query": "Do cart and checkout use separate object types in Saleor?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V13", "query": "What happens when a checkout line quantity reaches zero?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V14", "query": "How does checkout creation decide whether a checkout belongs to a signed-in user?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V15", "query": "Which mutation links a guest checkout to a user after login?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V16", "query": "Can prices and stock be assigned directly to a product without a variant?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V17", "query": "Can a product that has no variants itself appear in a checkout line?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V18", "query": "In the T-shirt example, which attribute is numeric and not selected by customers?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V19", "query": "Which checkout field says whether shipping is required, and which items need it?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V20", "query": "Does changing the account default alone apply it to the ongoing checkout?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V21", "query": "After setting a shipping address, how do I fetch available delivery methods?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V22", "query": "Which mutation selects a delivery method, and what two IDs does it require?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V23", "query": "Can I omit the country code when address validation is disabled?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V24", "query": "Which mutation adds a voucher and which current result field exposes errors?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V25", "query": "Which mutation removes a voucher, and where are its errors returned?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V26", "query": "Can a promo code be removed using its ID rather than the code string?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V27", "query": "For adding a promo code, what replaces deprecated checkoutId and token arguments?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V28", "query": "Does the storefront README explicitly advertise changing cart quantities?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V29", "query": "Does the README describe selecting multiple variant attributes such as color and size?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V30", "query": "Which available checkout objects can depend on the selected channel?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V31", "query": "How are minimum-spend eligibility and minimum-item eligibility calculated?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V32", "query": "How do I assign delivery and what must exist to apply a shipping voucher?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V33", "query": "Is promoCode required for both add-promo and remove-promo GraphQL mutations?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V34", "query": "What is the current discount percentage configured for TSIGMA10 in our backend?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V35", "query": "What phone number should a shopper call for this store support?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V36", "query": "What is the exact current DOM selector of the deployed Remove discount code button?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V37", "query": "Exactly how many checkoutAddPromoCode requests per minute does this backend allow?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V38", "query": "How many days after delivery does this store permit product returns?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V39", "query": "Since shipping vouchers work without a shipping address, how can I apply one to an address-free checkout?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}
+{"id": "V40", "query": "what do i need for a shiping cupon to work?", "project_id": "saleor-excerpt-evaluation", "snapshot_id": "saleor-excerpts-v1", "k": [3, 5, 10]}

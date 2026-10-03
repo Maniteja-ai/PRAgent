@@ -1,0 +1,17 @@
+{
+  "config": {
+    "dataset": "..\\evaluation\\datasets\\saleor-retrieval-v0.1",
+    "environment_file": "..\\.env",
+    "case_id": "G02",
+    "repetitions": 100,
+    "output_directory": "..\\artifacts\\evaluation-runs\\graph-stability"
+  },
+  "graph_id": "stability-8239f8a8a2ce4332ab618fa24be626c4",
+  "mode": "fresh_live_queries_same_immutable_synthetic_graph_no_model_calls",
+  "sha256": {
+    "fixture.json": "9d9fb541ced7ae5aa42ab4e6fc3e7b1458417c1597c302409f6534eb7d1d7944",
+    "queries.jsonl": "300fe45dc484828a54c06b406aa0e6f7aa53e1a0e4f2b1bf48fb07f84695f998",
+    "evaluation.graph-stability.json": "a2c70af0d569a3de86dcc4fe0ce8c078e94f9b907e7e25bb80a30aa6461de94c",
+    "run_graph_stability.py": "4530ec43ae7ae9f2eff4050ee94f1f0b7e5ec05b700562151d00dcec9f3ad182"
+  }
+}

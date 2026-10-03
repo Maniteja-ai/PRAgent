@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-02T12:20:31.389575+00:00",
+  "status": "EVIDENCE_FOUND",
+  "candidate_count": 5,
+  "selected_count": 5,
+  "score_kind": "retrieval-score-v1",
+  "timings_ms": {
+    "retrieve": 2809.299900007318,
+    "rerank": 0.14699999883305281,
+    "select": 0.15800000983290374
+  },
+  "reranking_model_calls": 0,
+  "quality_scored": false,
+  "offline_tests": 238,
+  "external_tests_deselected": 4,
+  "trace_impact_combined_coverage_percent": 89.83,
+  "initial_cli_failures": "Two live CLI attempts hit UnicodeEncodeError under cp1252; retrieval itself succeeded. ASCII-escaped JSON output fixed the error.",
+  "validation": "Lint, dataset structural integrity and wheel packaging passed. Full offline suite passed before whitespace-only Ruff formatting of the new graph files."
+}

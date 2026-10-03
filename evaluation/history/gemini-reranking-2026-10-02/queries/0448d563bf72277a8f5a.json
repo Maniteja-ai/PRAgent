@@ -1,0 +1,233 @@
+{
+  "query": "Which mutation removes a voucher, and where are its errors returned?",
+  "scope": {
+    "project_id": "saleor-excerpt-evaluation",
+    "run_id": "saleor-excerpts-v1"
+  },
+  "candidates": [
+    {
+      "id": "P22",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "## Apply a Voucher Code[\u200b](#apply-a-voucher-code \"Direct link to Apply a Voucher Code\")\n\nTo apply the voucher on checkout use [`checkoutAddPromoCode`](/api-reference/checkout/mutations/checkout-add-promo-code)\nmutation. The discount will be visible both in the line prices and in the `checkout.discount` field.\nTo apply the voucher on draft order use [`draftOrderCreate`](/api-reference/orders/mutations/draft-order-create) or [`draftOrderUpdate`](/api-reference/orders/mutations/draft-order-update)\nand pass `voucherCode` as an argument.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.7561861676263081,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P29",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "remove-promo-api",
+      "text": "Remove a gift card or a voucher from a checkout.\n\nTriggers the following webhook events:\n\n* CHECKOUT\\_UPDATED (async): A checkout was updated.\n\n```\ncheckoutRemovePromoCode(  \n  checkoutId: ID  \n  id: ID  \n  promoCode: String  \n  promoCodeId: ID  \n  token: UUID  \n): CheckoutRemovePromoCode\n```\n\nDetails\n\n```\ntype CheckoutRemovePromoCode {  \n  checkout: Checkout  \n  checkoutErrors: [CheckoutError!]! @deprecated  \n  errors: [CheckoutError!]!  \n}\n",
+      "artifact_path": "review/sources/remove-promo-api.md",
+      "retrieval_score": 0.7324870875197329,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-remove-promo-code",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P24",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Shipping method removal invalidates shipping voucher[\u200b](#shipping-method-removal-invalidates-shipping-voucher \"Direct link to Shipping method removal invalidates shipping voucher\")\n\n**Scenario:**\n\n1. Checkout has 2 lines and a shipping method assigned.\n2. A shipping voucher is applied.\n3. One checkout line is removed.\n4. The assigned shipping method is no longer valid for the updated checkout (e.g., weight, location, or product eligibility changes).\n5. The shipping method is automatically removed from the checkout.\n\nSince the shipping method is removed, the shipping voucher is also automatically unassigned.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.715468375171495,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P17",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "note\n\n**Vouchers vs Gift Cards**\n\nVouchers discount the subtotal, unit price, or shipping based on their type and are scoped to channels.\nGift cards reduce the total price and are currency-based, usable across channels with the same currency.\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.7147852268015037,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P16",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "## Types[\u200b](#types \"Direct link to Types\")\n\nVouchers come in three types:\n\n* `ENTIRE_ORDER`: Applies discount to the checkout subtotal\n* `SPECIFIC_PRODUCT`: Applies discount to eligible product unit prices. You define eligibility by linking products, variants, categories, or collections.\n* `SHIPPING`: Applies discount to shipping costs. To apply a shipping voucher, the checkout must include shippable products, shipping address, and a shipping method assigned.\n\nVouchers also have two value types:\n\n* `FIXED`: Reduces price by a specific amount\n* `PERCENTAGE`: Reduces price by a specific percentage\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.7126580623735848,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P25",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Subtotal change invalidates minimum spent voucher[\u200b](#subtotal-change-invalidates-minimum-spent-voucher \"Direct link to Subtotal change invalidates minimum spent voucher\")\n\n**Scenario:**\n\n1. Checkout has 2 lines and a valid shipping method assigned.\n2. A voucher with a minimum spent amount condition is applied.\n3. One line is removed from the checkout.\n4. The checkout subtotal drops below the voucher\u2019s minimum requirement.\n\nThe voucher is automatically removed, but the shipping method remains assigned.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.7036166964685301,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P18",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "vouchers",
+      "text": "### Apply Once Per Order[\u200b](#apply-once-per-order \"Direct link to Apply Once Per Order\")\n\nWhen the `Voucher.applyOncePerOrder` setting is enabled, the discount is applied only once per order, targeting the cheapest item.\nThe discount affects a single unit, not the entire order line.\n\n* For **product-specific vouchers**: applies to the cheapest item included in the discount.\n* For **entire order vouchers**: applies to the cheapest item overall.\n",
+      "artifact_path": "review/sources/vouchers.md",
+      "retrieval_score": 0.6871332441529838,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P27",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "add-promo-api",
+      "text": "Adds a gift card or a voucher to a checkout.\n\nTriggers the following webhook events:\n\n* CHECKOUT\\_UPDATED (async): A checkout was updated.\n\n```\ncheckoutAddPromoCode(  \n  checkoutId: ID  \n  id: ID  \n  promoCode: String!  \n  token: UUID  \n): CheckoutAddPromoCode\n```\n\nDetails\n\n```\ntype CheckoutAddPromoCode {  \n  checkout: Checkout  \n  checkoutErrors: [CheckoutError!]! @deprecated  \n  errors: [CheckoutError!]!  \n}\n```\n",
+      "artifact_path": "review/sources/add-promo-api.md",
+      "retrieval_score": 0.6780971114450334,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-add-promo-code",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P30",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "remove-promo-api",
+      "text": "#### [`id`](#id)\u00a0\u25cf\u00a0[`ID`](/api-reference/miscellaneous/scalars/id)[\u200b](#id \"Direct link to id\")\n\nThe checkout's ID.\n\n#### [`promoCode`](#promo-code)\u00a0\u25cf\u00a0[`String`](/api-reference/miscellaneous/scalars/string)[\u200b](#promo-code \"Direct link to promo-code\")\n\nGift card code or voucher code.\n\n#### [`promoCodeId`](#promo-code-id)\u00a0\u25cf\u00a0[`ID`](/api-reference/miscellaneous/scalars/id)[\u200b](#promo-code-id \"Direct link to promo-code-id\")\n\nGift card or voucher ID.\n\nShow deprecatedHide deprecated\n\n#### [`checkoutId`](#checkout-id)\u00a0\u25cf\u00a0[`ID`](/api-reference/miscellaneous/scalars/id)[\u200b](#checkout-id \"Direct link to checkout-id\")\n\nDEPRECATED\n\nUse `id` instead.\n\nThe ID of the checkout.\n\n#### [`token`](#token)\u00a0\u25cf\u00a0[`UUID`](/api-reference/miscellaneous/scalars/uuid)[\u200b](#token \"Direct link to token\")\n\nDEPRECATED\n\nUse `id` instead.\n\nCheckout token.\n",
+      "artifact_path": "review/sources/remove-promo-api.md",
+      "retrieval_score": 0.6777235040131722,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-remove-promo-code",
+        "source_version": "current-online-unpinned"
+      }
+    },
+    {
+      "id": "P23",
+      "scope": {
+        "project_id": "saleor-excerpt-evaluation",
+        "run_id": "saleor-excerpts-v1"
+      },
+      "source_id": "apply-vouchers",
+      "text": "### Shipping Voucher[\u200b](#shipping-voucher \"Direct link to Shipping Voucher\")\n\nTo apply a shipping voucher, the checkout must include shippable products, a provided shipping address, and a shipping method assigned.\n\nIn this example the checkout consists of one line for **$100**, shipping price for **$20** and **50%** shipping voucher.\nThe discount affects shipping price only.\n",
+      "artifact_path": "review/sources/apply-vouchers.md",
+      "retrieval_score": 0.6698267899548859,
+      "metadata": {
+        "source_url": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "source_version": "current-online-unpinned"
+      }
+    }
+  ],
+  "ranking": {
+    "score_kind": "gemini-relevance-v1",
+    "scores": [
+      {
+        "id": "P29",
+        "score": 3.0,
+        "quote": "Remove a gift card or a voucher from a checkout."
+      },
+      {
+        "id": "P22",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "P27",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "P30",
+        "score": 1.0,
+        "quote": ""
+      },
+      {
+        "id": "P24",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P17",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P16",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P25",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P18",
+        "score": 0.0,
+        "quote": ""
+      },
+      {
+        "id": "P23",
+        "score": 0.0,
+        "quote": ""
+      }
+    ],
+    "usage": {
+      "input_tokens": 1785,
+      "output_tokens": 203,
+      "total_tokens": 1988
+    }
+  },
+  "selection": {
+    "ids": [
+      "P29"
+    ],
+    "reason": "relevance_threshold",
+    "limit_reached": false
+  },
+  "status": "EVIDENCE_FOUND",
+  "coverage": "NOT_EVALUATED",
+  "timings_ms": {
+    "retrieve": 0.13770000077784061,
+    "rerank": 11587.781599999289,
+    "select": 0.502099996083416
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "../../schemas/retrieval/impact-query.schema.json",
+  "changed_files": [
+    "src/checkout/views/saleor-checkout/order-summary.tsx",
+    "src/checkout/views/saleor-checkout/saleor-checkout.tsx"
+  ],
+  "scope": {
+    "project_id": "saleor-storefront",
+    "revision": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+    "max_dependency_hops": 3,
+    "mapping_statuses": [
+      "CONFIRMED"
+    ]
+  }
+}

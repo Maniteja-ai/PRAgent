@@ -5,20 +5,34 @@ from contextlib import ExitStack
 
 import httpx
 
-from .config import Settings
-from .errors import ConfigurationError
-from .events import JsonEventSink
-from .implementations.chunkers import SectionChunker
-from .implementations.loaders import GitHubFileLoader, LocalFileLoader, WebLoader
-from .implementations.parsers import HtmlParser, MarkdownParser
-from .implementations.rate_limit import RequestPacer
-from .implementations.storage.artifacts import FileArtifactRepository
-from .models import EmbeddingConfig, EmbeddingProfile, Extraction, ExtractionConfig
-from .registry import Components
+from trace_impact.ingestion.config import EmbeddingConfig, ExtractionConfig
+from trace_impact.ingestion.documents.chunkers import SectionChunker
+from trace_impact.ingestion.documents.loaders import GitHubFileLoader, LocalFileLoader, WebLoader
+from trace_impact.ingestion.documents.parsers import HtmlParser, MarkdownParser
+from trace_impact.ingestion.models import EmbeddingProfile, Extraction
+from trace_impact.ingestion.storage.artifact_store import FileArtifactRepository
+from trace_impact.shared.component_config import ComponentDefinition, EmptyOptions, GitHubOptions
+from trace_impact.shared.errors import ConfigurationError
+from trace_impact.shared.events import JsonEventSink
+from trace_impact.shared.rate_limit import RequestPacer
+from trace_impact.shared.registry import Components
+from trace_impact.shared.settings import Settings
 
 
 def default_components(settings: Settings) -> Components:
     components = Components()
+    from trace_impact.ingestion.code.config import TypeScriptOptions
+    from trace_impact.ingestion.code.typescript_analyzer import TypeScriptAnalyzer
+
+    components.code_analyzers.register_configured_factory(
+        "typescript",
+        lambda config: TypeScriptAnalyzer(TypeScriptOptions.model_validate(config.options)),
+        definition=ComponentDefinition(
+            "TypeScript compiler",
+            "Analyze immutable Git sources without executing the repository.",
+            TypeScriptOptions,
+        ),
+    )
     components.loaders.register_factory("web", WebLoader)
     components.loaders.register_factory("github_file", GitHubFileLoader)
     components.loaders.register_factory("local_file", LocalFileLoader)
@@ -26,6 +40,26 @@ def default_components(settings: Settings) -> Components:
     components.parsers.register_factory("markdown", MarkdownParser)
     components.chunkers.register_factory("section", SectionChunker)
     components.artifacts.register_factory("local", FileArtifactRepository)
+    components.loaders.define(
+        "web",
+        ComponentDefinition("Website", "Read one public HTTPS documentation page.", EmptyOptions),
+    )
+    components.loaders.define(
+        "github_file",
+        ComponentDefinition(
+            "GitHub file", "Read a public repository file at a pinned commit.", GitHubOptions
+        ),
+    )
+    components.loaders.define(
+        "local_file",
+        ComponentDefinition(
+            "Local file", "Read a file inside this project's configuration directory.", EmptyOptions
+        ),
+    )
+    components.parsers.define("html", ComponentDefinition("HTML", "Extract documentation text from HTML."))
+    components.parsers.define(
+        "markdown", ComponentDefinition("Markdown", "Parse Markdown documents such as README.md.")
+    )
 
     def extractor(config: ExtractionConfig | None = None):
         selected = (
@@ -44,7 +78,7 @@ def default_components(settings: Settings) -> Components:
         from langchain_openai import ChatOpenAI
         from openai import OpenAIError
 
-        from .implementations.extractors import LangChainRequirementExtractor
+        from trace_impact.ingestion.requirements.langchain_extractor import LangChainRequirementExtractor
 
         with ExitStack() as resources:
             client = resources.enter_context(httpx.Client(timeout=settings.request_timeout))
@@ -83,7 +117,7 @@ def default_components(settings: Settings) -> Components:
         selected.require_embeddings()
         from langchain_openai import OpenAIEmbeddings
 
-        from .implementations.embeddings import LangChainEmbeddingProvider
+        from trace_impact.ingestion.embeddings.langchain_embeddings import LangChainEmbeddingProvider
 
         with ExitStack() as resources:
             client = resources.enter_context(httpx.Client(timeout=settings.request_timeout))
@@ -108,9 +142,9 @@ def default_components(settings: Settings) -> Components:
 
     def graph():
         settings.require_database()
-        from .implementations.storage.neo4j import Neo4jStore
+        from trace_impact.ingestion.storage.neo4j_requirement_store import Neo4jRequirementStore
 
-        return Neo4jStore(
+        return Neo4jRequirementStore(
             settings.neo4j_uri,
             settings.neo4j_username,
             settings.neo4j_password.get_secret_value(),
@@ -120,7 +154,7 @@ def default_components(settings: Settings) -> Components:
     def vector():
         from qdrant_client import QdrantClient
 
-        from .implementations.storage.qdrant import QdrantVectorStore
+        from trace_impact.ingestion.storage.qdrant_store import QdrantVectorStore
 
         client = (
             QdrantClient(
@@ -134,22 +168,113 @@ def default_components(settings: Settings) -> Components:
         return QdrantVectorStore(client)
 
     def gemini_extractor(config: ExtractionConfig):
-        from .implementations.gemini import build_extractor
+        from trace_impact.ingestion.requirements.gemini_extractor import build_extractor
 
         return build_extractor(settings, config)
 
     def gemini_embeddings(config: EmbeddingConfig):
-        from .implementations.gemini import build_embeddings
+        from trace_impact.ingestion.embeddings.gemini_embeddings import build_embeddings
 
         return build_embeddings(settings, config)
+
+    def gemini_interactions_extractor(config: ExtractionConfig):
+        from trace_impact.ingestion.requirements.gemini_interactions_extractor import build_extractor
+
+        return build_extractor(settings, config)
 
     components.extractors.register_factory("langchain", extractor)
     components.extractors.register_factory("openai", extractor)
     components.extractors.register_configured_factory("openai", extractor)
     components.extractors.register_configured_factory("gemini", gemini_extractor)
+    components.extractors.register_configured_factory("gemini_interactions", gemini_interactions_extractor)
     components.embeddings.register_configured_factory("openai", embeddings)
     components.embeddings.register_configured_factory("gemini", gemini_embeddings)
     components.embeddings.register_factory("openai", embeddings)
+    for registry in (components.extractors, components.embeddings):
+        for name in registry.names(configured=True):
+            registry.define(
+                name,
+                ComponentDefinition(
+                    name.replace("_", " ").title(),
+                    "Model ID and pacing are configured below. Credentials are read from .env.",
+                    EmptyOptions,
+                ),
+            )
     components.graphs.register_factory("neo4j", graph)
     components.vectors.register_factory("qdrant", vector)
+    from trace_impact.retrieval.config import (
+        CompatibleLLMOptions,
+        CrossEncoderOptions,
+        GeminiRerankerOptions,
+        ThresholdOptions,
+        TopKOptions,
+    )
+    from trace_impact.retrieval.rerankers.identity import IdentityReranker
+    from trace_impact.retrieval.selectors import ScoreThresholdSelector, TopKSelector
+
+    def compatible_reranker(config):
+        from trace_impact.retrieval.rerankers.compatible import build_compatible_reranker
+
+        return build_compatible_reranker(CompatibleLLMOptions.model_validate(config.options))
+
+    components.rerankers.register_configured_factory(
+        "openai_compatible",
+        compatible_reranker,
+        definition=ComponentDefinition(
+            "Compatible LLM API",
+            "Explicit Chat Completions endpoint, model and API-key environment name.",
+            CompatibleLLMOptions,
+        ),
+    )
+
+    def cross_encoder(config):
+        from trace_impact.retrieval.rerankers.cross_encoder import build_cross_encoder
+
+        return build_cross_encoder(CrossEncoderOptions.model_validate(config.options))
+
+    components.rerankers.register_configured_factory(
+        "cross_encoder",
+        cross_encoder,
+        definition=ComponentDefinition(
+            "Local cross-encoder", "Score query-passage pairs with a pinned CPU model.", CrossEncoderOptions
+        ),
+    )
+
+    def reranker(config):
+        from trace_impact.retrieval.rerankers.gemini import build_gemini_reranker
+
+        return build_gemini_reranker(settings, GeminiRerankerOptions.model_validate(config.options))
+
+    components.rerankers.register_configured_factory(
+        "identity",
+        lambda config: IdentityReranker(),
+        definition=ComponentDefinition(
+            "Original retrieval scores", "Baseline without model reranking.", EmptyOptions
+        ),
+    )
+    components.rerankers.register_configured_factory(
+        "gemini",
+        reranker,
+        definition=ComponentDefinition(
+            "Gemini relevance grades",
+            "LangChain structured reranking of existing passages.",
+            GeminiRerankerOptions,
+        ),
+    )
+    components.selectors.register_configured_factory(
+        "top_k",
+        lambda config: TopKSelector(TopKOptions.model_validate(config.options)),
+        definition=ComponentDefinition(
+            "Fixed result count", "Baseline ranked truncation without a relevance threshold.", TopKOptions
+        ),
+    )
+    components.selectors.register_configured_factory(
+        "score_threshold",
+        lambda config: ScoreThresholdSelector(ThresholdOptions.model_validate(config.options)),
+        definition=ComponentDefinition(
+            "Relevance selection",
+            "Apply a named score scale, threshold, deduplication and result cap.",
+            ThresholdOptions,
+        ),
+    )
     return components

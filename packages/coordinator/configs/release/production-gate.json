@@ -1,0 +1,24 @@
+{
+  "$schema": "../../schemas/production-gate.schema.json",
+  "schema_version": 1,
+  "report_file": "../../artifacts/saleor-production-09/report.json",
+  "evaluation_report_file": "../../artifacts/golden-evaluation-03/report.json",
+  "llm_evaluation_report_file": "../../artifacts/live-llm-evaluation-01/report.json",
+  "junit_file": "../../artifacts/production-tests.xml",
+  "coverage_file": "../../artifacts/production-coverage.json",
+  "minimum_tests": 227,
+  "minimum_coverage_percent": 90,
+  "required_behavior_checks": {
+    "baseline::Empty voucher disables Apply": "PASS",
+    "baseline::Eligible voucher reaches backend": "FAIL",
+    "baseline::Displayed discounted total and voucher state": "FAIL",
+    "patched::Empty voucher disables Apply": "PASS",
+    "patched::Eligible voucher reaches backend": "PASS",
+    "patched::Displayed discounted total and voucher state": "PASS",
+    "patched::Remove voucher and restore total": "PASS"
+  },
+  "required_requirements": {
+    "VOUCHER_APPLY_TOTAL": "PASS",
+    "VOUCHER_REMOVE_TOTAL": "PASS"
+  }
+}

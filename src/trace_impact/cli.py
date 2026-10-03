@@ -8,9 +8,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from . import IngestionPipeline, create_pipeline
-from .config import Settings
-from .errors import IngestionError
+from trace_impact import IngestionPipeline, create_pipeline
+from trace_impact.shared.errors import IngestionError
+from trace_impact.shared.settings import Settings
 
 
 def main():
@@ -29,6 +29,9 @@ def main():
     )
     extraction.add_argument("--max-chunks", type=int, default=100)
     commands.add_parser("components")
+    schema = commands.add_parser("schema", help="Generate JSON Schema for editor completion")
+    schema.add_argument("--output", type=Path, default=Path("schemas/ingestion/project.schema.json"))
+    schema.add_argument("--config", type=Path, help="Include this project's custom metadata definitions")
     index = commands.add_parser("index")
     index.add_argument("run_dir", type=Path)
     index.add_argument("--batch-size", type=int, default=16)
@@ -36,14 +39,40 @@ def main():
     search.add_argument("run_dir", type=Path)
     search.add_argument("query")
     search.add_argument("--limit", type=int, default=5)
+    retrieval = commands.add_parser("retrieve", help="Retrieve, rerank and select evidence")
+    retrieval.add_argument("run_dir", type=Path)
+    retrieval.add_argument("query")
+    retrieval.add_argument("--config", type=Path, help="Optional reranking JSON; default is vector top five")
+    retrieval_schema = commands.add_parser(
+        "retrieval-schema", help="Generate retrieval JSON editor definitions"
+    )
+    retrieval_schema.add_argument(
+        "--output", type=Path, default=Path("schemas/retrieval/retrieval.schema.json")
+    )
     commands.add_parser("doctor")
     commands.add_parser("init-db")
     graph = commands.add_parser("load-graph")
     graph.add_argument("run_dir", type=Path)
     graph.add_argument("--with-requirements", action="store_true")
+    code = commands.add_parser("analyze-code", help="Read pinned Git sources; no LLM or database calls")
+    code.add_argument("config", type=Path)
+    code.add_argument("--output", type=Path, required=True)
+    publish_code = commands.add_parser("publish-code-graph")
+    publish_code.add_argument("snapshot", type=Path)
+    impact = commands.add_parser("impact", help="Scoped Neo4j reverse-dependency retrieval")
+    impact.add_argument("graph_id")
+    impact.add_argument("query", type=Path)
+    code_schema = commands.add_parser("code-schema")
+    code_schema.add_argument("--output", type=Path, default=Path("schemas/ingestion/code-graph.schema.json"))
+    impact_schema = commands.add_parser("impact-schema")
+    impact_schema.add_argument(
+        "--output", type=Path, default=Path("schemas/retrieval/impact-query.schema.json")
+    )
     args = parser.parse_args()
     load_dotenv(args.env_file, override=False)
     logger = logging.getLogger("trace_impact.events")
+    previous_level, previous_propagate = logger.level, logger.propagate
+    handler = None
     logger.setLevel(logging.INFO)
     logger.propagate = False
     if not logger.handlers:
@@ -64,6 +93,12 @@ def main():
         parser.exit(
             1, f"Stage failed ({type(exc).__name__}); check service access and local configuration.\n"
         )
+    finally:
+        if handler is not None:
+            logger.removeHandler(handler)
+            handler.close()
+        logger.setLevel(previous_level)
+        logger.propagate = previous_propagate
 
 
 def dispatch(args, app: IngestionPipeline):
@@ -136,6 +171,15 @@ def dispatch(args, app: IngestionPipeline):
             raise SystemExit(1)
     elif args.command == "components":
         print(json.dumps(app.components.describe(), indent=2))
+    elif args.command == "schema":
+        from trace_impact.ingestion.schema import project_schema
+        from trace_impact.ingestion.storage.artifact_store import FileArtifactRepository
+
+        project = app.validate(args.config) if args.config else None
+        FileArtifactRepository().write(
+            args.output, project_schema(app.components, project.metadata if project else None)
+        )
+        print(f"Project schema written to {args.output}")
     elif args.command == "index":
         print(app.index(args.run_dir, args.batch_size).model_dump_json(indent=2))
     elif args.command == "search":
@@ -144,6 +188,52 @@ def dispatch(args, app: IngestionPipeline):
                 [hit.model_dump() for hit in app.search(args.run_dir, args.query, args.limit)], indent=2
             )
         )
+    elif args.command == "retrieve":
+        print(
+            app.retrieve(args.run_dir, args.query, args.config).model_dump_json(indent=2, ensure_ascii=True)
+        )
+    elif args.command == "retrieval-schema":
+        from trace_impact.ingestion.storage.artifact_store import FileArtifactRepository
+        from trace_impact.retrieval.config import retrieval_schema
+
+        FileArtifactRepository().write(args.output, retrieval_schema(app.components))
+        print(f"Retrieval schema written to {args.output}")
+    elif args.command == "analyze-code":
+        from trace_impact.ingestion.storage.artifact_store import FileArtifactRepository
+
+        snapshot = app.analyze_code(args.config)
+        FileArtifactRepository().write(args.output, snapshot.model_dump(mode="json"))
+        print(
+            json.dumps(
+                {
+                    "graph_id": snapshot.id,
+                    "nodes": len(snapshot.nodes),
+                    "edges": len(snapshot.edges),
+                    "diagnostics": len(snapshot.diagnostics),
+                }
+            )
+        )
+    elif args.command == "publish-code-graph":
+        from trace_impact.shared.graph_models import GraphSnapshot
+
+        snapshot = GraphSnapshot.model_validate_json(args.snapshot.read_text(encoding="utf-8"))
+        print(json.dumps(app.publish_code_graph(snapshot)))
+    elif args.command == "impact":
+        print(
+            app.retrieve_impact(
+                args.graph_id, json.loads(args.query.read_text(encoding="utf-8"))
+            ).model_dump_json(indent=2, ensure_ascii=True)
+        )
+    elif args.command == "code-schema":
+        from trace_impact.ingestion.code.config import code_schema
+        from trace_impact.ingestion.storage.artifact_store import FileArtifactRepository
+
+        FileArtifactRepository().write(args.output, code_schema(app.components))
+    elif args.command == "impact-schema":
+        from trace_impact.ingestion.storage.artifact_store import FileArtifactRepository
+        from trace_impact.shared.graph_models import ImpactQuery
+
+        FileArtifactRepository().write(args.output, ImpactQuery.model_json_schema())
     elif args.command == "load-graph":
         print(json.dumps(app.publish_graph(args.run_dir, args.with_requirements), indent=2))
     else:
