@@ -262,7 +262,7 @@ class GitHubAppTokenProvider:
                 "Authorization": f"Bearer {signed}",
                 "X-GitHub-Api-Version": self.config.api_version,
             },
-            json={"permissions": {"issues": "write", "pull_requests": "read", "contents": "read"}},
+            json={"permissions": {"issues": "write", "pull_requests": "write", "contents": "read"}},
         )
         response.raise_for_status()
         return response.json()["token"]

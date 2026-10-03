@@ -2,7 +2,7 @@
   "$schema": "../schemas/application.schema.json",
   "schema_version": 1,
   "project_id": "saleor-storefront",
-  "repository": "saleor/storefront",
+  "repository": "Maniteja-ai/storefront",
   "repository_path": "../../../../../work/saleor-storefront-upstream",
   "change_source": {
     "provider": "github"

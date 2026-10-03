@@ -203,6 +203,13 @@ def test_github_app_token_uses_short_lived_signed_jwt(monkeypatch, tmp_path):
     def handler(request):
         assert request.headers["authorization"] == "Bearer signed-jwt"
         assert request.url.path == "/app/installations/42/access_tokens"
+        assert json.loads(request.content) == {
+            "permissions": {
+                "issues": "write",
+                "pull_requests": "write",
+                "contents": "read",
+            }
+        }
         return httpx.Response(201, json={"token": "installation-token"})
 
     provider = GitHubAppTokenProvider(
