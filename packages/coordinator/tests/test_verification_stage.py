@@ -12,8 +12,8 @@ from trace_coordinator import (
     HumanReviewPolicy,
     ReviewResponse,
 )
-from trace_coordinator.analysis_workflow.behavior_test_stage import VerificationStage
 from trace_coordinator.behavior_testing.scenarios.implementations.voucher import VoucherScenario
+from trace_coordinator.behavior_testing.stage import BehaviorTestStage
 from trace_coordinator.behavior_testing.voucher_test import VoucherVerificationConfig
 from trace_coordinator.config import ScenarioBinding, VerificationPolicy
 from trace_coordinator.decision_model.implementations.fixture import FixtureDecisionModel
@@ -467,12 +467,12 @@ def test_catalog_and_budgets_reject_invalid_implementations(setup, tmp_path):
     _, _, scenario, _, _, binding = setup
     policy = VerificationPolicy(enabled=True, scenarios=(binding,))
     with pytest.raises(ValueError, match="Duplicate"):
-        VerificationStage(policy, [scenario, scenario], tmp_path)
+        BehaviorTestStage(policy, [scenario, scenario], tmp_path)
     with pytest.raises(ValueError, match="differ"):
-        VerificationStage(policy, [], tmp_path)
+        BehaviorTestStage(policy, [], tmp_path)
     scenario.required_calls = {"browser.act": 6}
     with pytest.raises(ValueError, match="bounded"):
-        VerificationStage(policy, [scenario], tmp_path)
+        BehaviorTestStage(policy, [scenario], tmp_path)
 
 
 def test_scope_mismatch_never_creates_carts(setup):

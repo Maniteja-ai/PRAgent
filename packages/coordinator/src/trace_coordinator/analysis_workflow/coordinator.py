@@ -12,10 +12,10 @@ from langchain_core.runnables.config import RunnableConfig
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.types import Checkpointer, Command, Interrupt
 
-from trace_coordinator.analysis_workflow.behavior_test_stage import VerificationStage
 from trace_coordinator.analysis_workflow.execution import ToolRegistry, ToolRuntime
 from trace_coordinator.analysis_workflow.graph import WORKFLOW_VERSION, build_workflow
 from trace_coordinator.behavior_testing.scenarios.interface import BehaviorScenario
+from trace_coordinator.behavior_testing.stage import BehaviorTestStage
 from trace_coordinator.config import (
     CallLimits,
     HumanReviewPolicy,
@@ -53,7 +53,7 @@ class Coordinator:
         self.limits, self.registry, self.model = limits, ToolRegistry(list(tools)), model
         self.ui_exploration = UIExplorationConfig.model_validate(ui_exploration or {})
         self.human_review = HumanReviewPolicy.model_validate(human_review or {})
-        self.verification = VerificationStage(
+        self.verification = BehaviorTestStage(
             VerificationPolicy.model_validate(verification or {}), scenarios, self.directory
         )
         self.guardrails = GuardrailEngine(guardrails)

@@ -9,8 +9,8 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Checkpointer, interrupt
 from pydantic import ValidationError
 
-from trace_coordinator.analysis_workflow.behavior_test_stage import VerificationStage, skipped
 from trace_coordinator.analysis_workflow.execution import ToolRuntime
+from trace_coordinator.behavior_testing.stage import BehaviorTestStage, skipped
 from trace_coordinator.config import HumanReviewPolicy, UIExplorationConfig
 from trace_coordinator.domain.contracts import (
     AnalysisReportPayload,
@@ -37,7 +37,7 @@ def build_workflow(
     context: ToolContext,
     checkpointer: Checkpointer,
     ui_exploration: UIExplorationConfig,
-    verification: VerificationStage,
+    verification: BehaviorTestStage,
     human_review_policy: HumanReviewPolicy,
 ) -> CompiledStateGraph[AnalysisState, None, AnalysisState, AnalysisState]:
     limits = runtime.limits

@@ -29,7 +29,7 @@ def skipped(reason: str, *, status: VerificationStatus = "NOT_RUN") -> Verificat
     return {"status": status, "checks": [], "evidence": {}, "reason": reason}
 
 
-class VerificationStage:
+class BehaviorTestStage:
     def __init__(
         self,
         policy: VerificationPolicy,
