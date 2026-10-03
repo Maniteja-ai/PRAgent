@@ -1,0 +1,35 @@
+"""Decision-model factory with resource ownership kept outside the workflow."""
+
+import json
+from contextlib import ExitStack
+
+from trace_coordinator.application.interfaces import DecisionModel
+from trace_coordinator.config import FixtureProvider, GeminiProvider, OpenAIProvider
+from trace_coordinator.domain.contracts import as_json_object
+from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel
+from trace_coordinator.infrastructure.factories.context import BootstrapContext
+
+
+class ModelFactory:
+    def __init__(self, resources: ExitStack, context: BootstrapContext) -> None:
+        self.resources = resources
+        self.context = context
+
+    def create(self, config: FixtureProvider | GeminiProvider | OpenAIProvider) -> DecisionModel:
+        if config.provider == "fixture":
+            return self._fixture(config)
+        return self._live(config)
+
+    def _fixture(self, config: FixtureProvider) -> DecisionModel:
+        document = as_json_object(json.loads(self.context.resolve(config.file).read_text(encoding="utf-8")))
+        decisions = document.get("decisions")
+        if not isinstance(decisions, list):
+            raise ValueError("Fixture model file requires a decisions list")
+        return FixtureModel(decisions)
+
+    def _live(self, config: GeminiProvider | OpenAIProvider) -> DecisionModel:
+        from trace_coordinator.infrastructure.adapters.langchain_model import LangChainModel
+
+        model = LangChainModel(config)
+        self.resources.callback(model.close)
+        return model
