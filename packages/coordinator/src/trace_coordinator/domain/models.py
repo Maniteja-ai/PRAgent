@@ -40,6 +40,18 @@ class Finding(Record):
     classification: Literal["POTENTIAL_IMPACT"] = "POTENTIAL_IMPACT"
 
 
+class FindingNarrative(Record):
+    position: int = Field(ge=0, le=29)
+    explanation: str = Field(min_length=1, max_length=4000)
+
+
+class ReportNarrative(Record):
+    """Optional prose supplied by a report writer; report facts remain authoritative."""
+
+    executive_summary: str = Field(min_length=1, max_length=2000)
+    findings: tuple[FindingNarrative, ...] = Field(default=(), max_length=30)
+
+
 class Decision(Record):
     action: Literal["tool", "review", "finish"]
     tool: str | None = None

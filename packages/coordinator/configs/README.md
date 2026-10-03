@@ -35,7 +35,7 @@ flowchart TD
 
 | Config | What it describes | Change it when |
 | --- | --- | --- |
-| [`saleor-verified.json`](saleor-verified.json) | Main coordinator run: application, model, review, runtime override and verification references | You select the model or enable verification |
+| [`saleor-verified.json`](saleor-verified.json) | Main coordinator run: application, model, report writer, review, runtime override and verification references | You select the model or enable verification |
 | [`saleor-live.json`](saleor-live.json) | Main run with bounded UI discovery | You want the agent to inspect the deployed UI before analysis |
 | [`saleor-webhook.json`](saleor-webhook.json) | Main run used by the GitHub webhook worker | A PR event should start analysis automatically |
 | [`application/`](application/) | Repository, PR/change source and baseline/patched deployments | You connect another repository or deployment |
@@ -76,3 +76,17 @@ JSON schemas before the run starts.
 5. Verification policy selects pre-approved scenarios from changed file paths.
 6. The webhook file can create the same coordinator request automatically for a PR.
 7. Evaluation and release configs measure the saved result; they do not control agent reasoning.
+
+## Report writing
+
+Production profiles enable one optional writing call with a single setting:
+
+```json
+"report": {
+  "writer": "llm"
+}
+```
+
+The writer reuses the configured coordinator model. It may improve only the executive summary and
+finding explanations. Status, evidence IDs, review questions, executed checks, gaps and call usage
+remain deterministic. If the writing call fails, the same report is rendered with the template.

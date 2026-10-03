@@ -50,6 +50,10 @@ class CommentPublisher(Protocol):
     def publish(self, job: ClaimedJobPayload, body: str) -> JsonObject: ...
 
 
+class ReportRenderer(Protocol):
+    def render(self, report: AnalysisReportPayload) -> str: ...
+
+
 _REPORT_ADAPTER = TypeAdapter(AnalysisReportPayload)
 
 
@@ -409,9 +413,9 @@ def run_next_job(
     publisher: CommentPublisher | None = None,
     auth: TokenProvider | None = None,
     github_client: Any | None = None,
+    report_service: ReportRenderer | None = None,
 ) -> JsonObject:
-    from trace_coordinator.bootstrap import create_coordinator
-    from trace_coordinator.presentation.report_formatter import markdown
+    from trace_coordinator.bootstrap import create_coordinator, create_report_service
 
     config = load_webhook_config(config_path)
     store = WebhookStore(config.database_file)
@@ -461,7 +465,11 @@ def run_next_job(
             report = _REPORT_ADAPTER.validate_python(coordinator.run(request, job["run_id"]))
         report_path = output / "report.json"
         report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-        rendered = markdown(report)
+        if report_service is None:
+            with create_report_service(Path(config.coordinator_config_file)) as reports:
+                rendered = reports.render(report)
+        else:
+            rendered = report_service.render(report)
         (output / "report.md").write_text(rendered, encoding="utf-8")
         if config.publish == "comment":
             if publisher is None:

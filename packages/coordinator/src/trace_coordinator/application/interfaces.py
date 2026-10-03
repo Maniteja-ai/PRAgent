@@ -5,7 +5,8 @@ from typing import Protocol
 
 from pydantic import BaseModel
 
-from trace_coordinator.domain.models import Decision, ToolContext, ToolResult
+from trace_coordinator.domain.contracts import AnalysisReportPayload
+from trace_coordinator.domain.models import Decision, ReportNarrative, ToolContext, ToolResult
 
 
 class Tool(Protocol):
@@ -24,3 +25,7 @@ class DecisionModel(Protocol):
     version: str
 
     def decide(self, context: Mapping[str, object]) -> Decision: ...
+
+
+class ReportWriter(Protocol):
+    def write(self, report: AnalysisReportPayload) -> ReportNarrative: ...

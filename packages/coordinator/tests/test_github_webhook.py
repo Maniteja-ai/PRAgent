@@ -17,6 +17,7 @@ from trace_coordinator.infrastructure.github_webhook import (
     WebhookService,
     run_next_job,
 )
+from trace_coordinator.presentation.report_formatter import ReportService
 
 
 def config(tmp_path):
@@ -328,6 +329,7 @@ def test_worker_completes_current_job_without_publishing(monkeypatch, tmp_path):
         config_file,
         auth=Auth(),
         github_client=httpx.Client(transport=httpx.MockTransport(handler)),
+        report_service=ReportService(),
     )
     assert result["status"] == "COMPLETED"
     assert (tmp_path / "output" / result["run_id"] / "report.json").exists()

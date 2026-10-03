@@ -171,6 +171,16 @@ class HumanReviewPolicy(Record):
     )
 
 
+class ReportConfig(Record):
+    writer: Literal["template", "llm"] = Field(
+        default="template",
+        description=(
+            "template renders validated facts without another model call; llm improves only the "
+            "summary and finding explanations and falls back to the template on failure."
+        ),
+    )
+
+
 class DisabledObservability(Record):
     provider: Literal["disabled"] = "disabled"
 
@@ -300,6 +310,7 @@ class CoordinatorFile(Record):
         description="Optional approved verification catalog.",
     )
     human_review: HumanReviewPolicy = Field(default_factory=HumanReviewPolicy)
+    report: ReportConfig = Field(default_factory=ReportConfig)
     model: FixtureProvider | GeminiProvider | OpenAIProvider = Field(discriminator="provider")
     env_file: str | None = Field(
         default=None, description="Optional dotenv path relative to this config; never copied to reports."
@@ -310,6 +321,8 @@ class CoordinatorFile(Record):
     def one_tool_source(self) -> Self:
         if (self.application_config_file is None) == (self.tool_fixture_file is None):
             raise ValueError("Set exactly one of application_config_file or tool_fixture_file")
+        if self.report.writer == "llm" and self.model.provider == "fixture":
+            raise ValueError("LLM report writing requires a live model provider")
         return self
 
 
@@ -321,6 +334,7 @@ class CoordinatorConfig(Record):
     ui_exploration: UIExplorationConfig
     verification: VerificationPolicy
     human_review: HumanReviewPolicy
+    report: ReportConfig
     guardrails: GuardrailPolicy
     artifact_security: ArtifactSecurityConfig
     observability: DisabledObservability | LangSmithObservability = Field(discriminator="provider")
@@ -377,6 +391,7 @@ def load_config(path: Path) -> CoordinatorConfig:
         ui_exploration=selected.ui_exploration,
         verification=verification,
         human_review=selected.human_review,
+        report=selected.report,
         guardrails=runtime.guardrails,
         artifact_security=runtime.artifact_security,
         observability=runtime.observability,

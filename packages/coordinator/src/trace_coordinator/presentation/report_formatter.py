@@ -1,10 +1,55 @@
-"""Deterministic Markdown rendering for PR impact reports."""
+"""Validated Markdown rendering with optional LLM-written prose."""
 
+import logging
+
+from trace_coordinator.application.interfaces import ReportWriter
 from trace_coordinator.domain.contracts import AnalysisReportPayload
+from trace_coordinator.domain.models import ReportNarrative
+
+LOGGER = logging.getLogger(__name__)
 
 
-def markdown(report: AnalysisReportPayload) -> str:
-    lines = ["# PR impact report", "", f"Status: {report['status']}", ""]
+class ReportService:
+    """Improve prose when a writer is available; always preserve deterministic output."""
+
+    def __init__(self, writer: ReportWriter | None = None) -> None:
+        self.writer = writer
+
+    def render(self, report: AnalysisReportPayload) -> str:
+        narrative: ReportNarrative | None = None
+        if self.writer:
+            try:
+                narrative = self.writer.write(report)
+            except Exception as exc:
+                LOGGER.warning("Optional report writer failed; using template: %s", type(exc).__name__)
+        return markdown(report, narrative)
+
+
+def _template_summary(report: AnalysisReportPayload) -> str:
+    count = len(report.get("findings", []))
+    finding_text = f"{count} potential impact finding" + ("" if count == 1 else "s")
+    verification = report.get("verification", "NOT_RUN")
+    return (
+        f"The analysis identified {finding_text}. Behavioral verification status is "
+        f"{verification}. Review the evidence and proposed checks below before merging."
+    )
+
+
+def markdown(report: AnalysisReportPayload, narrative: ReportNarrative | None = None) -> str:
+    lines = [
+        "# PR impact analysis",
+        "",
+        "## Summary",
+        "",
+        narrative.executive_summary if narrative else _template_summary(report),
+        "",
+        "| Analysis | Result |",
+        "| --- | --- |",
+        f"| Run status | {report['status']} |",
+        f"| Completeness | {report.get('completeness', 'UNKNOWN')} |",
+        f"| Behavioral verification | {report.get('verification', 'NOT_RUN')} |",
+        "",
+    ]
     observability = report.get("observability")
     if observability:
         lines.extend(
@@ -95,20 +140,30 @@ def markdown(report: AnalysisReportPayload) -> str:
                 path = candidate["code_path"].replace("|", "\\|")
                 lines.append(f"| {label} | {path}:{candidate['line']} | Candidate; needs validation |")
             lines.append("")
-    for finding in report.get("findings", []):
+    narrative_by_position = (
+        {item.position: item.explanation for item in narrative.findings} if narrative else {}
+    )
+    classification = (
+        "Classification: potential impact from analysis; executed scenario results are reported above."
+        if behavior and behavior["status"] == "COMPLETED"
+        else "Classification: potential impact; behavior is not verified."
+    )
+    for position, finding in enumerate(report.get("findings", [])):
         lines.extend(
             [
                 f"## {finding['title']}",
                 "",
-                finding["explanation"],
+                narrative_by_position.get(position, finding["explanation"]),
                 "",
-                "Classification: potential impact; behavior is not verified.",
+                classification,
                 "",
                 "Evidence: " + ", ".join(finding["evidence_ids"]),
                 "",
             ]
         )
-        lines.extend(f"- Proposed check (not run): {check}" for check in finding["checks"])
+        if finding["checks"]:
+            lines.extend(["Recommended checks:", ""])
+            lines.extend(f"- Not executed: {check}" for check in finding["checks"])
         lines.append("")
     lines.extend(["## Limits and gaps", ""])
     lines.extend(f"- {gap}" for gap in report.get("gaps", []))

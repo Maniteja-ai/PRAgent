@@ -11,6 +11,9 @@
     "max_output_tokens": 4000,
     "max_input_chars": 120000
   },
+  "report": {
+    "writer": "llm"
+  },
   "human_review": {
     "policy": "non_blocking"
   },

@@ -357,7 +357,7 @@ Current evidence:
 - [100-run coordinator stability](artifacts/coordinator-stability-01/report.md): 100/100, one output;
 - [final evaluation campaign](artifacts/final-evaluation-01/report.md): 17/17 checks passed with stated limits;
 - [production release gate](artifacts/production-readiness-04/report.md): `READY`;
-- current test suite: **268 passed**; Python 3.14/Windows measured **90.24%** combined
+- current test suite: **283 passed**; Python 3.14/Windows measured **90.24%** combined
   statement/branch coverage, while Python 3.12/Linux measured **87.40%** because Playwright
   calls run in a worker thread; CI keeps every module in scope and enforces the portable **87%** floor;
 - replay: the same run ID produced a byte-identical report with no new calls;
@@ -374,7 +374,7 @@ Current evidence:
 | `infrastructure/github_webhook.py` | Signed webhook intake, durable jobs and PR comments |
 | `security/` | Model guardrails and pluggable artifact DLP enforcement |
 | `evaluation/` | Golden, real-PR, live-model, campaign and release-gate evaluation |
-| `presentation/` | CLI commands and deterministic Markdown rendering |
+| `presentation/` | CLI commands and validated Markdown rendering with deterministic fallback |
 | `config.py`, `bootstrap.py` | Strict configuration schemas and dependency construction |
 
 Plain JSON is limited to provider, webhook, checkpoint and artifact boundaries. Those values are

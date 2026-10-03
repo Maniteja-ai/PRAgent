@@ -37,7 +37,7 @@
           "type": "string"
         },
         "timeout_seconds": {
-          "default": 45,
+          "default": 45.0,
           "exclusiveMinimum": 0,
           "maximum": 120,
           "title": "Timeout Seconds",
@@ -114,7 +114,7 @@
           "type": "string"
         },
         "timeout_seconds": {
-          "default": 45,
+          "default": 45.0,
           "exclusiveMinimum": 0,
           "maximum": 120,
           "title": "Timeout Seconds",
@@ -151,6 +151,23 @@
         "provider"
       ],
       "title": "OpenAIProvider",
+      "type": "object"
+    },
+    "ReportConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "writer": {
+          "default": "template",
+          "description": "template renders validated facts without another model call; llm improves only the summary and finding explanations and falls back to the template on failure.",
+          "enum": [
+            "template",
+            "llm"
+          ],
+          "title": "Writer",
+          "type": "string"
+        }
+      },
+      "title": "ReportConfig",
       "type": "object"
     },
     "UIExplorationConfig": {
@@ -290,6 +307,9 @@
     },
     "human_review": {
       "$ref": "#/$defs/HumanReviewPolicy"
+    },
+    "report": {
+      "$ref": "#/$defs/ReportConfig"
     },
     "model": {
       "discriminator": {
