@@ -1,10 +1,8 @@
-"""Deterministic offline fixtures, explicitly labelled as replay evidence."""
-
-from collections.abc import Mapping, Sequence
+"""Deterministic offline tool replay, explicitly labelled as fixture evidence."""
 
 from pydantic import BaseModel, Field
 
-from trace_coordinator.domain.models import Decision, Record, ToolContext, ToolResult
+from trace_coordinator.domain.models import Record, ToolContext, ToolResult
 from trace_coordinator.infrastructure.ledger import digest
 
 
@@ -35,18 +33,3 @@ class FixtureTool:
 
     def execute(self, arguments: BaseModel, context: ToolContext) -> ToolResult:
         return self.result
-
-
-class FixtureModel:
-    def __init__(self, decisions: Sequence[object]) -> None:
-        self.decisions = tuple(Decision.model_validate(item) for item in decisions)
-        if not self.decisions:
-            raise ValueError("A replay requires at least one decision")
-        self.version = "fixture-v1:" + digest(decisions)
-
-    def decide(self, context: Mapping[str, object]) -> Decision:
-        # Round-based replay remains stable across process restarts.
-        round_number = context.get("round")
-        if not isinstance(round_number, int):
-            raise ValueError("Fixture model context requires an integer round")
-        return self.decisions[min(round_number - 1, len(self.decisions) - 1)]

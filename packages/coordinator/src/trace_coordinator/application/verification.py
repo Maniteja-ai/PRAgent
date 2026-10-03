@@ -13,7 +13,6 @@ from typing import Literal, TypedDict, cast
 from filelock import FileLock
 from pydantic import Field, TypeAdapter, field_validator, model_validator
 
-from trace_coordinator.application.interfaces import Tool
 from trace_coordinator.application.runtime import ToolRegistry, ToolRuntime
 from trace_coordinator.config import CallLimits
 from trace_coordinator.domain.contracts import (
@@ -31,6 +30,7 @@ from trace_coordinator.domain.models import Evidence, Record, ToolContext
 from trace_coordinator.domain.project import ApplicationConfig, Deployment, load_application
 from trace_coordinator.infrastructure.artifacts import save_artifact
 from trace_coordinator.infrastructure.ledger import CallLedger, canonical, digest
+from trace_coordinator.tool.interface import Tool
 
 
 class BehaviorRequirement(Record):
@@ -469,7 +469,7 @@ class VoucherVerifier:
 
 
 def run_verification(config_path: str | Path, run_id: str) -> JsonObject:
-    from trace_coordinator.infrastructure.adapters.voucher_verification import verification_tools
+    from trace_coordinator.tool.implementations.voucher_verification import verification_tools
 
     if (
         not run_id

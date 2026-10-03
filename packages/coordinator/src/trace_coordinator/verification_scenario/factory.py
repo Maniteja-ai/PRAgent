@@ -3,13 +3,14 @@
 from pathlib import Path
 
 from trace_coordinator.application.verification import load_verification
-from trace_coordinator.application.verification_stage import ApprovedScenario
 from trace_coordinator.config import VerificationPolicy
 from trace_coordinator.domain.project import load_application
-from trace_coordinator.infrastructure.factories.context import BootstrapContext
+from trace_coordinator.infrastructure.dependencies import BootstrapContext
+from trace_coordinator.verification_scenario.implementations.voucher import VoucherScenario
+from trace_coordinator.verification_scenario.interface import ApprovedScenario
 
 
-class ScenarioFactory:
+class VerificationScenarioFactory:
     def __init__(self, context: BootstrapContext) -> None:
         self.context = context
 
@@ -17,8 +18,6 @@ class ScenarioFactory:
         if not policy.enabled:
             return []
         application = self.context.require_application()
-
-        from trace_coordinator.infrastructure.adapters.voucher_verification import VoucherScenario
 
         scenarios: list[ApprovedScenario] = []
         for binding in policy.scenarios:

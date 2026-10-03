@@ -19,14 +19,14 @@ from trace_coordinator.config import CallLimits
 from trace_coordinator.domain.errors import RunMismatch, ToolFailure, UncertainExecution
 from trace_coordinator.domain.models import Evidence, ToolContext, ToolResult
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.adapters.voucher_verification import (
+from trace_coordinator.infrastructure.ledger import CallLedger
+from trace_coordinator.tool.implementations.voucher_verification import (
     EmptyInput,
     FixtureInput,
     FixtureTool,
     ProbeInput,
     SaleorFixtures,
 )
-from trace_coordinator.infrastructure.ledger import CallLedger
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -107,7 +107,7 @@ class World:
         return self.evidence("browser", dict(elements=elements))
 
     def tools(self):
-        from trace_coordinator.infrastructure.adapters.browser import ActionInput, NavigateInput
+        from trace_coordinator.tool.implementations.browser import ActionInput, NavigateInput
 
         world = self
 
@@ -227,7 +227,7 @@ def test_oracle_rejects_wrong_percentage_currency_and_line_set(inputs):
 
 
 def test_saved_run_replays_report_not_side_effects_and_rejects_changed_config(inputs, tmp_path, monkeypatch):
-    from trace_coordinator.infrastructure.adapters import voucher_verification
+    from trace_coordinator.tool.implementations import voucher_verification
 
     config, app = inputs
     Path(tmp_path / "graph-config.json").write_text(

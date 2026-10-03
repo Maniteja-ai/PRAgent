@@ -6,16 +6,13 @@ from pathlib import Path
 
 from trace_coordinator.application.coordinator import Coordinator
 from trace_coordinator.config import load_config
-from trace_coordinator.infrastructure.factories import (
-    BootstrapContext,
-    ModelFactory,
-    ResponseFormatterFactory,
-    ScenarioFactory,
-    ToolFactory,
-)
+from trace_coordinator.decision_model.factory import DecisionModelFactory
+from trace_coordinator.infrastructure.dependencies import BootstrapContext
 from trace_coordinator.infrastructure.observability import CoordinatorObservability
-from trace_coordinator.response_formatter import ResponseFormatter
+from trace_coordinator.response_formatter import ResponseFormatter, ResponseFormatterFactory
 from trace_coordinator.security.artifact_security import artifact_security
+from trace_coordinator.tool.factory import ToolFactory
+from trace_coordinator.verification_scenario.factory import VerificationScenarioFactory
 
 
 @contextmanager
@@ -30,8 +27,8 @@ def create_coordinator(config_path: Path) -> Iterator[Coordinator]:
         context = BootstrapContext.create(path, config)
         resources.enter_context(artifact_security(context.state_directory, config.artifact_security))
         tools = ToolFactory(resources, context).create(config.tool_provider)
-        model = ModelFactory(resources, context).create(config.model)
-        scenarios = ScenarioFactory(context).create(config.verification)
+        model = DecisionModelFactory(resources, context).create(config.model)
+        scenarios = VerificationScenarioFactory(context).create(config.verification)
         yield Coordinator(
             context.state_directory,
             config.limits,

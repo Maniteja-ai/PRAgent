@@ -7,13 +7,14 @@ from typing import TypeVar
 
 from pydantic import BaseModel
 
-from trace_coordinator.application.interfaces import DecisionModel, Tool
 from trace_coordinator.config import CallLimits
+from trace_coordinator.decision_model.interface import DecisionModel
 from trace_coordinator.domain.contracts import ToolDescriptionPayload, as_json_object
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
 from trace_coordinator.domain.models import Decision, ToolContext, ToolResult
 from trace_coordinator.infrastructure.ledger import CallLedger
 from trace_coordinator.security.guardrails import GuardrailEngine
+from trace_coordinator.tool.interface import Tool
 
 _ResultT = TypeVar("_ResultT", bound=BaseModel)
 

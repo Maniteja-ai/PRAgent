@@ -8,12 +8,12 @@ from typing import Literal
 
 from pydantic import Field
 
-from trace_coordinator.application.interfaces import DecisionModel
 from trace_coordinator.config import GeminiProvider, OpenAIProvider
+from trace_coordinator.decision_model.implementations.langchain import LangChainDecisionModel
+from trace_coordinator.decision_model.interface import DecisionModel
 from trace_coordinator.domain.contracts import GuardrailAuditPayload, JsonObject, as_json_object
 from trace_coordinator.domain.errors import FailureCode, ToolFailure
 from trace_coordinator.domain.models import Evidence, Record
-from trace_coordinator.infrastructure.adapters.langchain_model import LangChainModel
 from trace_coordinator.security.guardrails import GuardrailEngine, GuardrailPolicy, findings
 
 
@@ -89,7 +89,7 @@ def evaluate_live_llm(
         load_dotenv(source.parent / config.env_file, override=False)
     engine = GuardrailEngine(config.guardrails)
     owned = model is None
-    selected_model: DecisionModel = model or LangChainModel(config.model)
+    selected_model: DecisionModel = model or LangChainDecisionModel(config.model)
     provider_calls = structured = grounded_findings = total_findings = 0
     results: list[JsonObject] = []
     called_cases = 0
@@ -172,7 +172,7 @@ def evaluate_live_llm(
                 )
             )
     finally:
-        if owned and isinstance(selected_model, LangChainModel):
+        if owned and isinstance(selected_model, LangChainDecisionModel):
             selected_model.close()
     case_pass_rate = cases_passed / len(results)
     structured_rate = structured / called_cases if called_cases else 1.0

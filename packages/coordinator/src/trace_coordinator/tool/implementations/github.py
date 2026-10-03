@@ -10,9 +10,9 @@ from pydantic import BaseModel
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import ToolContext, ToolResult
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.adapters.fixtures import PRInput
-from trace_coordinator.infrastructure.adapters.git_changes import compare, evidence
 from trace_coordinator.infrastructure.ledger import digest
+from trace_coordinator.tool.dependencies.git_changes import compare, evidence
+from trace_coordinator.tool.implementations.fixture import PRInput
 
 
 class GitHubDiffTool:

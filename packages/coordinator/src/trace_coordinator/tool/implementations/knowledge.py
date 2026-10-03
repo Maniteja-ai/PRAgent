@@ -23,9 +23,9 @@ from trace_coordinator.domain.contracts import (
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import Evidence, ToolContext, ToolResult
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.adapters.fixtures import QueryInput
 from trace_coordinator.infrastructure.artifacts import save_artifact
 from trace_coordinator.infrastructure.ledger import canonical, digest
+from trace_coordinator.tool.implementations.fixture import QueryInput
 
 
 class TypeScriptMappingInspector:
@@ -34,7 +34,7 @@ class TypeScriptMappingInspector:
     def __init__(self, application: ApplicationConfig, config: MappingConfig) -> None:
         from trace_impact.ingestion.code import typescript_analyzer
 
-        from trace_coordinator.infrastructure.adapters.git_changes import git
+        from trace_coordinator.tool.dependencies.git_changes import git
 
         self.app, self.config = application, config
         self.revision = getattr(application, config.environment).revision
@@ -54,7 +54,7 @@ class TypeScriptMappingInspector:
         candidate: SourceInspectionCandidatePayload,
         element: ObservedElementPayload,
     ) -> SourceProvenancePayload:
-        from trace_coordinator.infrastructure.adapters.git_changes import git
+        from trace_coordinator.tool.dependencies.git_changes import git
 
         deployed = git(
             self.app,
@@ -85,7 +85,11 @@ class TypeScriptMappingInspector:
             wrappers=self.wrappers,
         )
         result = subprocess.run(
-            ["node", str(Path(__file__).with_name("validate_jsx.cjs")), str(self.compiler)],
+            [
+                "node",
+                str(Path(__file__).resolve().parents[1] / "dependencies" / "validate_jsx.cjs"),
+                str(self.compiler),
+            ],
             input=json.dumps(payload).encode(),
             capture_output=True,
             timeout=30,

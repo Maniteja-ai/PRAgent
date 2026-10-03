@@ -369,14 +369,23 @@ Current evidence:
 | --- | --- |
 | `domain/` | Pydantic domain models plus typed checkpoint, report and persistence contracts |
 | `application/` | LangGraph workflow, guarded dispatch, verification and mapping use cases |
-| `infrastructure/adapters/` | Git, GitHub, knowledge, browser, model and Saleor provider boundaries |
+| `decision_model/` | Decision-model interface, fixture/LangChain implementations, chat-client dependency and factory |
+| `tool/` | Tool interface, live/fixture implementations, Git/JS dependencies and factory |
+| `verification_scenario/` | Approved-scenario interface, voucher implementation and factory |
+| `response_formatter/` | Formatter interface, template/LLM/fallback implementations, renderer dependency and factory |
 | `infrastructure/ledger.py` | Transactional quotas, receipts and recovery |
 | `infrastructure/github_webhook.py` | Signed webhook intake, durable jobs and PR comments |
-| `security/` | Model guardrails and pluggable artifact DLP enforcement |
+| `infrastructure/dependencies/` | Shared bootstrap context used while factories assemble one run |
+| `security/artifact_security/` | Scanner interface, baseline/Google implementations, factory, configuration and enforcement policy |
+| `security/guardrails.py` | Request, evidence, prompt-injection and output guardrails |
 | `evaluation/` | Golden, real-PR, live-model, campaign and release-gate evaluation |
 | `cli.py` | Command-line entry point |
-| `response_formatter/` | One formatter interface and separate template, LLM and fallback implementations |
 | `config.py`, `bootstrap.py` | Strict configuration schemas and dependency construction |
+
+Replaceable features use the same small shape: `interface.py` defines the contract,
+`implementations/` contains provider-specific code, `dependencies/` contains shared external helpers
+when needed, and `factory.py` selects an implementation from validated configuration. Ordinary domain
+and workflow modules remain direct files because they are application logic rather than provider choices.
 
 Plain JSON is limited to provider, webhook, checkpoint and artifact boundaries. Those values are
 validated immediately into Pydantic models or named `TypedDict` contracts before application code

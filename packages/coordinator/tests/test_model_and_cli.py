@@ -7,12 +7,12 @@ import pytest
 
 from trace_coordinator.cli import main
 from trace_coordinator.config import GeminiProvider, OpenAIProvider
-from trace_coordinator.domain.errors import FailureCode, ToolFailure
-from trace_coordinator.infrastructure.adapters.langchain_model import (
-    LangChainModel,
+from trace_coordinator.decision_model.implementations.langchain import (
+    LangChainDecisionModel,
     ModelDecision,
     classify_failure,
 )
+from trace_coordinator.domain.errors import FailureCode, ToolFailure
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -54,7 +54,9 @@ def model_stubs(monkeypatch):
     "provider,kind,retries", [("gemini", GeminiProvider, 1), ("openai", OpenAIProvider, 0)]
 )
 def test_model_adapters_disable_sdk_retry_and_close(model_stubs, provider, kind, retries):
-    adapter = LangChainModel(kind(provider=provider, model="test-model", api_key_env="TEST_MODEL_KEY"))
+    adapter = LangChainDecisionModel(
+        kind(provider=provider, model="test-model", api_key_env="TEST_MODEL_KEY")
+    )
     assert adapter.client.options["max_retries"] == retries
     assert adapter.decide({"round": 1}).action == "finish"
     assert "test-only-secret" not in adapter.version
@@ -65,13 +67,13 @@ def test_model_adapters_disable_sdk_retry_and_close(model_stubs, provider, kind,
 def test_missing_key_is_explicit(monkeypatch):
     monkeypatch.delenv("ABSENT_COORDINATOR_TEST_KEY", raising=False)
     with pytest.raises(ValueError, match="ABSENT_COORDINATOR_TEST_KEY"):
-        LangChainModel(
+        LangChainDecisionModel(
             GeminiProvider(provider="gemini", model="test", api_key_env="ABSENT_COORDINATOR_TEST_KEY")
         )
 
 
 def test_context_overflow_prevents_model_dispatch(model_stubs):
-    adapter = LangChainModel(
+    adapter = LangChainDecisionModel(
         GeminiProvider(provider="gemini", model="test", api_key_env="TEST_MODEL_KEY", max_input_chars=1000)
     )
     with pytest.raises(ToolFailure, match="context budget"):
@@ -80,7 +82,9 @@ def test_context_overflow_prevents_model_dispatch(model_stubs):
 
 
 def test_transient_errors_are_safe_and_retryable(model_stubs):
-    adapter = LangChainModel(GeminiProvider(provider="gemini", model="test", api_key_env="TEST_MODEL_KEY"))
+    adapter = LangChainDecisionModel(
+        GeminiProvider(provider="gemini", model="test", api_key_env="TEST_MODEL_KEY")
+    )
     adapter.client.error = TimeoutError("raw secret provider error")
     with pytest.raises(ToolFailure) as caught:
         adapter.decide({})
@@ -90,7 +94,9 @@ def test_transient_errors_are_safe_and_retryable(model_stubs):
 
 @pytest.mark.parametrize("arguments", ["not-json", "[]", '"' + "x" * 16001 + '"'])
 def test_provider_wire_still_has_strict_local_validation(model_stubs, monkeypatch, arguments):
-    adapter = LangChainModel(GeminiProvider(provider="gemini", model="test", api_key_env="TEST_MODEL_KEY"))
+    adapter = LangChainDecisionModel(
+        GeminiProvider(provider="gemini", model="test", api_key_env="TEST_MODEL_KEY")
+    )
     monkeypatch.setattr(
         adapter.structured,
         "invoke",
@@ -108,7 +114,9 @@ def test_provider_wire_still_has_strict_local_validation(model_stubs, monkeypatc
 
 
 def test_finish_discards_harmless_provider_question_echo(model_stubs, monkeypatch):
-    adapter = LangChainModel(GeminiProvider(provider="gemini", model="test", api_key_env="TEST_MODEL_KEY"))
+    adapter = LangChainDecisionModel(
+        GeminiProvider(provider="gemini", model="test", api_key_env="TEST_MODEL_KEY")
+    )
     monkeypatch.setattr(
         adapter.structured,
         "invoke",
@@ -171,7 +179,7 @@ def test_opt_in_invalid_output_retry_is_counted_and_strict(model_stubs, monkeypa
     from trace_coordinator.domain.models import ToolContext
     from trace_coordinator.infrastructure.ledger import CallLedger
 
-    adapter = LangChainModel(
+    adapter = LangChainDecisionModel(
         GeminiProvider(
             provider="gemini", model="test", api_key_env="TEST_MODEL_KEY", retry_invalid_response=True
         )

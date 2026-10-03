@@ -4,7 +4,6 @@ import json
 from collections.abc import Sequence
 from fnmatch import fnmatchcase
 from pathlib import Path
-from typing import Protocol
 
 from pydantic import TypeAdapter
 
@@ -23,16 +22,7 @@ from trace_coordinator.domain.models import Evidence, ToolContext
 from trace_coordinator.domain.state import AnalysisState
 from trace_coordinator.infrastructure.artifacts import save_artifact
 from trace_coordinator.infrastructure.ledger import canonical, digest
-
-
-class ApprovedScenario(Protocol):
-    id: str
-    version: str
-    description: str
-    changed_paths: tuple[str, ...]
-    required_calls: dict[str, int]
-
-    def execute(self, runtime: ToolRuntime, context: ToolContext) -> VerificationResultPayload: ...
+from trace_coordinator.verification_scenario.interface import ApprovedScenario
 
 
 def skipped(reason: str, *, status: VerificationStatus = "NOT_RUN") -> VerificationResultPayload:

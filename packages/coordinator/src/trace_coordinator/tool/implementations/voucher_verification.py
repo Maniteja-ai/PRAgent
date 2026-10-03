@@ -15,21 +15,14 @@ from urllib.parse import urlencode
 import httpx
 from pydantic import BaseModel
 
-from trace_coordinator.application.interfaces import Tool
-from trace_coordinator.application.runtime import ToolRuntime
-from trace_coordinator.config import ScenarioBinding
-from trace_coordinator.domain.contracts import (
-    JsonObject,
-    VerificationResultPayload,
-    as_json_object,
-    as_json_value,
-)
+from trace_coordinator.domain.contracts import JsonObject, as_json_object, as_json_value
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import Evidence, Record, ToolContext, ToolResult
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.adapters.browser import DESCRIBE, BrowserSession, BrowserTool
 from trace_coordinator.infrastructure.artifacts import save_artifact
 from trace_coordinator.infrastructure.ledger import canonical, digest
+from trace_coordinator.tool.implementations.browser import DESCRIBE, BrowserSession, BrowserTool
+from trace_coordinator.tool.interface import Tool
 
 if TYPE_CHECKING:
     from trace_coordinator.application.verification import VoucherVerificationConfig
@@ -41,77 +34,6 @@ lines { quantity variant { id } } channel { slug } shippingAddress { country { c
 class ObservedTotalPayload(TypedDict):
     value: str | None
     text: str
-
-
-class VoucherScenario:
-    """Approved adapter: reuse the parent run, agent, limits and attempt database."""
-
-    required_calls = {
-        "fixture.catalog": 1,
-        "fixture.prepare": 3,
-        "fixture.apply": 1,
-        "fixture.observe": 3,
-        "browser.navigate": 2,
-        "browser.act": 5,
-        "browser.check": 5,
-    }
-
-    def __init__(
-        self,
-        binding: ScenarioBinding,
-        config: "VoucherVerificationConfig",
-        application: ApplicationConfig,
-        root: Path,
-    ) -> None:
-        self.id, self.description, self.changed_paths = binding.id, binding.description, binding.changed_paths
-        self.config, self.app, self.root = config, application, root
-        self.version = "integrated-voucher-v1:" + digest(
-            {"config": config.model_dump(mode="json"), "application": application.model_dump(mode="json")}
-        )
-
-    def execute(self, runtime: ToolRuntime, context: ToolContext) -> VerificationResultPayload:
-        from trace_coordinator.application.runtime import ToolRegistry, ToolRuntime
-        from trace_coordinator.application.verification import VoucherVerifier
-
-        changes = context.changes
-        if (
-            not self.app.browser.enabled
-            or context.project_id != self.app.project_id
-            or changes is None
-            or (
-                changes.repository != self.app.repository
-                or changes.analysis_base != self.app.baseline.revision
-                or changes.analysis_head != self.app.patched.revision
-            )
-        ):
-            raise ToolFailure("Verification application differs from the pinned analysis scope")
-        with verification_tools(self.app, self.config, self.root, context.run_id) as tools:
-            shared = ToolRuntime(
-                runtime.ledger,
-                runtime.limits.model_copy(update={"retry_attempts": 1}),
-                ToolRegistry(tools),
-                model=None,
-            )
-            verifier = VoucherVerifier(self.config, self.app, runtime.ledger, runtime=shared)
-            result = verifier.run(context.run_id, operation_prefix=f"verification:{self.id}:")
-            attestations = {
-                name: as_json_object(item)
-                for name, item in context.runtime_attestations.items()
-                if isinstance(item, dict)
-            }
-            if (
-                set(attestations) == {"baseline", "patched"}
-                and len({item["backend_fingerprint"] for item in attestations.values()}) == 1
-                and all(
-                    attestations[name]["revision"] == getattr(self.app, name).revision
-                    for name in ("baseline", "patched")
-                )
-            ):
-                result["comparison"] = {
-                    "status": "SUPPORTED",
-                    "reason": "Both URLs attested their configured source revisions and the same backend identity. The observed before/after difference supports attribution for the checks that ran.",
-                }
-            return result
 
 
 class EmptyInput(Record):

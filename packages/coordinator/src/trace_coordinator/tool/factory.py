@@ -3,12 +3,12 @@
 import json
 from contextlib import ExitStack
 
-from trace_coordinator.application.interfaces import Tool
 from trace_coordinator.config import FixtureProvider, LiveToolProvider
 from trace_coordinator.domain.contracts import as_json_object
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.adapters.fixtures import FixtureTool
-from trace_coordinator.infrastructure.factories.context import BootstrapContext
+from trace_coordinator.infrastructure.dependencies import BootstrapContext
+from trace_coordinator.tool.implementations.fixture import FixtureTool
+from trace_coordinator.tool.interface import Tool
 
 
 class ToolFactory:
@@ -39,18 +39,18 @@ class ToolFactory:
 
     def _change_tool(self, application: ApplicationConfig) -> Tool:
         if application.change_source.provider == "local_git":
-            from trace_coordinator.infrastructure.adapters.local_git import LocalGitDiffTool
+            from trace_coordinator.tool.implementations.local_git import LocalGitDiffTool
 
             return LocalGitDiffTool(application, self.context.state_directory)
 
-        from trace_coordinator.infrastructure.adapters.github import GitHubDiffTool
+        from trace_coordinator.tool.implementations.github import GitHubDiffTool
 
         tool = GitHubDiffTool(application, self.context.state_directory)
         self.resources.callback(tool.close)
         return tool
 
     def _knowledge_tools(self, application: ApplicationConfig) -> list[Tool]:
-        from trace_coordinator.infrastructure.adapters.knowledge import KnowledgeTool
+        from trace_coordinator.tool.implementations.knowledge import KnowledgeTool
 
         return [
             KnowledgeTool(name, application, self.context.state_directory)
@@ -66,7 +66,7 @@ class ToolFactory:
             )
         ):
             return
-        from trace_coordinator.infrastructure.adapters.attestation import DeploymentAttestationTool
+        from trace_coordinator.tool.implementations.attestation import DeploymentAttestationTool
 
         tool = DeploymentAttestationTool(application)
         self.resources.callback(tool.close)
@@ -75,7 +75,7 @@ class ToolFactory:
     def _add_browser(self, tools: list[Tool], application: ApplicationConfig) -> None:
         if not application.browser.enabled:
             return
-        from trace_coordinator.infrastructure.adapters.browser import BrowserSession, BrowserTool
+        from trace_coordinator.tool.implementations.browser import BrowserSession, BrowserTool
 
         session = BrowserSession(application, self.context.state_directory)
         self.resources.callback(session.close)

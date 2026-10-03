@@ -16,22 +16,24 @@ repository/
     pyproject.toml                  Own dependencies and CLI
     uv.lock                         Own reproducible environment
     src/trace_coordinator/
-      api.py                        prepare(), analyze(), resume()
+      bootstrap.py                  Composition root only
       config.py                     Typed JSON definitions and validation
-      models.py                     Versioned input/output records
-      interfaces.py                 Replaceable component contracts
-      bootstrap.py                  Construct registered implementations
-      workflow.py                   LangGraph nodes, routes and joins
-      state.py                      Small, serializable workflow state
-      policy.py                     Budgets, evidence and failure decisions
-      stages/                       Preparation, reasoning, verification, reporting
-      browser/                      Bounded observe-decide-act subgraph
-      adapters/                     Library, GitHub, models, browser and stores
-      prompts/                      Versioned task prompts
+      application/                  LangGraph workflow and use cases
+      domain/                       Coordinator-owned models and contracts
+      decision_model/               Interface, implementations, dependencies, factory
+      tool/                         Interface, implementations, dependencies, factory
+      verification_scenario/        Interface, implementations, factory
+      response_formatter/           Interface, implementations, dependencies, factory
+      security/artifact_security/   Interface, implementations, factory and policy
+      infrastructure/               Ledger, artifacts, webhook and observability
+      evaluation/                   Golden, live-model and release evaluations
     configs/, schemas/, tests/, docs/
 ```
 
-Dependency direction: **coordinator stages -> coordinator interfaces <- adapters -> external implementations**. Only the local knowledge adapter imports `trace_impact`; core coordinator code does not import its models, shared utilities, registry, settings or databases. The existing library never imports the coordinator or LangGraph.
+Dependency direction: **application -> feature interfaces <- implementations -> external systems**.
+Only the knowledge tool implementation imports `trace_impact`; core coordinator code does not import
+its models, shared utilities, registry, settings or databases. The existing library never imports the
+coordinator or LangGraph.
 
 Use Python Protocols and small composed classes. Avoid a base-agent inheritance hierarchy. `bootstrap.py` performs dependency injection from an explicit provider registry. Adapters translate library objects into coordinator-owned, JSON-serializable records.
 

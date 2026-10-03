@@ -7,7 +7,7 @@ from pydantic import ValidationError
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import ToolContext
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.adapters.attestation import AttestationInput, DeploymentAttestationTool
+from trace_coordinator.tool.implementations.attestation import AttestationInput, DeploymentAttestationTool
 
 
 def application(tmp_path, *, production=True):

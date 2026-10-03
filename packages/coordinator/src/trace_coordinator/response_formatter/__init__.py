@@ -1,5 +1,6 @@
 """Response formatter contract and its three implementations."""
 
+from trace_coordinator.response_formatter.factory import ResponseFormatterFactory
 from trace_coordinator.response_formatter.implementations.fallback import (
     FallbackResponseFormatter,
 )
@@ -13,5 +14,6 @@ __all__ = [
     "FallbackResponseFormatter",
     "LlmResponseFormatter",
     "ResponseFormatter",
+    "ResponseFormatterFactory",
     "TemplateResponseFormatter",
 ]

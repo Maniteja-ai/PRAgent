@@ -15,16 +15,17 @@ from trace_coordinator import (
 from trace_coordinator.application.verification import VoucherVerificationConfig
 from trace_coordinator.application.verification_stage import VerificationStage
 from trace_coordinator.config import ScenarioBinding, VerificationPolicy
+from trace_coordinator.decision_model.implementations.fixture import FixtureDecisionModel
 from trace_coordinator.domain.errors import RunMismatch
 from trace_coordinator.domain.models import ChangeSet, Evidence, ToolResult
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel, FixtureTool
-from trace_coordinator.infrastructure.adapters.voucher_verification import VoucherScenario
+from trace_coordinator.tool.implementations.fixture import FixtureTool
+from trace_coordinator.verification_scenario.implementations.voucher import VoucherScenario
 
 
 @pytest.fixture
 def setup(tmp_path, monkeypatch):
-    from trace_coordinator.infrastructure.adapters import voucher_verification
+    from trace_coordinator.tool.implementations import voucher_verification
 
     app = ApplicationConfig(
         project_id="p",
@@ -91,7 +92,7 @@ def setup(tmp_path, monkeypatch):
                 },
             )
         )
-    from trace_coordinator.infrastructure.adapters.browser import NavigateInput
+    from trace_coordinator.tool.implementations.browser import NavigateInput
 
     class Entry:
         name = "browser.navigate"
@@ -122,7 +123,7 @@ def setup(tmp_path, monkeypatch):
         yield World(config).tools()
 
     monkeypatch.setattr(voucher_verification, "verification_tools", factory)
-    model = FixtureModel(
+    model = FixtureDecisionModel(
         [
             {
                 "action": "finish",
@@ -144,7 +145,7 @@ def setup(tmp_path, monkeypatch):
             tmp_path / "state",
             limits or CallLimits(total_calls=35),
             tools,
-            FixtureModel(decisions) if decisions else model,
+            FixtureDecisionModel(decisions) if decisions else model,
             verification=VerificationPolicy(enabled=True, approval=approval, scenarios=(binding,)),
             human_review=review_policy,
             scenarios=(selected or scenario,),
@@ -446,7 +447,7 @@ def test_no_findings_no_matching_scenario_or_ambiguous_scenarios(setup, tmp_path
         tmp_path / "ambiguous",
         CallLimits(total_calls=35),
         tools,
-        FixtureModel(
+        FixtureDecisionModel(
             [
                 {
                     "action": "finish",

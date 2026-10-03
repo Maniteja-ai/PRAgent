@@ -6,9 +6,10 @@ from pathlib import Path
 import pytest
 
 from trace_coordinator.bootstrap import create_coordinator
+from trace_coordinator.decision_model.implementations.fixture import FixtureDecisionModel
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import AnalysisRequest, Evidence, ToolResult
-from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel, FixtureTool
+from trace_coordinator.tool.implementations.fixture import FixtureTool
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = json.loads((ROOT / "tests/fixtures/coordinator/voucher-analysis.json").read_text())
@@ -20,13 +21,8 @@ FIXTURE = json.loads((ROOT / "tests/fixtures/coordinator/voucher-analysis.json")
 def test_live_composition_routes_entry_captures_and_cleans_up(
     tmp_path, monkeypatch, browser_failure, change_provider, verification_enabled
 ):
-    from trace_coordinator.infrastructure.adapters import (
-        browser,
-        github,
-        knowledge,
-        langchain_model,
-        local_git,
-    )
+    from trace_coordinator.decision_model.implementations import langchain
+    from trace_coordinator.tool.implementations import browser, github, knowledge, local_git
 
     closed, calls = [], []
 
@@ -64,7 +60,7 @@ def test_live_composition_routes_entry_captures_and_cleans_up(
         def close(self):
             closed.append("browser")
 
-    class Model(FixtureModel):
+    class Model(FixtureDecisionModel):
         def __init__(self, config):
             super().__init__([{"action": "finish"}])
 
@@ -75,7 +71,7 @@ def test_live_composition_routes_entry_captures_and_cleans_up(
     monkeypatch.setattr(local_git, "LocalGitDiffTool", GitHub)
     monkeypatch.setattr(knowledge, "KnowledgeTool", Knowledge)
     monkeypatch.setattr(browser, "BrowserSession", Browser)
-    monkeypatch.setattr(langchain_model, "LangChainModel", Model)
+    monkeypatch.setattr(langchain, "LangChainDecisionModel", Model)
     app = json.loads((ROOT / "configs/application/saleor.json").read_text())
     # This composition test replaces all live adapters except attestation; keep it offline.
     app["require_exact_revisions"] = False

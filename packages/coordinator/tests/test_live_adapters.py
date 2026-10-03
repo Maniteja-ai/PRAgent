@@ -16,10 +16,10 @@ from trace_coordinator.domain.project import (
     RetrievalConfigFile,
     load_application,
 )
-from trace_coordinator.infrastructure.adapters.fixtures import PRInput
-from trace_coordinator.infrastructure.adapters.github import GitHubDiffTool
-from trace_coordinator.infrastructure.adapters.local_git import LocalGitDiffTool
 from trace_coordinator.infrastructure.artifacts import save_artifact
+from trace_coordinator.tool.implementations.fixture import PRInput
+from trace_coordinator.tool.implementations.github import GitHubDiffTool
+from trace_coordinator.tool.implementations.local_git import LocalGitDiffTool
 
 ROOT = Path(__file__).resolve().parents[1]
 

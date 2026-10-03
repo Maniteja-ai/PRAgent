@@ -4,10 +4,11 @@ import pytest
 
 from trace_coordinator.application.runtime import ToolRegistry, ToolRuntime
 from trace_coordinator.config import CallLimits
+from trace_coordinator.decision_model.implementations.fixture import FixtureDecisionModel
 from trace_coordinator.domain.errors import LimitReached, RunMismatch, ToolFailure, UncertainExecution
 from trace_coordinator.domain.models import Evidence, ToolContext, ToolResult
-from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel, QueryInput
 from trace_coordinator.infrastructure.ledger import CallLedger
+from trace_coordinator.tool.implementations.fixture import QueryInput
 
 
 class CountingTool:
@@ -36,7 +37,7 @@ def make_runtime(tmp_path, limits=None, tool=None):
         ledger,
         limits or CallLimits(retry_delay_seconds=0),
         ToolRegistry([tool]),
-        FixtureModel([{"action": "finish"}]),
+        FixtureDecisionModel([{"action": "finish"}]),
     )
     context = ToolContext(run_id="run", project_id="project", agent_id="coordinator")
     return runtime, context, tool

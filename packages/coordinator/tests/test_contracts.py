@@ -127,7 +127,7 @@ def test_contradictory_decision_rejected():
 
 def test_package_core_does_not_depend_on_knowledge_library():
     for path in (ROOT / "src/trace_coordinator").rglob("*.py"):
-        if path.name == "knowledge.py" and path.parent.name == "adapters":
+        if path.name == "knowledge.py" and path.parent.name == "implementations":
             continue
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
             if isinstance(node, ast.ImportFrom):

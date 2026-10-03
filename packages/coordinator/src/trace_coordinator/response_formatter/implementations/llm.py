@@ -3,12 +3,12 @@
 from typing import Any
 
 from trace_coordinator.config import GeminiProvider, OpenAIProvider
+from trace_coordinator.decision_model.dependencies import create_chat_model
 from trace_coordinator.domain.contracts import AnalysisReportPayload
 from trace_coordinator.domain.models import ReportNarrative
-from trace_coordinator.infrastructure.adapters.langchain_model import create_chat_model
 from trace_coordinator.infrastructure.ledger import canonical
+from trace_coordinator.response_formatter.dependencies import render_markdown
 from trace_coordinator.response_formatter.interface import ResponseFormatter
-from trace_coordinator.response_formatter.renderer import render_markdown
 
 REPORT_PROMPT = """Rewrite a validated PR impact analysis for a software reviewer.
 

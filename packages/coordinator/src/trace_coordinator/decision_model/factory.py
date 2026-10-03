@@ -3,14 +3,14 @@
 import json
 from contextlib import ExitStack
 
-from trace_coordinator.application.interfaces import DecisionModel
 from trace_coordinator.config import FixtureProvider, GeminiProvider, OpenAIProvider
+from trace_coordinator.decision_model.implementations.fixture import FixtureDecisionModel
+from trace_coordinator.decision_model.interface import DecisionModel
 from trace_coordinator.domain.contracts import as_json_object
-from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel
-from trace_coordinator.infrastructure.factories.context import BootstrapContext
+from trace_coordinator.infrastructure.dependencies import BootstrapContext
 
 
-class ModelFactory:
+class DecisionModelFactory:
     def __init__(self, resources: ExitStack, context: BootstrapContext) -> None:
         self.resources = resources
         self.context = context
@@ -25,11 +25,11 @@ class ModelFactory:
         decisions = document.get("decisions")
         if not isinstance(decisions, list):
             raise ValueError("Fixture model file requires a decisions list")
-        return FixtureModel(decisions)
+        return FixtureDecisionModel(decisions)
 
     def _live(self, config: GeminiProvider | OpenAIProvider) -> DecisionModel:
-        from trace_coordinator.infrastructure.adapters.langchain_model import LangChainModel
+        from trace_coordinator.decision_model.implementations.langchain import LangChainDecisionModel
 
-        model = LangChainModel(config)
+        model = LangChainDecisionModel(config)
         self.resources.callback(model.close)
         return model

@@ -12,10 +12,11 @@ from trace_coordinator import (
     ReviewResponse,
 )
 from trace_coordinator.bootstrap import create_coordinator
+from trace_coordinator.decision_model.implementations.fixture import FixtureDecisionModel
 from trace_coordinator.domain.errors import RunMismatch, ToolFailure
 from trace_coordinator.domain.models import Evidence, ToolResult
-from trace_coordinator.infrastructure.adapters.attestation import AttestationInput
-from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel, FixtureTool
+from trace_coordinator.tool.implementations.attestation import AttestationInput
+from trace_coordinator.tool.implementations.fixture import FixtureTool
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = json.loads((ROOT / "tests/fixtures/coordinator/voucher-analysis.json").read_text(encoding="utf-8"))
@@ -29,7 +30,7 @@ def coordinator(path, decisions=None, limits=None, tools=None, human_review=None
         path,
         limits or CallLimits(retry_delay_seconds=0),
         tools or [FixtureTool(name, data) for name, data in FIXTURE["tools"].items()],
-        FixtureModel(decisions or FIXTURE["decisions"]),
+        FixtureDecisionModel(decisions or FIXTURE["decisions"]),
         human_review=human_review,
     )
 

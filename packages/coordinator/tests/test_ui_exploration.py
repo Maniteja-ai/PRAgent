@@ -7,8 +7,8 @@ from trace_coordinator.application.ui_evidence import label_in_source, source_li
 from trace_coordinator.application.ui_exploration import ui_exploration_status
 from trace_coordinator.config import UIExplorationConfig
 from trace_coordinator.domain.models import Decision, Evidence, ToolResult
-from trace_coordinator.infrastructure.adapters.browser import ActionInput, NavigateInput
-from trace_coordinator.infrastructure.adapters.fixtures import FixtureTool
+from trace_coordinator.tool.implementations.browser import ActionInput, NavigateInput
+from trace_coordinator.tool.implementations.fixture import FixtureTool
 
 
 def screen(ref, *, name="Product", fingerprint="home", previous=None):

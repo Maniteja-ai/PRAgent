@@ -16,8 +16,8 @@ from trace_coordinator.application.mapping import (
 )
 from trace_coordinator.application.ui_evidence import ui_index
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.adapters import knowledge
 from trace_coordinator.infrastructure.artifacts import save_artifact
+from trace_coordinator.tool.implementations import knowledge
 
 ROOT = Path(__file__).resolve().parents[1]
 REV = "b" * 40
@@ -272,7 +272,7 @@ def run_jsx(source, **changes):
     return subprocess.run(
         [
             "node",
-            str(ROOT / "src/trace_coordinator/infrastructure/adapters/validate_jsx.cjs"),
+            str(ROOT / "src/trace_coordinator/tool/dependencies/validate_jsx.cjs"),
             str(compiler),
         ],
         input=json.dumps(payload).encode(),
@@ -338,7 +338,7 @@ def test_jsx_wrapper_must_forward_identity_props(wrapper, succeeds):
 
 
 def test_inspector_checks_actual_patch_source_and_parser(batch, monkeypatch):
-    from trace_coordinator.infrastructure.adapters import git_changes
+    from trace_coordinator.tool.dependencies import git_changes
 
     report, config, app, _ = batch
     monkeypatch.setattr(

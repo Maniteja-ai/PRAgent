@@ -10,9 +10,10 @@ from pydantic import Field, TypeAdapter
 
 from trace_coordinator.application.coordinator import Coordinator
 from trace_coordinator.config import CallLimits, HumanReviewPolicy
+from trace_coordinator.decision_model.implementations.fixture import FixtureDecisionModel
 from trace_coordinator.domain.contracts import AnalysisReportPayload, JsonObject, as_json_object
 from trace_coordinator.domain.models import AnalysisRequest, Record
-from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel, FixtureTool
+from trace_coordinator.tool.implementations.fixture import FixtureTool
 
 
 class GoldenFinding(Record):
@@ -82,7 +83,7 @@ def evaluate_dataset(path: str | Path, output_directory: str | Path) -> JsonObje
                 case_root,
                 dataset.limits,
                 tools,
-                FixtureModel(case.decisions),
+                FixtureDecisionModel(case.decisions),
                 human_review=case.human_review,
             ).run(case.request, "evaluation"),
         )

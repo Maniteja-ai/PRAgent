@@ -8,8 +8,8 @@ import pytest
 from trace_coordinator.domain.errors import ToolFailure
 from trace_coordinator.domain.models import ChangeSet, FileChange, ToolContext
 from trace_coordinator.domain.project import ApplicationConfig
-from trace_coordinator.infrastructure.adapters.fixtures import QueryInput
-from trace_coordinator.infrastructure.adapters.knowledge import KnowledgeTool
+from trace_coordinator.tool.implementations.fixture import QueryInput
+from trace_coordinator.tool.implementations.knowledge import KnowledgeTool
 
 
 @pytest.fixture

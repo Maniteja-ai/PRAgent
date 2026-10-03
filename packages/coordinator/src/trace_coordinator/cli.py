@@ -210,7 +210,7 @@ def main() -> None:
         print(json.dumps({"status": result["status"], "run_id": args.run_id, "checks": result["checks"]}))
         return
     if args.command == "map-ui":
-        from trace_coordinator.infrastructure.adapters.knowledge import (
+        from trace_coordinator.tool.implementations.knowledge import (
             prepare_ui_snapshot,
             publish_ui_snapshot,
         )

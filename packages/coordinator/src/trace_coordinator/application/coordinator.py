@@ -12,9 +12,8 @@ from langchain_core.runnables.config import RunnableConfig
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.types import Checkpointer, Command, Interrupt
 
-from trace_coordinator.application.interfaces import DecisionModel, Tool
 from trace_coordinator.application.runtime import ToolRegistry, ToolRuntime
-from trace_coordinator.application.verification_stage import ApprovedScenario, VerificationStage
+from trace_coordinator.application.verification_stage import VerificationStage
 from trace_coordinator.application.workflow import WORKFLOW_VERSION, build_workflow
 from trace_coordinator.config import (
     CallLimits,
@@ -22,6 +21,7 @@ from trace_coordinator.config import (
     UIExplorationConfig,
     VerificationPolicy,
 )
+from trace_coordinator.decision_model.interface import DecisionModel
 from trace_coordinator.domain.contracts import AnalysisReportPayload, JsonObject, as_json_object
 from trace_coordinator.domain.errors import RunMismatch
 from trace_coordinator.domain.models import AnalysisRequest, ReviewResponse, ToolContext
@@ -29,6 +29,8 @@ from trace_coordinator.domain.state import AnalysisState
 from trace_coordinator.infrastructure.ledger import CallLedger, canonical, digest
 from trace_coordinator.infrastructure.observability import CoordinatorObservability
 from trace_coordinator.security.guardrails import GuardrailEngine, GuardrailPolicy
+from trace_coordinator.tool.interface import Tool
+from trace_coordinator.verification_scenario.interface import ApprovedScenario
 
 
 class Coordinator:
