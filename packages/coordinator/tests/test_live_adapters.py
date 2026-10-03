@@ -5,13 +5,13 @@ from pathlib import Path
 import httpx
 import pytest
 
-from trace_coordinator.adapters.fixtures import PRInput
-from trace_coordinator.adapters.github import GitHubDiffTool
-from trace_coordinator.adapters.local_git import LocalGitDiffTool
-from trace_coordinator.application import ApplicationConfig, LocalGitSource, load_application
-from trace_coordinator.artifacts import save_artifact
-from trace_coordinator.errors import ToolFailure
-from trace_coordinator.models import ToolContext
+from trace_coordinator.domain.errors import ToolFailure
+from trace_coordinator.domain.models import ToolContext
+from trace_coordinator.domain.project import ApplicationConfig, LocalGitSource, load_application
+from trace_coordinator.infrastructure.adapters.fixtures import PRInput
+from trace_coordinator.infrastructure.adapters.github import GitHubDiffTool
+from trace_coordinator.infrastructure.adapters.local_git import LocalGitDiffTool
+from trace_coordinator.infrastructure.artifacts import save_artifact
 
 ROOT = Path(__file__).resolve().parents[1]
 

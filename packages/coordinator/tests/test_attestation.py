@@ -4,10 +4,10 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from trace_coordinator.adapters.attestation import AttestationInput, DeploymentAttestationTool
-from trace_coordinator.application import ApplicationConfig
-from trace_coordinator.errors import ToolFailure
-from trace_coordinator.models import ToolContext
+from trace_coordinator.domain.errors import ToolFailure
+from trace_coordinator.domain.models import ToolContext
+from trace_coordinator.domain.project import ApplicationConfig
+from trace_coordinator.infrastructure.adapters.attestation import AttestationInput, DeploymentAttestationTool
 
 
 def application(tmp_path, *, production=True):

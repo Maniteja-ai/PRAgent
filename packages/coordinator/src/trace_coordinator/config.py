@@ -5,9 +5,9 @@ from typing import Annotated, Literal
 
 from pydantic import Field, StrictInt, model_validator
 
-from trace_coordinator.artifact_security import ArtifactSecurityConfig
-from trace_coordinator.guardrails import GuardrailPolicy
-from trace_coordinator.models import Record
+from trace_coordinator.domain.models import Record
+from trace_coordinator.security.artifact_security import ArtifactSecurityConfig
+from trace_coordinator.security.guardrails import GuardrailPolicy
 
 
 class CallLimits(Record):

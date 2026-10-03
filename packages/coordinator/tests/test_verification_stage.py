@@ -12,19 +12,19 @@ from trace_coordinator import (
     HumanReviewPolicy,
     ReviewResponse,
 )
-from trace_coordinator.adapters.fixtures import FixtureModel, FixtureTool
-from trace_coordinator.adapters.voucher_verification import VoucherScenario
-from trace_coordinator.application import ApplicationConfig
+from trace_coordinator.application.verification import VoucherVerificationConfig
+from trace_coordinator.application.verification_stage import VerificationStage
 from trace_coordinator.config import ScenarioBinding, VerificationPolicy
-from trace_coordinator.errors import RunMismatch
-from trace_coordinator.models import ChangeSet, Evidence, ToolResult
-from trace_coordinator.verification import VoucherVerificationConfig
-from trace_coordinator.verification_stage import VerificationStage
+from trace_coordinator.domain.errors import RunMismatch
+from trace_coordinator.domain.models import ChangeSet, Evidence, ToolResult
+from trace_coordinator.domain.project import ApplicationConfig
+from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel, FixtureTool
+from trace_coordinator.infrastructure.adapters.voucher_verification import VoucherScenario
 
 
 @pytest.fixture
 def setup(tmp_path, monkeypatch):
-    from trace_coordinator.adapters import voucher_verification
+    from trace_coordinator.infrastructure.adapters import voucher_verification
 
     app = ApplicationConfig(
         project_id="p",
@@ -91,7 +91,7 @@ def setup(tmp_path, monkeypatch):
                 },
             )
         )
-    from trace_coordinator.adapters.browser import NavigateInput
+    from trace_coordinator.infrastructure.adapters.browser import NavigateInput
 
     class Entry:
         name = "browser.navigate"
@@ -181,7 +181,7 @@ def test_full_graph_integrates_results_using_same_run_and_ledger(setup, tmp_path
     )
     assert not (tmp_path / "standalone-unused").exists()
     assert build().run(request, "run") == result and calls == ["factory"]
-    from trace_coordinator.cli import markdown
+    from trace_coordinator.presentation.report_formatter import markdown
 
     rendered = markdown(result)
     assert (
@@ -236,7 +236,7 @@ def test_non_blocking_approval_and_linked_late_verification_preserve_run_contrac
     assert question["kind"] == "verification_approval"
     assert question["scenario_id"] == "voucher"
     assert "Approve scenario voucher" in question["question"]
-    from trace_coordinator.cli import markdown
+    from trace_coordinator.presentation.report_formatter import markdown
 
     assert question["question"] in markdown(original)
     assert not calls

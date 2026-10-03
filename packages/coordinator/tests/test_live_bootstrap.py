@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from trace_coordinator.adapters.fixtures import FixtureModel, FixtureTool
 from trace_coordinator.bootstrap import create_coordinator
-from trace_coordinator.errors import ToolFailure
-from trace_coordinator.models import AnalysisRequest, Evidence, ToolResult
+from trace_coordinator.domain.errors import ToolFailure
+from trace_coordinator.domain.models import AnalysisRequest, Evidence, ToolResult
+from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel, FixtureTool
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = json.loads((ROOT / "examples/voucher-fixture.json").read_text())
@@ -20,7 +20,13 @@ FIXTURE = json.loads((ROOT / "examples/voucher-fixture.json").read_text())
 def test_live_composition_routes_entry_captures_and_cleans_up(
     tmp_path, monkeypatch, browser_failure, change_provider, verification_enabled
 ):
-    from trace_coordinator.adapters import browser, github, knowledge, langchain_model, local_git
+    from trace_coordinator.infrastructure.adapters import (
+        browser,
+        github,
+        knowledge,
+        langchain_model,
+        local_git,
+    )
 
     closed, calls = [], []
 

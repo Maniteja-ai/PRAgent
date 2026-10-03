@@ -3,15 +3,15 @@ from pathlib import Path
 
 import jsonschema
 
-from trace_coordinator.artifacts import save_artifact
-from trace_coordinator.campaign import CampaignConfig, campaign_schema, run_campaign
-from trace_coordinator.evaluation import (
+from trace_coordinator.evaluation.campaign import CampaignConfig, campaign_schema, run_campaign
+from trace_coordinator.evaluation.coordinator import (
     GoldenDataset,
     dataset_schema,
     evaluate_dataset,
     evaluate_stability,
 )
-from trace_coordinator.readiness import ProductionGateConfig, gate_schema, run_gate
+from trace_coordinator.evaluation.readiness import ProductionGateConfig, gate_schema, run_gate
+from trace_coordinator.infrastructure.artifacts import save_artifact
 
 ROOT = Path(__file__).resolve().parents[1]
 

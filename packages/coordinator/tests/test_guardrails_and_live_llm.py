@@ -4,17 +4,17 @@ from pathlib import Path
 import jsonschema
 import pytest
 
+from trace_coordinator.application.runtime import ToolRegistry, ToolRuntime
 from trace_coordinator.config import CallLimits
-from trace_coordinator.errors import FailureCode, ToolFailure
-from trace_coordinator.guardrails import GuardrailEngine
-from trace_coordinator.ledger import CallLedger
-from trace_coordinator.llm_evaluation import (
+from trace_coordinator.domain.errors import FailureCode, ToolFailure
+from trace_coordinator.domain.models import Decision, Finding, ToolContext
+from trace_coordinator.evaluation.llm import (
     LiveLLMEvaluationConfig,
     evaluate_live_llm,
     live_llm_schema,
 )
-from trace_coordinator.models import Decision, Finding, ToolContext
-from trace_coordinator.runtime import ToolRegistry, ToolRuntime
+from trace_coordinator.infrastructure.ledger import CallLedger
+from trace_coordinator.security.guardrails import GuardrailEngine
 
 ROOT = Path(__file__).resolve().parents[1]
 

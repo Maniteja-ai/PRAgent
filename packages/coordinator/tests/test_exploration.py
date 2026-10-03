@@ -3,12 +3,12 @@ import json
 import pytest
 
 from trace_coordinator import AnalysisRequest, CallLimits, Coordinator
-from trace_coordinator.adapters.browser import ActionInput, NavigateInput
-from trace_coordinator.adapters.fixtures import FixtureTool
+from trace_coordinator.application.exploration import exploration_status
+from trace_coordinator.application.ui_evidence import label_in_source, source_lines, ui_index
 from trace_coordinator.config import ExplorationConfig
-from trace_coordinator.exploration import exploration_status
-from trace_coordinator.models import Decision, Evidence, ToolResult
-from trace_coordinator.ui_evidence import label_in_source, source_lines, ui_index
+from trace_coordinator.domain.models import Decision, Evidence, ToolResult
+from trace_coordinator.infrastructure.adapters.browser import ActionInput, NavigateInput
+from trace_coordinator.infrastructure.adapters.fixtures import FixtureTool
 
 
 def screen(ref, *, name="Product", fingerprint="home", previous=None):
@@ -209,7 +209,7 @@ def test_no_invented_flow_across_restart_or_environments():
 
 
 def test_exploration_report_explains_paths_and_unconfirmed_candidates():
-    from trace_coordinator.cli import markdown
+    from trace_coordinator.presentation.report_formatter import markdown
 
     result = markdown(
         {

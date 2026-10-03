@@ -2,12 +2,12 @@ from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
-from trace_coordinator.adapters.fixtures import FixtureModel, QueryInput
+from trace_coordinator.application.runtime import ToolRegistry, ToolRuntime
 from trace_coordinator.config import CallLimits
-from trace_coordinator.errors import LimitReached, RunMismatch, ToolFailure, UncertainExecution
-from trace_coordinator.ledger import CallLedger
-from trace_coordinator.models import Evidence, ToolContext, ToolResult
-from trace_coordinator.runtime import ToolRegistry, ToolRuntime
+from trace_coordinator.domain.errors import LimitReached, RunMismatch, ToolFailure, UncertainExecution
+from trace_coordinator.domain.models import Evidence, ToolContext, ToolResult
+from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel, QueryInput
+from trace_coordinator.infrastructure.ledger import CallLedger
 
 
 class CountingTool:

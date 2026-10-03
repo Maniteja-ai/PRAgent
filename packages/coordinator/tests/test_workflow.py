@@ -11,11 +11,11 @@ from trace_coordinator import (
     HumanReviewPolicy,
     ReviewResponse,
 )
-from trace_coordinator.adapters.attestation import AttestationInput
-from trace_coordinator.adapters.fixtures import FixtureModel, FixtureTool
 from trace_coordinator.bootstrap import create_coordinator
-from trace_coordinator.errors import RunMismatch, ToolFailure
-from trace_coordinator.models import Evidence, ToolResult
+from trace_coordinator.domain.errors import RunMismatch, ToolFailure
+from trace_coordinator.domain.models import Evidence, ToolResult
+from trace_coordinator.infrastructure.adapters.attestation import AttestationInput
+from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel, FixtureTool
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = json.loads((ROOT / "examples/voucher-fixture.json").read_text(encoding="utf-8"))
@@ -336,7 +336,7 @@ def test_bootstrap_resolves_paths_against_config(tmp_path, monkeypatch):
 
 
 def test_crash_after_tool_completion_before_graph_checkpoint_uses_cached_result(tmp_path, monkeypatch):
-    from trace_coordinator.runtime import ToolRuntime
+    from trace_coordinator.application.runtime import ToolRuntime
 
     class SimulatedCrash(BaseException):
         pass

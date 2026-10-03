@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from trace_coordinator.real_pr_evaluation import (
+from trace_coordinator.evaluation.real_pr import (
     RealPrDataset,
     ReviewProvenance,
     evaluate_real_prs,

@@ -7,7 +7,7 @@ import pytest
 from pydantic import ValidationError
 
 from trace_coordinator.config import CallLimits, CoordinatorConfig, schema
-from trace_coordinator.models import Decision
+from trace_coordinator.domain.models import Decision
 
 ROOT = Path(__file__).resolve().parents[1]
 

@@ -4,11 +4,11 @@ import json
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
 
-from trace_coordinator.adapters.fixtures import FixtureModel, FixtureTool
-from trace_coordinator.api import Coordinator
-from trace_coordinator.artifact_security import artifact_security
+from trace_coordinator.application.coordinator import Coordinator
 from trace_coordinator.config import load_config
-from trace_coordinator.observability import CoordinatorObservability
+from trace_coordinator.infrastructure.adapters.fixtures import FixtureModel, FixtureTool
+from trace_coordinator.infrastructure.observability import CoordinatorObservability
+from trace_coordinator.security.artifact_security import artifact_security
 
 
 @contextmanager
@@ -27,17 +27,17 @@ def create_coordinator(config_path: Path):
             data = json.loads((path.parent / config.tools.file).read_text(encoding="utf-8"))
             tools = [FixtureTool(name, result) for name, result in data["tools"].items()]
         else:
-            from trace_coordinator.adapters.knowledge import KnowledgeTool
-            from trace_coordinator.application import load_application
+            from trace_coordinator.domain.project import load_application
+            from trace_coordinator.infrastructure.adapters.knowledge import KnowledgeTool
 
             application = load_application(path.parent / config.tools.application_file)
             artifact_root = state_root
             if application.change_source.provider == "local_git":
-                from trace_coordinator.adapters.local_git import LocalGitDiffTool
+                from trace_coordinator.infrastructure.adapters.local_git import LocalGitDiffTool
 
                 changes = LocalGitDiffTool(application, artifact_root)
             else:
-                from trace_coordinator.adapters.github import GitHubDiffTool
+                from trace_coordinator.infrastructure.adapters.github import GitHubDiffTool
 
                 changes = GitHubDiffTool(application, artifact_root)
                 stack.callback(changes.close)
@@ -52,13 +52,13 @@ def create_coordinator(config_path: Path):
                 deployment.attestation is not None
                 for deployment in (application.baseline, application.patched)
             ):
-                from trace_coordinator.adapters.attestation import DeploymentAttestationTool
+                from trace_coordinator.infrastructure.adapters.attestation import DeploymentAttestationTool
 
                 attestation = DeploymentAttestationTool(application)
                 stack.callback(attestation.close)
                 tools.append(attestation)
             if application.browser.enabled:
-                from trace_coordinator.adapters.browser import BrowserSession, BrowserTool
+                from trace_coordinator.infrastructure.adapters.browser import BrowserSession, BrowserTool
 
                 session = BrowserSession(application, artifact_root)
                 stack.callback(session.close)
@@ -71,8 +71,8 @@ def create_coordinator(config_path: Path):
                 raise ValueError(
                     "JSON verification requires live tools; inject synthetic scenarios through the Python API for offline tests"
                 )
-            from trace_coordinator.adapters.voucher_verification import VoucherScenario
-            from trace_coordinator.verification import load_verification
+            from trace_coordinator.application.verification import load_verification
+            from trace_coordinator.infrastructure.adapters.voucher_verification import VoucherScenario
 
             for binding in config.verification.scenarios:
                 selected = load_verification(path.parent / binding.config_file)
@@ -86,7 +86,7 @@ def create_coordinator(config_path: Path):
             model_data = json.loads((path.parent / config.model.file).read_text(encoding="utf-8"))
             model = FixtureModel(model_data["decisions"])
         else:
-            from trace_coordinator.adapters.langchain_model import LangChainModel
+            from trace_coordinator.infrastructure.adapters.langchain_model import LangChainModel
 
             model = LangChainModel(config.model)
             stack.callback(model.close)

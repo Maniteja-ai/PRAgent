@@ -27,13 +27,22 @@ webhook = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "PyJWT[crypto]>=2.10,<3"]
 trace-impact = { path = "../..", editable = true }
 
 [dependency-groups]
-dev = ["pytest>=8,<10", "pytest-cov>=7,<8", "jsonschema>=4,<5", "ruff>=0.12,<1"]
+dev = [
+  "pytest>=8,<10",
+  "pytest-cov>=7,<8",
+  "jsonschema>=4,<5",
+  "ruff>=0.12,<1",
+  "trio>=0.30,<1",
+]
 
 [project.scripts]
-trace-coordinator = "trace_coordinator.cli:main"
+trace-coordinator = "trace_coordinator.presentation.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/trace_coordinator"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/trace_coordinator", "pyproject.toml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

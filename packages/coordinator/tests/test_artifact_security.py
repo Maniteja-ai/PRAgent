@@ -2,14 +2,14 @@ import json
 
 import pytest
 
-from trace_coordinator.artifact_security import (
+from trace_coordinator.infrastructure.artifacts import save_artifact
+from trace_coordinator.security.artifact_security import (
     ArtifactScan,
     ArtifactSecurityConfig,
     GoogleArtifactScanner,
     artifact_security,
     build_scanner,
 )
-from trace_coordinator.artifacts import save_artifact
 
 
 def test_baseline_dlp_blocks_sensitive_artifact_and_audits_only_categories(tmp_path):

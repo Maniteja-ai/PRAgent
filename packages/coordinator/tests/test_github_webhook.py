@@ -9,7 +9,7 @@ from types import SimpleNamespace
 import httpx
 import pytest
 
-from trace_coordinator.github_webhook import (
+from trace_coordinator.infrastructure.github_webhook import (
     GitHubAppTokenProvider,
     GitHubCommentPublisher,
     WebhookConfig,

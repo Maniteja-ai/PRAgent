@@ -5,10 +5,14 @@ from types import SimpleNamespace
 
 import pytest
 
-from trace_coordinator.adapters.langchain_model import LangChainModel, ModelDecision, classify_failure
-from trace_coordinator.cli import main
 from trace_coordinator.config import GeminiProvider, OpenAIProvider
-from trace_coordinator.errors import FailureCode, ToolFailure
+from trace_coordinator.domain.errors import FailureCode, ToolFailure
+from trace_coordinator.infrastructure.adapters.langchain_model import (
+    LangChainModel,
+    ModelDecision,
+    classify_failure,
+)
+from trace_coordinator.presentation.cli import main
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -142,10 +146,10 @@ def test_structured_parser_failure_is_not_a_transient_provider_error():
 
 @pytest.mark.parametrize("sdk_parser", [False, True])
 def test_opt_in_invalid_output_retry_is_counted_and_strict(model_stubs, monkeypatch, tmp_path, sdk_parser):
+    from trace_coordinator.application.runtime import ToolRegistry, ToolRuntime
     from trace_coordinator.config import CallLimits
-    from trace_coordinator.ledger import CallLedger
-    from trace_coordinator.models import ToolContext
-    from trace_coordinator.runtime import ToolRegistry, ToolRuntime
+    from trace_coordinator.domain.models import ToolContext
+    from trace_coordinator.infrastructure.ledger import CallLedger
 
     adapter = LangChainModel(
         GeminiProvider(

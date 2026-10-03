@@ -8,25 +8,25 @@ import jsonschema
 import pytest
 from pydantic import ValidationError
 
-from trace_coordinator.adapters.voucher_verification import (
-    EmptyInput,
-    FixtureInput,
-    FixtureTool,
-    ProbeInput,
-    SaleorFixtures,
-)
-from trace_coordinator.application import ApplicationConfig
-from trace_coordinator.config import CallLimits
-from trace_coordinator.errors import RunMismatch, ToolFailure, UncertainExecution
-from trace_coordinator.ledger import CallLedger
-from trace_coordinator.models import Evidence, ToolContext, ToolResult
-from trace_coordinator.verification import (
+from trace_coordinator.application.verification import (
     VoucherVerificationConfig,
     VoucherVerifier,
     run_verification,
     validate_oracle,
     verification_markdown,
 )
+from trace_coordinator.config import CallLimits
+from trace_coordinator.domain.errors import RunMismatch, ToolFailure, UncertainExecution
+from trace_coordinator.domain.models import Evidence, ToolContext, ToolResult
+from trace_coordinator.domain.project import ApplicationConfig
+from trace_coordinator.infrastructure.adapters.voucher_verification import (
+    EmptyInput,
+    FixtureInput,
+    FixtureTool,
+    ProbeInput,
+    SaleorFixtures,
+)
+from trace_coordinator.infrastructure.ledger import CallLedger
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -107,7 +107,7 @@ class World:
         return self.evidence("browser", dict(elements=elements))
 
     def tools(self):
-        from trace_coordinator.adapters.browser import ActionInput, NavigateInput
+        from trace_coordinator.infrastructure.adapters.browser import ActionInput, NavigateInput
 
         world = self
 
@@ -227,7 +227,7 @@ def test_oracle_rejects_wrong_percentage_currency_and_line_set(inputs):
 
 
 def test_saved_run_replays_report_not_side_effects_and_rejects_changed_config(inputs, tmp_path, monkeypatch):
-    from trace_coordinator.adapters import voucher_verification
+    from trace_coordinator.infrastructure.adapters import voucher_verification
 
     config, app = inputs
     Path(config.application_file).write_text(app.model_dump_json())
@@ -338,8 +338,8 @@ def test_json_schema_is_current():
 
 
 def test_verification_cli(inputs, tmp_path, monkeypatch, capsys):
-    from trace_coordinator import verification
-    from trace_coordinator.cli import main
+    from trace_coordinator.application import verification
+    from trace_coordinator.presentation.cli import main
 
     result, _ = execute(inputs, tmp_path)
     monkeypatch.setattr(verification, "run_verification", lambda *_: result)

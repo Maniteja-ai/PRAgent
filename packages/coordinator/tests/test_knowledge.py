@@ -5,11 +5,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from trace_coordinator.adapters.fixtures import QueryInput
-from trace_coordinator.adapters.knowledge import KnowledgeTool
-from trace_coordinator.application import ApplicationConfig
-from trace_coordinator.errors import ToolFailure
-from trace_coordinator.models import ChangeSet, FileChange, ToolContext
+from trace_coordinator.domain.errors import ToolFailure
+from trace_coordinator.domain.models import ChangeSet, FileChange, ToolContext
+from trace_coordinator.domain.project import ApplicationConfig
+from trace_coordinator.infrastructure.adapters.fixtures import QueryInput
+from trace_coordinator.infrastructure.adapters.knowledge import KnowledgeTool
 
 
 @pytest.fixture
@@ -225,7 +225,7 @@ def test_execute_uses_configured_vector_path_disables_retries_and_closes(
 ):
     import trace_impact
 
-    from trace_coordinator.models import ToolResult
+    from trace_coordinator.domain.models import ToolResult
 
     app, context = knowledge
     seen = []

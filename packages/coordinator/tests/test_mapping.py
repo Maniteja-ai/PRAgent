@@ -8,11 +8,16 @@ from types import SimpleNamespace
 import jsonschema
 import pytest
 
-from trace_coordinator.adapters import knowledge
-from trace_coordinator.application import ApplicationConfig
-from trace_coordinator.artifacts import save_artifact
-from trace_coordinator.mapping import MappingConfig, project_snapshot, validate_mappings, verified_bytes
-from trace_coordinator.ui_evidence import ui_index
+from trace_coordinator.application.mapping import (
+    MappingConfig,
+    project_snapshot,
+    validate_mappings,
+    verified_bytes,
+)
+from trace_coordinator.application.ui_evidence import ui_index
+from trace_coordinator.domain.project import ApplicationConfig
+from trace_coordinator.infrastructure.adapters import knowledge
+from trace_coordinator.infrastructure.artifacts import save_artifact
 
 ROOT = Path(__file__).resolve().parents[1]
 REV = "b" * 40
@@ -265,7 +270,11 @@ def run_jsx(source, **changes):
     )
     payload.update(changes)
     return subprocess.run(
-        ["node", str(ROOT / "src/trace_coordinator/adapters/validate_jsx.cjs"), str(compiler)],
+        [
+            "node",
+            str(ROOT / "src/trace_coordinator/infrastructure/adapters/validate_jsx.cjs"),
+            str(compiler),
+        ],
         input=json.dumps(payload).encode(),
         capture_output=True,
         timeout=30,
@@ -329,7 +338,7 @@ def test_jsx_wrapper_must_forward_identity_props(wrapper, succeeds):
 
 
 def test_inspector_checks_actual_patch_source_and_parser(batch, monkeypatch):
-    from trace_coordinator.adapters import git_changes
+    from trace_coordinator.infrastructure.adapters import git_changes
 
     report, config, app, _ = batch
     monkeypatch.setattr(
@@ -426,7 +435,7 @@ def test_publication_receipt_only_after_verified_readback(batch, monkeypatch, fa
 
 
 def test_map_ui_cli_preparation_and_publish(monkeypatch, capsys, tmp_path):
-    from trace_coordinator.cli import main
+    from trace_coordinator.presentation.cli import main
 
     monkeypatch.setattr(
         knowledge, "prepare_ui_snapshot", lambda _: (None, None, None, {"status": "PREPARED"})
