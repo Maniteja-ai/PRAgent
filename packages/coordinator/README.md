@@ -283,7 +283,9 @@ Current evidence:
 - [100-run coordinator stability](artifacts/coordinator-stability-01/report.md): 100/100, one output;
 - [final evaluation campaign](artifacts/final-evaluation-01/report.md): 17/17 checks passed with stated limits;
 - [production release gate](artifacts/production-readiness-04/report.md): `READY`;
-- test suite: **256 passed**, **90.15% combined statement/branch coverage**;
+- current test suite: **258 passed**; Python 3.14/Windows measured **90.11%** combined
+  statement/branch coverage, while Python 3.12/Linux measured **87.40%** because Playwright
+  calls run in a worker thread; CI keeps every module in scope and enforces the portable **87%** floor;
 - replay: the same run ID produced a byte-identical report with no new calls;
 - Ruff lint and formatting checks passed.
 
