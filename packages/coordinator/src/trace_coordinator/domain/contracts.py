@@ -54,6 +54,7 @@ class ObservedElementPayload(TypedDict, total=False):
     checked: bool
     filled: bool
     test_id: str
+    impact_id: str
 
 
 class ScreenPayload(TypedDict, total=False):

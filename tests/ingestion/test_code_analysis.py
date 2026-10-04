@@ -11,7 +11,9 @@ from tests.support.graph import ROOT, MemoryReader
 from trace_impact import create_pipeline
 from trace_impact.ingestion.code.config import CodeGraphConfig, TypeScriptOptions, code_schema
 from trace_impact.retrieval.graph.service import ImpactRetriever
+from trace_impact.shared.errors import SourceReadError
 from trace_impact.shared.graph_models import ImpactQuery
+from trace_impact.shared.stage_config import StageConfig
 
 
 def test_real_compiler_resolves_aliases_shadowing_and_ignores_dirty_worktree(tmp_path):
@@ -82,3 +84,70 @@ def test_options_are_bounded():
         TypeScriptOptions(timeout_seconds=0)
     with pytest.raises(ValidationError):
         ImpactQuery(scope={"project_id": "p", "revision": "v", "max_dependency_hops": 100})
+
+
+def test_compiler_extracts_static_impact_ids_on_owning_component(tmp_path):
+    repo, revision = typescript_repo(
+        tmp_path,
+        'export function Summary() { return <button data-impact-id="checkout.discount.apply">Apply</button>; }\n',
+    )
+    with create_pipeline() as app:
+        graph = app.components.code_analyzers.resolve(StageConfig(provider="typescript")).analyze(
+            CodeGraphConfig(project_id="unit", repository_path=str(repo), revision=revision)
+        )
+    summary = next(node for node in graph.nodes if node.name == "Summary")
+    assert summary.properties["impact_ids"] == ["checkout.discount.apply"]
+    assert any("Stable UI tags: 1" in diagnostic for diagnostic in graph.diagnostics)
+
+
+@pytest.mark.parametrize(
+    ("source", "message"),
+    [
+        (
+            'const impactId = "checkout.discount.apply"; export function Summary() { return <button data-impact-id={impactId}>Apply</button>; }\n',
+            "must be a static string",
+        ),
+        (
+            'export function Summary() { return <><button data-impact-id="checkout.discount.apply">A</button><button data-impact-id="checkout.discount.apply">B</button></>; }\n',
+            "duplicate data-impact-id",
+        ),
+    ],
+)
+def test_compiler_rejects_unprovable_impact_ids(tmp_path, source, message):
+    repo, revision = typescript_repo(tmp_path, source)
+    analyzer = create_pipeline()
+    with analyzer as app, pytest.raises(SourceReadError, match=message):
+        app.components.code_analyzers.resolve(StageConfig(provider="typescript")).analyze(
+            CodeGraphConfig(project_id="unit", repository_path=str(repo), revision=revision)
+        )
+
+
+def typescript_repo(tmp_path, source):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "src").mkdir()
+    (repo / "tsconfig.json").write_text(
+        json.dumps({"compilerOptions": {"jsx": "preserve"}, "include": ["src/**/*"]})
+    )
+    (repo / "src/summary.tsx").write_text(source)
+    subprocess.run(["git", "-C", str(repo), "init", "-q"], check=True)
+    subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(repo),
+            "-c",
+            "user.name=Test",
+            "-c",
+            "user.email=test@example.invalid",
+            "commit",
+            "-qm",
+            "fixture",
+        ],
+        check=True,
+    )
+    revision = subprocess.run(
+        ["git", "-C", str(repo), "rev-parse", "HEAD"], capture_output=True, check=True, text=True
+    ).stdout.strip()
+    return repo, revision

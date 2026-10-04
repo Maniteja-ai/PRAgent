@@ -21,7 +21,7 @@ PAGE = b"""<!DOCTYPE html><html><body><h1>Checkout</h1>
 <label>Voucher code<input id="code" placeholder="Voucher code"></label>
 <label>Shipping<select aria-label="Shipping"><option>Standard</option><option>Express</option></select></label>
 <input aria-label="Private field">
-<button onclick="document.querySelector('#total').textContent='9'">Apply</button>
+<button data-impact-id="checkout.discount.apply" onclick="document.querySelector('#total').textContent='9'">Apply</button>
 <button onclick="document.querySelector('#total').textContent='ORDER PLACED'">Place order</button>
 <button data-testid="CartToggle" onclick="this.textContent='Cart opened'">1 item in cart</button>
 <p id="total">10</p><a href="https://outside.example/">External</a>
@@ -228,6 +228,14 @@ def test_live_local_capture_and_single_action(browser):
     assert Path(result.metadata["screenshot"]["path"]).is_file()
     transition = json.loads(Path(result.metadata["transition"]["path"]).read_text(encoding="utf-8"))
     assert transition["from"] == first.id and transition["to"] == result.id
+
+
+def test_capture_preserves_stable_impact_id_in_json_and_sanitized_dom(browser):
+    observed = navigate(browser)
+    apply = element(observed, "Apply")
+    assert apply["impact_id"] == "checkout.discount.apply"
+    dom = Path(observed.metadata["dom"]["path"]).read_text(encoding="utf-8")
+    assert 'data-impact-id="checkout.discount.apply"' in dom
 
 
 def test_disallowed_button_and_external_link_do_not_execute(browser):

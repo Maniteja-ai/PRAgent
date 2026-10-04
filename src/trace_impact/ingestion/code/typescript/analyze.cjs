@@ -38,7 +38,9 @@ const program = ts.createProgram(roots, options, host);
 if (program.getSyntacticDiagnostics().length) throw new Error('Source syntax errors');
 const checker = program.getTypeChecker();
 const sources = program.getSourceFiles().filter(s => files.has(canonical(s.fileName)) && /\.(tsx?|jsx?)$/.test(s.fileName));
-const nodes = [], edges = new Map(), declarations = new Map(), modules = new Map();
+const nodes = [], nodeById = new Map(), edges = new Map(), declarations = new Map(), modules = new Map();
+const impactDeclarations = new Map();
+const impactPattern = /^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/;
 const relative = file => path.relative('/repo', canonical(file));
 function edge(source, target, type, properties = {}) {
   if (source === target) return;
@@ -47,8 +49,9 @@ function edge(source, target, type, properties = {}) {
 }
 for (const source of sources) {
   const file = relative(source.fileName), fileID = `file:${file}`, moduleID = `${file}#module`;
-  nodes.push({id: fileID, kind: 'CodeFile', name: file, properties: {path: file}});
-  nodes.push({id: moduleID, kind: 'CodeSymbol', name: '<module>', properties: {path: file, start_line: 1, end_line: source.getLineAndCharacterOfPosition(source.end).line + 1}});
+  const fileNode = {id: fileID, kind: 'CodeFile', name: file, properties: {path: file}};
+  const moduleNode = {id: moduleID, kind: 'CodeSymbol', name: '<module>', properties: {path: file, start_line: 1, end_line: source.getLineAndCharacterOfPosition(source.end).line + 1}};
+  nodes.push(fileNode, moduleNode); nodeById.set(fileID, fileNode); nodeById.set(moduleID, moduleNode);
   modules.set(canonical(source.fileName), moduleID);
   declarations.set(source, moduleID);
   edge(fileID, moduleID, 'DECLARES');
@@ -57,10 +60,11 @@ for (const source of sources) {
     if (eligible && node.name && ts.isIdentifier(node.name)) {
       const start = node.getStart(source), id = `${file}#${start}:${node.name.text}`;
       declarations.set(node, id);
-      nodes.push({id, kind: 'CodeSymbol', name: node.name.text, properties: {
+      const symbolNode = {id, kind: 'CodeSymbol', name: node.name.text, properties: {
         path: file, start_line: source.getLineAndCharacterOfPosition(start).line + 1,
         end_line: source.getLineAndCharacterOfPosition(node.end).line + 1, declaration_kind: ts.SyntaxKind[node.kind],
-      }});
+      }};
+      nodes.push(symbolNode); nodeById.set(id, symbolNode);
       edge(fileID, id, 'DECLARES');
     }
     ts.forEachChild(node, collect);
@@ -72,6 +76,25 @@ for (const source of sources) {
   function visit(node, owner, typeContext = false) {
     owner = declarations.get(node) || owner;
     typeContext = typeContext || ts.isTypeNode(node);
+    if (ts.isJsxAttribute(node) && node.name.getText(source) === 'data-impact-id') {
+      const initializer = node.initializer;
+      let value;
+      if (initializer && ts.isStringLiteral(initializer)) value = initializer.text;
+      else if (initializer && ts.isJsxExpression(initializer) && initializer.expression &&
+        (ts.isStringLiteral(initializer.expression) || ts.isNoSubstitutionTemplateLiteral(initializer.expression))) {
+        value = initializer.expression.text;
+      } else {
+        throw new Error(`IMPACT_TAG_ERROR: data-impact-id must be a static string at ${relative(source.fileName)}:${source.getLineAndCharacterOfPosition(node.getStart()).line + 1}`);
+      }
+      if (!impactPattern.test(value)) throw new Error(`IMPACT_TAG_ERROR: invalid data-impact-id '${value}'`);
+      const previous = impactDeclarations.get(value);
+      const declaration = {owner, path: relative(source.fileName), line: source.getLineAndCharacterOfPosition(node.getStart()).line + 1};
+      if (previous) throw new Error(`IMPACT_TAG_ERROR: duplicate data-impact-id '${value}' at ${previous.path}:${previous.line} and ${declaration.path}:${declaration.line}`);
+      impactDeclarations.set(value, declaration);
+      const ownerNode = nodeById.get(owner);
+      if (!ownerNode) throw new Error(`IMPACT_TAG_ERROR: no source owner for data-impact-id '${value}'`);
+      ownerNode.properties.impact_ids = [...(ownerNode.properties.impact_ids || []), value].sort();
+    }
     if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
       if (node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
         const spec = node.moduleSpecifier.text;
@@ -99,6 +122,7 @@ for (const source of sources) {
 process.stdout.write(JSON.stringify({
   nodes: nodes.sort((a,b) => a.id.localeCompare(b.id)), edges: [...edges.values()].sort((a,b) => a.id.localeCompare(b.id)),
   diagnostics: [`Compiler: TypeScript ${ts.version}; static references only, not exhaustive runtime dependencies.`,
-    'External packages, computed dynamic imports, reflection and UI/flow mappings are not analyzed.',
+    `Stable UI tags: ${impactDeclarations.size} unique static data-impact-id declarations.`,
+    'External packages, computed dynamic imports and reflection are not analyzed.',
     ...[...unresolved].sort().map(s => `Unresolved or external module: ${s}`)],
 }));

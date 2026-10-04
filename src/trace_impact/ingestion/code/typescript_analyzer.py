@@ -68,9 +68,20 @@ class TypeScriptAnalyzer:
                 input=json.dumps(payload).encode(),
                 capture_output=True,
                 timeout=self.options.timeout_seconds,
-                check=True,
+                check=False,
             )
+            if result.returncode:
+                error = result.stderr.decode("utf-8", errors="replace")
+                marker = "IMPACT_TAG_ERROR:"
+                if marker in error:
+                    detail = error.split(marker, 1)[1].splitlines()[0].strip()
+                    raise SourceReadError(f"Invalid stable UI tag: {detail}")
+                raise SourceReadError(
+                    "TypeScript analysis failed; install the pinned helper dependencies and check syntax/configuration"
+                )
             extracted = json.loads(result.stdout)
+        except SourceReadError:
+            raise
         except (OSError, subprocess.SubprocessError, ValueError):
             raise SourceReadError(
                 "TypeScript analysis failed; install the pinned helper dependencies and check syntax/configuration"

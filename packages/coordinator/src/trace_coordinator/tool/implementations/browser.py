@@ -30,7 +30,8 @@ DESCRIBE = """el => ({tag:el.tagName.toLowerCase(), type:el.getAttribute('type')
     name:el.getAttribute('aria-label') || (el.labels && el.labels[0] && el.labels[0].innerText) ||
       el.getAttribute('placeholder') || el.innerText || el.getAttribute('title') || '',
     href:el.getAttribute('href')||'', disabled:!!el.disabled,
-    checked:!!el.checked, filled:!!el.value, test_id:el.getAttribute('data-testid')||''})"""
+    checked:!!el.checked, filled:!!el.value, test_id:el.getAttribute('data-testid')||'',
+    impact_id:el.getAttribute('data-impact-id')||''})"""
 _ELEMENT_ADAPTER = TypeAdapter(ObservedElementPayload)
 
 
@@ -299,7 +300,7 @@ class BrowserSession:
         dom = page.evaluate("""() => {const root=document.documentElement.cloneNode(true);
             root.querySelectorAll('script,style,input[type=hidden],noscript').forEach(e=>e.remove());
             root.querySelectorAll('*').forEach(e=>{for(const a of [...e.attributes]) {
-                if(!['role','aria-label','aria-expanded','aria-checked','type','name','placeholder','id','class'].includes(a.name)) e.removeAttribute(a.name);
+                if(!['role','aria-label','aria-expanded','aria-checked','type','name','placeholder','id','class','data-impact-id'].includes(a.name)) e.removeAttribute(a.name);
             }}); return root.outerHTML;}""")
         if len(dom) > self.app.browser.max_dom_chars:
             raise ToolFailure("DOM exceeds capture budget; no incomplete DOM artifact accepted")
