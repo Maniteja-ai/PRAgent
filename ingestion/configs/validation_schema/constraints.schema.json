@@ -1,0 +1,105 @@
+{
+  "$defs": {
+    "FailureConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "source_error": {
+          "default": "continue",
+          "enum": [
+            "continue",
+            "stop"
+          ],
+          "title": "Source Error",
+          "type": "string"
+        }
+      },
+      "title": "FailureConfig",
+      "type": "object"
+    },
+    "LimitConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "documents": {
+          "default": 1000,
+          "minimum": 1,
+          "title": "Documents",
+          "type": "integer"
+        },
+        "code_files": {
+          "default": 10000,
+          "minimum": 1,
+          "title": "Code Files",
+          "type": "integer"
+        },
+        "ui_pages": {
+          "default": 50,
+          "minimum": 1,
+          "title": "Ui Pages",
+          "type": "integer"
+        },
+        "confirmed_mappings": {
+          "default": 10000,
+          "minimum": 1,
+          "title": "Confirmed Mappings",
+          "type": "integer"
+        }
+      },
+      "title": "LimitConfig",
+      "type": "object"
+    },
+    "RetryConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "attempts": {
+          "default": 2,
+          "maximum": 5,
+          "minimum": 0,
+          "title": "Attempts",
+          "type": "integer"
+        }
+      },
+      "title": "RetryConfig",
+      "type": "object"
+    },
+    "TimeoutConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "run_seconds": {
+          "default": 1800,
+          "minimum": 1,
+          "title": "Run Seconds",
+          "type": "integer"
+        },
+        "model_seconds": {
+          "default": 45,
+          "minimum": 1,
+          "title": "Model Seconds",
+          "type": "integer"
+        }
+      },
+      "title": "TimeoutConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "retries": {
+      "$ref": "#/$defs/RetryConfig"
+    },
+    "timeouts": {
+      "$ref": "#/$defs/TimeoutConfig"
+    },
+    "limits": {
+      "$ref": "#/$defs/LimitConfig"
+    },
+    "failures": {
+      "$ref": "#/$defs/FailureConfig"
+    },
+    "$schema": {
+      "type": "string"
+    }
+  },
+  "title": "ConstraintsConfig",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

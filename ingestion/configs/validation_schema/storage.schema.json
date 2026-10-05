@@ -1,0 +1,212 @@
+{
+  "$defs": {
+    "ArtifactStorageConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "default": "local",
+          "title": "Provider",
+          "type": "string"
+        },
+        "run_directory": {
+          "format": "path",
+          "title": "Run Directory",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_directory"
+      ],
+      "title": "ArtifactStorageConfig",
+      "type": "object"
+    },
+    "GraphStorageConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "default": "memory",
+          "title": "Provider",
+          "type": "string"
+        },
+        "connection": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Neo4jConnectionConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "publish_documents": {
+          "default": true,
+          "title": "Publish Documents",
+          "type": "boolean"
+        },
+        "publish_requirements": {
+          "default": true,
+          "title": "Publish Requirements",
+          "type": "boolean"
+        },
+        "publish_code": {
+          "default": true,
+          "title": "Publish Code",
+          "type": "boolean"
+        },
+        "publish_confirmed_mappings": {
+          "default": true,
+          "title": "Publish Confirmed Mappings",
+          "type": "boolean"
+        }
+      },
+      "title": "GraphStorageConfig",
+      "type": "object"
+    },
+    "Neo4jConnectionConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "uri_env": {
+          "minLength": 1,
+          "title": "Uri Env",
+          "type": "string"
+        },
+        "username_env": {
+          "minLength": 1,
+          "title": "Username Env",
+          "type": "string"
+        },
+        "password_env": {
+          "minLength": 1,
+          "title": "Password Env",
+          "type": "string"
+        },
+        "database_env": {
+          "minLength": 1,
+          "title": "Database Env",
+          "type": "string"
+        }
+      },
+      "required": [
+        "uri_env",
+        "username_env",
+        "password_env",
+        "database_env"
+      ],
+      "title": "Neo4jConnectionConfig",
+      "type": "object"
+    },
+    "QdrantConnectionConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "url_env": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url Env"
+        },
+        "api_key_env": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Api Key Env"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "format": "path",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "collection": {
+          "title": "Collection",
+          "type": "string"
+        },
+        "similarity": {
+          "default": "cosine",
+          "enum": [
+            "cosine",
+            "dot",
+            "euclidean"
+          ],
+          "title": "Similarity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection"
+      ],
+      "title": "QdrantConnectionConfig",
+      "type": "object"
+    },
+    "VectorStorageConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "default": "memory",
+          "title": "Provider",
+          "type": "string"
+        },
+        "connection": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/QdrantConnectionConfig"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "publish_chunks": {
+          "default": true,
+          "title": "Publish Chunks",
+          "type": "boolean"
+        }
+      },
+      "title": "VectorStorageConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "artifacts": {
+      "$ref": "#/$defs/ArtifactStorageConfig"
+    },
+    "graph": {
+      "$ref": "#/$defs/GraphStorageConfig"
+    },
+    "vector": {
+      "$ref": "#/$defs/VectorStorageConfig"
+    },
+    "$schema": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifacts",
+    "graph",
+    "vector"
+  ],
+  "title": "StorageConfig",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

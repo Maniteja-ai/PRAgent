@@ -1,0 +1,35 @@
+{
+  "dataset_id": "saleor-pr-impact-quality-v1",
+  "status": "DRAFT_PENDING_HUMAN_REVIEW",
+  "label_basis": "Expected impacts were labeled from the read-only GitHub PR #1 diff at head 1622163cffab9d5e1f3cb32647f3c7dea73d5764. The browser test scope was read from config/default/behavior.json. Review these labels before using scores as a release gate.",
+  "cases": [
+    {
+      "case_id": "saleor-pr-1-voucher-impact",
+      "run_id": "live-e2e-pr1-all-routes-20261005-0826",
+      "repository": "Maniteja-ai/storefront",
+      "pull_request": 1,
+      "head_sha": "1622163cffab9d5e1f3cb32647f3c7dea73d5764",
+      "expected_impacts": [
+        {
+          "impact_id": "apply-promo-code",
+          "statement": "The checkout summary submits a trimmed code through Saleor checkoutAddPromoCode, handles transport and GraphQL errors, and on success clears the input and requests a checkout refresh.",
+          "source_paths": ["src/checkout/views/saleor-checkout/order-summary.tsx"]
+        },
+        {
+          "impact_id": "remove-applied-voucher",
+          "statement": "When checkout data contains an applied voucher, the summary displays its code and discount name; removal calls checkoutRemovePromoCode, handles errors, and refreshes checkout after success.",
+          "source_paths": ["src/checkout/views/saleor-checkout/order-summary.tsx"]
+        },
+        {
+          "impact_id": "refresh-mobile-and-desktop-checkout",
+          "statement": "The checkout page supplies the network-only checkout refresh callback to both mobile and desktop order summaries.",
+          "source_paths": ["src/checkout/views/saleor-checkout/saleor-checkout.tsx"]
+        }
+      ],
+      "observed_behavior_scope": [
+        "The browser scenario added a product, navigated to checkout, and asserted the checkout URL, discount-code input, and Apply button were visible.",
+        "The browser scenario did not submit a voucher, verify a backend mutation, verify a rejected code, remove an applied voucher, or check recalculated totals."
+      ]
+    }
+  ]
+}

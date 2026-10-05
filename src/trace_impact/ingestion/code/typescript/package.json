@@ -1,7 +1,0 @@
-{
-  "name": "trace-impact-typescript-analyzer",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Trusted compiler helper; never executes the analyzed repository",
-  "dependencies": { "typescript": "5.3.3" }
-}

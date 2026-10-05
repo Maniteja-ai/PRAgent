@@ -1,0 +1,6 @@
+{
+  "$schema": "../validation_schema/chunking.schema.json",
+  "provider": "section",
+  "code_provider": "syntax_aware",
+  "max_chunk_chars": 1800
+}

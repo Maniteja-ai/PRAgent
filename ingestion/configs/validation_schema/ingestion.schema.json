@@ -1,0 +1,116 @@
+{
+  "$defs": {
+    "ConfigFiles": {
+      "additionalProperties": false,
+      "properties": {
+        "input": {
+          "format": "path",
+          "title": "Input",
+          "type": "string"
+        },
+        "models": {
+          "format": "path",
+          "title": "Models",
+          "type": "string"
+        },
+        "chunking": {
+          "format": "path",
+          "title": "Chunking",
+          "type": "string"
+        },
+        "storage": {
+          "format": "path",
+          "title": "Storage",
+          "type": "string"
+        },
+        "constraints": {
+          "format": "path",
+          "title": "Constraints",
+          "type": "string"
+        },
+        "evaluation": {
+          "format": "path",
+          "title": "Evaluation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "input",
+        "models",
+        "chunking",
+        "storage",
+        "constraints",
+        "evaluation"
+      ],
+      "title": "ConfigFiles",
+      "type": "object"
+    },
+    "ProjectConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9_-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "ProjectConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "$Schema"
+    },
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "env_file": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Env File"
+    },
+    "project": {
+      "$ref": "#/$defs/ProjectConfig"
+    },
+    "files": {
+      "$ref": "#/$defs/ConfigFiles"
+    }
+  },
+  "required": [
+    "project",
+    "files"
+  ],
+  "title": "ApplicationManifest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

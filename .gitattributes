@@ -1,6 +1,0 @@
-*.pdf binary
-
-# Dataset hashes and evidence offsets are byte-based. Preserve their reviewed bytes
-# across Windows and Linux checkouts.
-evaluation/datasets/saleor-retrieval-v0.1/** -text -whitespace
-evaluation/history/**/*.xml -whitespace

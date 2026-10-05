@@ -1,0 +1,39 @@
+{
+  "$schema": "../validation_schema/models.schema.json",
+  "embedding": {
+    "enabled": true,
+    "implementation": "gemini",
+    "model": {
+      "provider": "gemini",
+      "name": "gemini-embedding-2",
+      "api_key_env": "GEMINI_API_KEY",
+      "requests_per_minute": 10
+    },
+    "batch_size": 16
+  },
+  "requirement_extraction": {
+    "enabled": true,
+    "implementation": "gemini",
+    "model": {
+      "provider": "gemini",
+      "name": "gemini-3.5-flash-lite",
+      "api_key_env": "GEMINI_API_KEY",
+      "max_output_tokens": 8192,
+      "requests_per_minute": 10
+    },
+    "max_chunks": 1000,
+    "batch_size": 10
+  },
+  "evaluation_judge": {
+    "enabled": true,
+    "implementation": "gemini",
+    "model": {
+      "provider": "gemini",
+      "name": "gemini-2.5-flash",
+      "api_key_env": "GEMINI_API_KEY",
+      "max_output_tokens": 8192,
+      "requests_per_minute": 5
+    },
+    "temperature": 0
+  }
+}

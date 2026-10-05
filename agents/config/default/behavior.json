@@ -1,0 +1,83 @@
+{
+  "provider": "playwright",
+  "scenarios": [
+    {
+      "scenario_id": "cart-page-renders",
+      "actions": [
+        {
+          "action": "open",
+          "url": "https://testsigma-saleor-patched.vercel.app/default-channel/cart"
+        }
+      ],
+      "assertions": [
+        {
+          "kind": "visible",
+          "selector": "h1"
+        },
+        {
+          "kind": "text_contains",
+          "selector": "h1",
+          "expected": "Your Shopping Cart"
+        }
+      ]
+    },
+    {
+      "scenario_id": "product-list-renders",
+      "actions": [
+        {
+          "action": "open",
+          "url": "https://testsigma-saleor-patched.vercel.app/default-channel/products"
+        }
+      ],
+      "assertions": [
+        {
+          "kind": "visible",
+          "selector": "h1"
+        },
+        {
+          "kind": "text_contains",
+          "selector": "h1",
+          "expected": "All Products"
+        }
+      ]
+    },
+    {
+      "scenario_id": "checkout-discount-controls-render",
+      "target_routes": [
+        "/checkout"
+      ],
+      "actions": [
+        {
+          "action": "open",
+          "url": "https://testsigma-saleor-patched.vercel.app/default-channel/products/apple-juice"
+        },
+        {
+          "action": "click",
+          "selector": "button:not(.shrink-0):has-text('Add to bag')"
+        },
+        {
+          "action": "click",
+          "selector": "button:has-text('item in cart, view bag')"
+        },
+        {
+          "action": "click",
+          "selector": "a:has-text('Checkout')"
+        }
+      ],
+      "assertions": [
+        {
+          "kind": "visible",
+          "selector": "input[placeholder='Discount code']:visible"
+        },
+        {
+          "kind": "visible",
+          "selector": "button:has-text('Apply'):visible"
+        },
+        {
+          "kind": "url_contains",
+          "expected": "/checkout?checkout="
+        }
+      ]
+    }
+  ]
+}

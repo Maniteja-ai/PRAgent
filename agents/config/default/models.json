@@ -1,0 +1,7 @@
+{
+  "provider": "gemini",
+  "model": "gemini-3.8-flash",
+  "api_key_env": "GEMINI_API_KEY",
+  "temperature": 0,
+  "embedding_model": "gemini-embedding-2"
+}

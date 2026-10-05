@@ -1,7 +1,0 @@
-{
-  "dataset": "../../evaluation/datasets/saleor-retrieval-v0.1",
-  "environment_file": "../../.env",
-  "case_id": "G02",
-  "repetitions": 100,
-  "output_directory": "../../artifacts/evaluation-runs/graph-stability"
-}

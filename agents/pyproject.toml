@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "testsigma-pr-impact-agent"
+version = "0.1.0"
+description = "A modular, webhook-driven pull request impact analysis agent"
+requires-python = ">=3.11,<3.15"
+dependencies = [
+  "pydantic>=2.12,<3",
+  "langgraph>=1,<2",
+  "fastapi>=0.115,<1",
+  "httpx>=0.28,<1",
+  "neo4j>=6,<7",
+  "numpy>=1.21,<2.4",
+  "playwright>=1.50,<2",
+  "python-dotenv>=1.1,<2",
+  "qdrant-client>=1.15,<2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "ruff>=0.12,<1", "mypy>=1.15,<1.20"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/impact_agent"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src/impact_agent"]

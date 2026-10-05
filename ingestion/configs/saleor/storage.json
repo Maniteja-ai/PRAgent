@@ -1,0 +1,31 @@
+{
+  "$schema": "../validation_schema/storage.schema.json",
+  "artifacts": {
+    "provider": "local",
+    "run_directory": "../../runs"
+  },
+  "graph": {
+    "provider": "neo4j",
+    "connection": {
+      "uri_env": "NEO4J_URI",
+      "username_env": "NEO4J_USERNAME",
+      "password_env": "NEO4J_PASSWORD",
+      "database_env": "NEO4J_DATABASE"
+    },
+    "publish_documents": true,
+    "publish_requirements": true,
+    "publish_code": true,
+    "publish_confirmed_mappings": true
+  },
+  "vector": {
+    "provider": "qdrant",
+    "connection": {
+      "url_env": "QDRANT_URL",
+      "api_key_env": "QDRANT_API_KEY",
+        "path": "../../.vector-store",
+        "collection": "saleor_knowledge",
+        "similarity": "cosine"
+    },
+    "publish_chunks": true
+  }
+}

@@ -1,0 +1,1 @@
+"""Stage evaluation recorder contract."""

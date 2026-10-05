@@ -1,0 +1,17 @@
+{
+  "$schema": "../validation_schema/evaluation.schema.json",
+  "recording": {
+    "enabled": true,
+    "provider": "jsonl",
+    "directory": "../../artifacts/ingestion-observations",
+    "include_payloads": false
+  },
+  "dataset_manifest": "../../evaluation/datasets/saleor-retrieval-v0.1/manifest.json",
+  "metrics": {
+    "requirement_grounding": false,
+    "vector_retrieval": true,
+    "graph_retrieval": true,
+    "mapping_precision": false,
+    "mapping_recall": false
+  }
+}

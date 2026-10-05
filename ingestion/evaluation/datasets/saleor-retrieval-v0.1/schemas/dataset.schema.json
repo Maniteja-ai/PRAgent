@@ -1,0 +1,1259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Retrieval evaluation dataset contracts",
+  "description": "Draft annotations and frozen evidence; validation does not certify semantic correctness.",
+  "$defs": {
+    "review": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "DRAFT",
+            "REVIEWED",
+            "FROZEN",
+            "DISPUTED"
+          ]
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_checked_by": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "human_reviewers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "approved": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "status",
+        "author",
+        "evidence_checked_by",
+        "human_reviewers",
+        "approved"
+      ],
+      "additionalProperties": false,
+      "title": "Review"
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "max_dependency_hops": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mapping_statuses": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "CONFIRMED"
+            ]
+          }
+        }
+      },
+      "required": [
+        "project_id",
+        "revision",
+        "max_dependency_hops",
+        "mapping_statuses"
+      ],
+      "additionalProperties": false,
+      "title": "Scope"
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "source_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "start_char": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end_char": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "start_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "offset_convention": {
+          "enum": [
+            "unicode-codepoints-half-open"
+          ]
+        }
+      },
+      "required": [
+        "source_path",
+        "source_sha256",
+        "start_char",
+        "end_char",
+        "start_line",
+        "end_line",
+        "offset_convention"
+      ],
+      "additionalProperties": false,
+      "title": "Evidence"
+    },
+    "passage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "project_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "snapshot_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_snapshot_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority": {
+          "enum": [
+            "frontend_spec",
+            "backend_contract",
+            "api_contract"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidence"
+        }
+      },
+      "required": [
+        "id",
+        "project_id",
+        "snapshot_id",
+        "source_id",
+        "source_snapshot_id",
+        "source_version",
+        "source_url",
+        "authority",
+        "text",
+        "text_sha256",
+        "evidence"
+      ],
+      "additionalProperties": false,
+      "title": "Passage"
+    },
+    "vector_input": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "minLength": 1
+        },
+        "project_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "snapshot_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "k": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "required": [
+        "query",
+        "project_id",
+        "snapshot_id",
+        "k"
+      ],
+      "additionalProperties": false,
+      "title": "Vector Input"
+    },
+    "vector_query": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "query": {
+          "type": "string",
+          "minLength": 1
+        },
+        "project_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "snapshot_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "k": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "required": [
+        "id",
+        "query",
+        "project_id",
+        "snapshot_id",
+        "k"
+      ],
+      "additionalProperties": false,
+      "title": "Vector Query"
+    },
+    "unit": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_fact": {
+          "type": "string",
+          "minLength": 1
+        },
+        "acceptable_passage_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "expected_fact",
+        "acceptable_passage_ids"
+      ],
+      "additionalProperties": false,
+      "title": "Unit"
+    },
+    "vector_case": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "split": {
+          "enum": [
+            "development"
+          ]
+        },
+        "group_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "input": {
+          "$ref": "#/$defs/vector_input"
+        },
+        "reference": {
+          "type": "object",
+          "properties": {
+            "answerability": {
+              "enum": [
+                "ANSWERABLE",
+                "UNANSWERABLE_IN_BOUNDED_CORPUS"
+              ]
+            },
+            "evidence_units": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/unit"
+              }
+            },
+            "relevance_grades": {
+              "type": "object",
+              "additionalProperties": {
+                "enum": [
+                  0,
+                  1,
+                  2
+                ]
+              }
+            },
+            "candidate_universe": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            },
+            "annotation_completeness": {
+              "enum": [
+                "EXHAUSTIVE_PROPOSED_WITHIN_30_PASSAGES"
+              ]
+            },
+            "answer_caution": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "answerability",
+            "evidence_units",
+            "relevance_grades",
+            "candidate_universe",
+            "annotation_completeness",
+            "answer_caution"
+          ],
+          "additionalProperties": false
+        },
+        "review": {
+          "$ref": "#/$defs/review"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "split",
+        "group_id",
+        "tags",
+        "input",
+        "reference",
+        "review"
+      ],
+      "additionalProperties": false,
+      "title": "Vector Case"
+    },
+    "node": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "CodeSymbol",
+            "UIElement",
+            "UserFlow",
+            "Requirement"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "project_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "properties": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "name",
+        "project_id",
+        "revision",
+        "properties"
+      ],
+      "additionalProperties": false,
+      "title": "Node"
+    },
+    "edge": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "DEPENDS_ON",
+            "RENDERS",
+            "CONTAINS",
+            "CHECKS"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "CONFIRMED",
+            "CANDIDATE",
+            "REJECTED"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "type",
+        "target",
+        "status"
+      ],
+      "additionalProperties": false,
+      "title": "Edge"
+    },
+    "graph_fixture": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "origin": {
+          "enum": [
+            "SYNTHETIC_CONTRACT_FIXTURE_NOT_SALEOR_OBSERVATIONS"
+          ]
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/edge"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "origin",
+        "nodes",
+        "edges"
+      ],
+      "additionalProperties": false,
+      "title": "Graph Fixture"
+    },
+    "graph_input": {
+      "type": "object",
+      "properties": {
+        "fixture_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation": {
+          "enum": [
+            "impact_neighborhood"
+          ]
+        },
+        "changed_symbol_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "symbol_lookup": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope": {
+          "$ref": "#/$defs/scope"
+        }
+      },
+      "required": [
+        "fixture_id",
+        "operation",
+        "changed_symbol_ids",
+        "symbol_lookup",
+        "scope"
+      ],
+      "additionalProperties": false,
+      "title": "Graph Input"
+    },
+    "graph_query": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fixture_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation": {
+          "enum": [
+            "impact_neighborhood"
+          ]
+        },
+        "changed_symbol_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "symbol_lookup": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope": {
+          "$ref": "#/$defs/scope"
+        }
+      },
+      "required": [
+        "id",
+        "fixture_id",
+        "operation",
+        "changed_symbol_ids",
+        "symbol_lookup",
+        "scope"
+      ],
+      "additionalProperties": false,
+      "title": "Graph Query"
+    },
+    "witness": {
+      "type": "object",
+      "properties": {
+        "target_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "node_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "edge_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "target_id",
+        "node_ids",
+        "edge_ids"
+      ],
+      "additionalProperties": false,
+      "title": "Witness"
+    },
+    "graph_case": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "split": {
+          "enum": [
+            "development"
+          ]
+        },
+        "group_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "input": {
+          "$ref": "#/$defs/graph_input"
+        },
+        "reference": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "OK",
+                "UNMAPPED",
+                "SYMBOL_NOT_FOUND",
+                "AMBIGUOUS_SYMBOL",
+                "UNMAPPED_WITHIN_BUDGET",
+                "NO_CHANGES",
+                "INVALID_INPUT"
+              ]
+            },
+            "ui_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "flow_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "requirement_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "witness_paths": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/witness"
+              }
+            },
+            "forbidden_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "result_semantics": {
+              "enum": [
+                "reachable_risk_candidates_not_confirmed_breakage"
+              ]
+            },
+            "annotation_completeness": {
+              "enum": [
+                "EXHAUSTIVE_SYNTHETIC_CONTRACT"
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "ui_ids",
+            "flow_ids",
+            "requirement_ids",
+            "witness_paths",
+            "forbidden_ids",
+            "result_semantics",
+            "annotation_completeness"
+          ],
+          "additionalProperties": false
+        },
+        "review": {
+          "$ref": "#/$defs/review"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "split",
+        "group_id",
+        "tags",
+        "input",
+        "reference",
+        "review"
+      ],
+      "additionalProperties": false,
+      "title": "Graph Case"
+    },
+    "combined": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "graph_case_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "vector_case_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "origin": {
+          "enum": [
+            "SYNTHETIC_ORCHESTRATION_CONTRACT_WITH_REAL_DOC_EXCERPTS"
+          ]
+        },
+        "expected_rule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "review": {
+          "$ref": "#/$defs/review"
+        }
+      },
+      "required": [
+        "id",
+        "graph_case_id",
+        "vector_case_id",
+        "origin",
+        "expected_rule",
+        "review"
+      ],
+      "additionalProperties": false,
+      "title": "Combined"
+    },
+    "failure": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fault": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_behavior": {
+          "type": "string",
+          "minLength": 1
+        },
+        "execution_status": {
+          "enum": [
+            "SPECIFIED_NOT_EXECUTED"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/review"
+        }
+      },
+      "required": [
+        "id",
+        "stage",
+        "fault",
+        "expected_behavior",
+        "execution_status",
+        "review"
+      ],
+      "additionalProperties": false,
+      "title": "Failure"
+    },
+    "isolation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_case_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scenario": {
+          "type": "string",
+          "minLength": 1
+        },
+        "index_additions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "forbidden_result_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "expected_behavior": {
+          "type": "string",
+          "minLength": 1
+        },
+        "review": {
+          "$ref": "#/$defs/review"
+        }
+      },
+      "required": [
+        "id",
+        "base_case_id",
+        "scenario",
+        "index_additions",
+        "forbidden_result_ids",
+        "expected_behavior",
+        "review"
+      ],
+      "additionalProperties": false,
+      "title": "Isolation"
+    },
+    "queue": {
+      "type": "object",
+      "properties": {
+        "item_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "suite": {
+          "enum": [
+            "vector",
+            "graph",
+            "combined",
+            "failures",
+            "isolation"
+          ]
+        },
+        "status": {
+          "enum": [
+            "PENDING_HUMAN_REVIEW",
+            "APPROVED",
+            "REJECTED",
+            "DISPUTED"
+          ]
+        },
+        "decision": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reviewer": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "item_id",
+        "suite",
+        "status",
+        "decision",
+        "reviewer",
+        "reason"
+      ],
+      "additionalProperties": false,
+      "title": "Queue"
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_snapshot_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normalized_sha256": {
+          "type": "string",
+          "minLength": 1
+        },
+        "raw_sha256": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retrieved_at": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "source_id",
+        "source_snapshot_id",
+        "version",
+        "authority",
+        "url",
+        "file",
+        "normalized_sha256",
+        "raw_sha256",
+        "retrieved_at"
+      ],
+      "additionalProperties": false,
+      "title": "Source"
+    },
+    "manifest": {
+      "type": "object",
+      "properties": {
+        "dataset_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "DRAFT_PENDING_HUMAN_REVIEW",
+            "FROZEN"
+          ]
+        },
+        "created_on": {
+          "type": "string",
+          "minLength": 1
+        },
+        "golden_release": {
+          "type": "boolean"
+        },
+        "source_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_corpus_sha256": {
+          "type": "string",
+          "minLength": 1
+        },
+        "split": {
+          "enum": [
+            "development"
+          ]
+        },
+        "held_out_cases": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "review": {
+          "$ref": "#/$defs/review"
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "isolation": {
+          "type": "object",
+          "properties": {
+            "target_input_allowlist": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "scorer_only": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "enforcement": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "target_input_allowlist",
+            "scorer_only",
+            "enforcement"
+          ],
+          "additionalProperties": false
+        },
+        "grading": {
+          "type": "object"
+        },
+        "schema_file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "file_schemas": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "files": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      },
+      "required": [
+        "dataset_id",
+        "version",
+        "status",
+        "created_on",
+        "golden_release",
+        "source_run_id",
+        "source_corpus_sha256",
+        "split",
+        "held_out_cases",
+        "review",
+        "counts",
+        "scope",
+        "isolation",
+        "grading",
+        "schema_file",
+        "file_schemas",
+        "files"
+      ],
+      "additionalProperties": false,
+      "title": "Manifest"
+    },
+    "real_seeds": {
+      "type": "object",
+      "properties": {
+        "pr_url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_commit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "head_commit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "split": {
+          "enum": [
+            "development"
+          ]
+        },
+        "contamination": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "revision": {
+                "type": "string",
+                "minLength": 1
+              },
+              "repository_path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "file": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "revision",
+              "repository_path",
+              "file",
+              "sha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "claim": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_file": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "id",
+              "claim",
+              "evidence_file"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "missing_for_real_impact_gold": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "review": {
+          "$ref": "#/$defs/review"
+        }
+      },
+      "required": [
+        "pr_url",
+        "base_commit",
+        "head_commit",
+        "split",
+        "contamination",
+        "status",
+        "files",
+        "observations",
+        "missing_for_real_impact_gold",
+        "review"
+      ],
+      "additionalProperties": false,
+      "title": "Real Seeds"
+    }
+  }
+}

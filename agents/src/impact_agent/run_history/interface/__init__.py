@@ -1,0 +1,1 @@
+"""Run history storage contract."""

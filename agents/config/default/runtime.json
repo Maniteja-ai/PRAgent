@@ -1,0 +1,10 @@
+{
+  "max_calls_per_tool": 5,
+  "max_total_calls": 30,
+  "max_reasoning_rounds": 10,
+  "retry_attempts": 2,
+  "request_timeout_seconds": 90,
+  "job_max_attempts": 3,
+  "job_lease_seconds": 300,
+  "job_poll_seconds": 2
+}

@@ -1,6 +1,0 @@
-{
-  "features": [
-    "A visitor can search the catalog by book title.",
-    "A signed-in member can renew a loan unless another member has reserved the book."
-  ]
-}

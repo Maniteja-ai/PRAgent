@@ -1,0 +1,306 @@
+{
+  "note": "Internal import paths changed; public factory, CLI commands and stored run IDs are retained. Historical evidence describes its original code version.",
+  "moves": {
+    "src/trace_impact/config.py": [
+      "src/trace_impact/shared/settings.py"
+    ],
+    "src/trace_impact/component_config.py": [
+      "src/trace_impact/shared/component_config.py"
+    ],
+    "src/trace_impact/errors.py": [
+      "src/trace_impact/shared/errors.py"
+    ],
+    "src/trace_impact/events.py": [
+      "src/trace_impact/shared/events.py"
+    ],
+    "src/trace_impact/names.py": [
+      "src/trace_impact/shared/names.py"
+    ],
+    "src/trace_impact/registry.py": [
+      "src/trace_impact/shared/registry.py"
+    ],
+    "src/trace_impact/models.py": [
+      "src/trace_impact/ingestion/config.py",
+      "src/trace_impact/ingestion/models.py",
+      "src/trace_impact/shared/contracts.py"
+    ],
+    "src/trace_impact/interfaces.py": [
+      "src/trace_impact/ingestion/interfaces.py"
+    ],
+    "src/trace_impact/metadata.py": [
+      "src/trace_impact/ingestion/metadata.py"
+    ],
+    "src/trace_impact/schema.py": [
+      "src/trace_impact/ingestion/schema.py"
+    ],
+    "src/trace_impact/_workflows.py": [
+      "src/trace_impact/ingestion/service.py"
+    ],
+    "src/trace_impact/_indexing.py": [
+      "src/trace_impact/ingestion/embeddings/indexer.py",
+      "src/trace_impact/retrieval/documents/search.py"
+    ],
+    "src/trace_impact/policies.py": [
+      "src/trace_impact/ingestion/requirements/policies.py"
+    ],
+    "src/trace_impact/prompts.py": [
+      "src/trace_impact/ingestion/requirements/prompts.py"
+    ],
+    "src/trace_impact/implementations/loaders.py": [
+      "src/trace_impact/ingestion/documents/loaders.py"
+    ],
+    "src/trace_impact/implementations/parsers.py": [
+      "src/trace_impact/ingestion/documents/parsers.py"
+    ],
+    "src/trace_impact/implementations/chunkers.py": [
+      "src/trace_impact/ingestion/documents/chunkers.py"
+    ],
+    "src/trace_impact/implementations/extractors.py": [
+      "src/trace_impact/ingestion/requirements/langchain_extractor.py"
+    ],
+    "src/trace_impact/implementations/embeddings.py": [
+      "src/trace_impact/ingestion/embeddings/langchain_embeddings.py"
+    ],
+    "src/trace_impact/implementations/gemini.py": [
+      "src/trace_impact/ingestion/requirements/gemini_extractor.py",
+      "src/trace_impact/ingestion/embeddings/gemini_embeddings.py"
+    ],
+    "src/trace_impact/implementations/gemini_interactions.py": [
+      "src/trace_impact/ingestion/requirements/gemini_interactions_extractor.py"
+    ],
+    "src/trace_impact/implementations/rate_limit.py": [
+      "src/trace_impact/shared/rate_limit.py"
+    ],
+    "src/trace_impact/implementations/storage/artifacts.py": [
+      "src/trace_impact/ingestion/storage/artifact_store.py"
+    ],
+    "src/trace_impact/implementations/storage/neo4j.py": [
+      "src/trace_impact/ingestion/storage/neo4j_requirement_store.py"
+    ],
+    "src/trace_impact/implementations/storage/qdrant.py": [
+      "src/trace_impact/ingestion/storage/qdrant_store.py"
+    ],
+    "src/trace_impact/code_graph/analyzer.py": [
+      "src/trace_impact/ingestion/code/typescript_analyzer.py"
+    ],
+    "src/trace_impact/code_graph/config.py": [
+      "src/trace_impact/ingestion/code/config.py"
+    ],
+    "src/trace_impact/code_graph/models.py": [
+      "src/trace_impact/shared/graph_models.py",
+      "src/trace_impact/ingestion/code/interfaces.py",
+      "src/trace_impact/retrieval/graph/interfaces.py"
+    ],
+    "src/trace_impact/code_graph/neo4j.py": [
+      "src/trace_impact/ingestion/storage/neo4j_code_store.py",
+      "src/trace_impact/retrieval/graph/neo4j_reader.py"
+    ],
+    "src/trace_impact/code_graph/retrieval.py": [
+      "src/trace_impact/retrieval/graph/service.py"
+    ],
+    "src/trace_impact/code_graph/typescript": [
+      "src/trace_impact/ingestion/code/typescript"
+    ],
+    "src/trace_impact/retrieval/contracts.py": [
+      "src/trace_impact/retrieval/models.py",
+      "src/trace_impact/retrieval/interfaces.py",
+      "src/trace_impact/shared/contracts.py"
+    ],
+    "src/trace_impact/retrieval/adapters.py": [
+      "src/trace_impact/retrieval/documents/adapters.py",
+      "src/trace_impact/retrieval/rerankers/identity.py",
+      "src/trace_impact/retrieval/selectors.py"
+    ],
+    "src/trace_impact/retrieval/llm.py": [
+      "src/trace_impact/retrieval/rerankers/llm.py"
+    ],
+    "src/trace_impact/retrieval/gemini.py": [
+      "src/trace_impact/retrieval/rerankers/gemini.py"
+    ],
+    "src/trace_impact/retrieval/cross_encoder.py": [
+      "src/trace_impact/retrieval/rerankers/cross_encoder.py"
+    ],
+    "src/trace_impact/retrieval/compatible.py": [
+      "src/trace_impact/retrieval/rerankers/compatible.py"
+    ],
+    "src/trace_impact/retrieval/credentials.py": [
+      "src/trace_impact/retrieval/rerankers/credentials.py"
+    ],
+    "src/trace_eval/__init__.py": [
+      "src/trace_impact/evals/__init__.py"
+    ],
+    "src/trace_eval/cli.py": [
+      "src/trace_impact/evals/cli.py"
+    ],
+    "src/trace_eval/config.py": [
+      "src/trace_impact/evals/config.py"
+    ],
+    "src/trace_eval/runner.py": [
+      "src/trace_impact/evals/scoring/retrieval.py"
+    ],
+    "evaluation/validate_dataset.py": [
+      "src/trace_impact/evals/validation/dataset.py"
+    ],
+    "examples/evaluation/run_graph_benchmark.py": [
+      "src/trace_impact/evals/runners/graph_benchmark.py"
+    ],
+    "examples/evaluation/run_graph_stability.py": [
+      "src/trace_impact/evals/runners/graph_stability.py"
+    ],
+    "examples/evaluation/run_retrieval_experiment.py": [
+      "src/trace_impact/evals/runners/retrieval_experiment.py"
+    ],
+    "examples/evaluation/run_vector_benchmark.py": [
+      "src/trace_impact/evals/runners/vector_benchmark.py"
+    ],
+    "projects/example/project.json": [
+      "configs/ingestion/example/project.json"
+    ],
+    "projects/example/spec.md": [
+      "configs/ingestion/example/spec.md"
+    ],
+    "projects/plugin-example/features.json": [
+      "configs/ingestion/plugin-example/features.json"
+    ],
+    "projects/plugin-example/project.yaml": [
+      "configs/ingestion/plugin-example/project.yaml"
+    ],
+    "projects/saleor/project.json": [
+      "configs/ingestion/saleor/project.json"
+    ],
+    "configs/code.saleor.json": [
+      "configs/ingestion/saleor/code.json"
+    ],
+    "configs/saleor.json": [
+      "examples/saleor/environment.json"
+    ],
+    "requirements/saleor.json": [
+      "examples/saleor/reference-requirements.json"
+    ],
+    "configs/retrieval.baseline.json": [
+      "configs/retrieval/baseline.json"
+    ],
+    "configs/retrieval.compatible-example.json": [
+      "configs/retrieval/compatible-example.json"
+    ],
+    "configs/retrieval.cross-encoder.json": [
+      "configs/retrieval/cross-encoder.json"
+    ],
+    "configs/retrieval.default.json": [
+      "configs/retrieval/default.json"
+    ],
+    "configs/retrieval.gemini.json": [
+      "configs/retrieval/gemini.json"
+    ],
+    "configs/retrieval.llm.json": [
+      "configs/retrieval/llm.json"
+    ],
+    "configs/impact.saleor.json": [
+      "configs/retrieval/saleor-impact.json"
+    ],
+    "configs/benchmark.vector.json": [
+      "configs/evals/vector-benchmark.json"
+    ],
+    "configs/experiment.reranking.json": [
+      "configs/evals/gemini-reranking.json"
+    ],
+    "configs/experiment.cross-encoder.json": [
+      "configs/evals/cross-encoder.json"
+    ],
+    "configs/evaluation.vector.example.json": [
+      "configs/evals/vector-example.json"
+    ],
+    "configs/evaluation.graph.example.json": [
+      "configs/evals/graph-example.json"
+    ],
+    "configs/evaluation.graph-stability.json": [
+      "configs/evals/graph-stability.json"
+    ],
+    "configs/ingestion/validation_schema/project.schema.json": [
+      "configs/ingestion/validation_schema/project.schema.json"
+    ],
+    "configs/ingestion/validation_schema/code-graph.schema.json": [
+      "configs/ingestion/validation_schema/code-graph.schema.json"
+    ],
+    "configs/retrieval/validation_schema/retrieval.schema.json": [
+      "configs/retrieval/validation_schema/retrieval.schema.json"
+    ],
+    "configs/retrieval/validation_schema/impact-query.schema.json": [
+      "configs/retrieval/validation_schema/impact-query.schema.json"
+    ],
+    "configs/evals/validation_schema/evaluation.schema.json": [
+      "configs/evals/validation_schema/evaluation.schema.json"
+    ],
+    "configs/evals/validation_schema/experiment-history.schema.json": [
+      "configs/evals/validation_schema/experiment-history.schema.json"
+    ],
+    "tests/test_architecture.py": [
+      "tests/ingestion/test_architecture.py"
+    ],
+    "tests/test_cli.py": [
+      "tests/ingestion/test_cli.py"
+    ],
+    "tests/test_code_graph.py": [
+      "tests/ingestion/test_code_analysis.py",
+      "tests/retrieval/test_graph_retrieval.py",
+      "tests/support/graph.py"
+    ],
+    "tests/test_code_graph_integration.py": [
+      "tests/integration/test_code_graph_integration.py"
+    ],
+    "tests/test_configuration.py": [
+      "tests/ingestion/test_configuration.py"
+    ],
+    "tests/test_cross_encoder.py": [
+      "tests/retrieval/test_cross_encoder.py"
+    ],
+    "tests/test_evaluation_dataset.py": [
+      "tests/evals/test_evaluation_dataset.py"
+    ],
+    "tests/test_gemini_interactions.py": [
+      "tests/ingestion/test_gemini_interactions.py"
+    ],
+    "tests/test_graph.py": [
+      "tests/ingestion/test_graph.py"
+    ],
+    "tests/test_indexing_failures.py": [
+      "tests/ingestion/test_indexing_failures.py"
+    ],
+    "tests/test_ingestion.py": [
+      "tests/ingestion/test_ingestion.py"
+    ],
+    "tests/test_ingestion_e2e.py": [
+      "tests/integration/test_ingestion_e2e.py"
+    ],
+    "tests/test_ingestion_failures.py": [
+      "tests/ingestion/test_ingestion_failures.py"
+    ],
+    "tests/test_library.py": [
+      "tests/ingestion/test_library.py"
+    ],
+    "tests/test_metadata_configuration.py": [
+      "tests/ingestion/test_metadata_configuration.py"
+    ],
+    "tests/test_providers.py": [
+      "tests/ingestion/test_providers.py"
+    ],
+    "tests/test_reranker_providers.py": [
+      "tests/retrieval/test_reranker_providers.py"
+    ],
+    "tests/test_retrieval.py": [
+      "tests/retrieval/test_retrieval.py"
+    ],
+    "tests/test_retrieval_failures.py": [
+      "tests/retrieval/test_retrieval_failures.py"
+    ],
+    "tests/test_simple_evaluation.py": [
+      "tests/evals/test_simple_evaluation.py"
+    ],
+    "docs/low-level-design.md": [
+      "docs/archive/low-level-design.md"
+    ],
+    "docs/proposed-knowledge-platform-lld.md": [
+      "docs/archive/proposed-knowledge-platform-lld.md"
+    ]
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "provider": "sqlite",
+  "database_path": "data/agent-runs.sqlite3"
+}

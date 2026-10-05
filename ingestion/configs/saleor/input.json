@@ -1,0 +1,235 @@
+{
+  "$schema": "../validation_schema/input.schema.json",
+  "repository": {
+    "url": "https://github.com/Maniteja-ai/storefront",
+    "baseline_commit": "6e55bd8b924c0341e21a85d4666ca510838ed4e5",
+    "code_roots": [
+      "src/app",
+      "src/ui",
+      "src/checkout",
+      "src/lib",
+      "src/graphql"
+    ]
+  },
+  "baseline_url": "https://testsigma-saleor-baseline.vercel.app",
+  "scope": [
+    "Product browsing and variant selection",
+    "Cart lines and quantities",
+    "Guest checkout before payment",
+    "Shipping addresses and delivery selection",
+    "Voucher application, removal and errors",
+    "Channel-dependent prices and availability"
+  ],
+  "excluded_inputs": [
+    "PR description and diff",
+    "Patched deployment",
+    "Manually curated requirements/saleor.json",
+    "Manual validation artifacts",
+    "Repository AGENTS.md and coding skills",
+    "Real payment and order completion"
+  ],
+  "documents": {
+    "allowed_hosts": [
+      "raw.githubusercontent.com",
+      "docs.saleor.io"
+    ],
+    "sources": [
+      {
+        "id": "storefront-readme",
+        "location": "https://raw.githubusercontent.com/saleor/storefront/23bc49ccd22e13e182b30daff562d5e5c9af874c/README.md",
+        "authority": "frontend_spec",
+        "version": "23bc49ccd22e13e182b30daff562d5e5c9af874c",
+        "scope": [
+          "browsing",
+          "variants",
+          "cart",
+          "checkout"
+        ],
+        "parser": "markdown",
+        "loader": "github_file",
+        "options": {
+          "repository": "saleor/storefront",
+          "revision": "23bc49ccd22e13e182b30daff562d5e5c9af874c",
+          "path": "README.md"
+        }
+      },
+      {
+        "id": "products",
+        "location": "https://docs.saleor.io/developer/products/overview",
+        "authority": "backend_contract",
+        "version": "current-online-unpinned",
+        "scope": [
+          "products",
+          "variants",
+          "availability"
+        ],
+        "parser": "html",
+        "loader": "web"
+      },
+      {
+        "id": "checkout",
+        "location": "https://docs.saleor.io/developer/checkout/overview",
+        "authority": "backend_contract",
+        "version": "current-online-unpinned",
+        "scope": [
+          "cart",
+          "checkout",
+          "channels"
+        ],
+        "parser": "html",
+        "loader": "web"
+      },
+      {
+        "id": "checkout-lifecycle",
+        "location": "https://docs.saleor.io/developer/checkout/lifecycle",
+        "authority": "backend_contract",
+        "version": "current-online-unpinned",
+        "scope": [
+          "guest-checkout",
+          "quantities"
+        ],
+        "parser": "html",
+        "loader": "web"
+      },
+      {
+        "id": "shipping-address",
+        "location": "https://docs.saleor.io/developer/checkout/address",
+        "authority": "backend_contract",
+        "version": "current-online-unpinned",
+        "scope": [
+          "addresses",
+          "shipping"
+        ],
+        "parser": "html",
+        "loader": "web"
+      },
+      {
+        "id": "vouchers",
+        "location": "https://docs.saleor.io/developer/discounts/vouchers",
+        "authority": "backend_contract",
+        "version": "current-online-unpinned",
+        "scope": [
+          "voucher-eligibility"
+        ],
+        "parser": "html",
+        "loader": "web"
+      },
+      {
+        "id": "apply-vouchers",
+        "location": "https://docs.saleor.io/developer/discounts/apply-vouchers",
+        "authority": "backend_contract",
+        "version": "current-online-unpinned",
+        "scope": [
+          "voucher-discounts"
+        ],
+        "parser": "html",
+        "loader": "web"
+      },
+      {
+        "id": "add-promo-api",
+        "location": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-add-promo-code",
+        "authority": "api_contract",
+        "version": "current-online-unpinned",
+        "scope": [
+          "voucher-application"
+        ],
+        "parser": "html",
+        "loader": "web"
+      },
+      {
+        "id": "remove-promo-api",
+        "location": "https://docs.saleor.io/api-reference/checkout/mutations/checkout-remove-promo-code",
+        "authority": "api_contract",
+        "version": "current-online-unpinned",
+        "scope": [
+          "voucher-removal"
+        ],
+        "parser": "html",
+        "loader": "web"
+      }
+    ]
+  },
+  "code": {
+    "enabled": true,
+    "repository_path": "../../work/saleor-storefront-upstream",
+    "revision": "1b5d6545d34fda38c1fb24712ed4bf3dffc684b8",
+    "ui_tagging": {
+      "enabled": true,
+      "max_dependency_hops": 12,
+      "max_routes_per_file": 10
+    },
+    "analyzer": {
+        "provider": "typescript",
+        "options": {
+          "tsconfig": "tsconfig.json",
+          "source_prefixes": [
+            "src/",
+            ".graphqlrc.ts",
+            ".lintstagedrc.js",
+            "eslint.config.mjs",
+            "global.d.ts",
+            "knip.config.ts",
+            "next.config.js",
+            "package.json",
+            "postcss.config.cjs",
+            "tailwind.config.cjs",
+            "tsconfig.json",
+            "vitest.config.ts"
+          ],
+        "max_files": 2000,
+        "max_bytes": 30000000,
+        "timeout_seconds": 90
+      }
+    }
+  },
+  "ui": {
+    "enabled": true,
+    "base_url": "https://testsigma-saleor-baseline.vercel.app",
+    "seed_paths": [
+      "/default-channel",
+      "/default-channel/products",
+      "/default-channel/cart",
+      "/checkout"
+    ],
+    "journeys": [
+      {
+        "journey_id": "checkout-with-item",
+        "actions": [
+          {
+            "action": "open",
+            "path": "/default-channel/products/apple-juice"
+          },
+          {
+            "action": "click",
+            "selector": "button:not(.shrink-0):has-text('Add to bag')"
+          },
+          {
+            "action": "click",
+            "selector": "button:has-text('item in cart, view bag')"
+          },
+          {
+            "action": "click",
+            "selector": "a:has-text('Checkout')"
+          },
+          {
+            "action": "wait_visible",
+            "selector": "input[placeholder='Discount code']:visible"
+          }
+        ]
+      }
+    ],
+    "allowed_hosts": [
+      "testsigma-saleor-baseline.vercel.app"
+    ],
+    "explorer": {
+      "provider": "browser",
+      "options": {}
+    },
+    "mapping_resolver": {
+      "provider": "nextjs_routes",
+      "options": {}
+    },
+    "max_pages": 50,
+    "max_actions_per_page": 20
+  }
+}

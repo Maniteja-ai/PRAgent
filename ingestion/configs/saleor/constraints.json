@@ -1,0 +1,19 @@
+{
+  "$schema": "../validation_schema/constraints.schema.json",
+  "retries": {
+    "attempts": 2
+  },
+  "timeouts": {
+    "run_seconds": 1800,
+    "model_seconds": 45
+  },
+  "limits": {
+    "documents": 1000,
+    "code_files": 10000,
+    "ui_pages": 50,
+    "confirmed_mappings": 10000
+  },
+  "failures": {
+    "source_error": "continue"
+  }
+}

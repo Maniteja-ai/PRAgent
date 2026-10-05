@@ -1,7 +1,0 @@
-{
-  "schema_version": 1,
-  "project_id": "saleor-storefront",
-  "repository": "saleor/storefront",
-  "pull_request": 1199,
-  "question": "Which checkout voucher UI elements, discovered user flows, and requirements could PR 1199 affect? Inspect the deployed UI where possible, distinguish potential impact from verified defects, and state any missing graph mappings or inaccessible flows."
-}

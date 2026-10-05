@@ -1,0 +1,1 @@
+"""Browser exploration contract."""

@@ -1,0 +1,331 @@
+{
+  "$defs": {
+    "CodeInputConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "repository_path": {
+          "format": "path",
+          "title": "Repository Path",
+          "type": "string"
+        },
+        "revision": {
+          "title": "Revision",
+          "type": "string"
+        },
+        "analyzer": {
+          "$ref": "#/$defs/StageConfig"
+        },
+        "ui_tagging": {
+          "$ref": "#/$defs/UiTaggingConfig"
+        }
+      },
+      "required": [
+        "repository_path",
+        "revision"
+      ],
+      "title": "CodeInputConfig",
+      "type": "object"
+    },
+    "DocumentSourceConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "location": {
+          "title": "Location",
+          "type": "string"
+        },
+        "loader": {
+          "title": "Loader",
+          "type": "string"
+        },
+        "parser": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parser"
+        },
+        "authority": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authority"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        },
+        "scope": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Scope",
+          "type": "array"
+        },
+        "options": {
+          "additionalProperties": true,
+          "title": "Options",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "location",
+        "loader"
+      ],
+      "title": "DocumentSourceConfig",
+      "type": "object"
+    },
+    "DocumentsConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_hosts": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Hosts",
+          "type": "array"
+        },
+        "sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/DocumentSourceConfig"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "metadata": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metadata"
+        }
+      },
+      "title": "DocumentsConfig",
+      "type": "object"
+    },
+    "RepositoryConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "baseline_commit": {
+          "title": "Baseline Commit",
+          "type": "string"
+        },
+        "code_roots": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Code Roots",
+          "type": "array"
+        }
+      },
+      "required": [
+        "url",
+        "baseline_commit"
+      ],
+      "title": "RepositoryConfig",
+      "type": "object"
+    },
+    "StageConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "minLength": 1,
+          "title": "Provider",
+          "type": "string"
+        },
+        "options": {
+          "additionalProperties": true,
+          "title": "Options",
+          "type": "object"
+        }
+      },
+      "required": [
+        "provider"
+      ],
+      "title": "StageConfig",
+      "type": "object"
+    },
+    "UiInputConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "base_url": {
+          "title": "Base Url",
+          "type": "string"
+        },
+        "seed_paths": {
+          "default": [
+            "/"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "title": "Seed Paths",
+          "type": "array"
+        },
+        "allowed_hosts": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Hosts",
+          "type": "array"
+        },
+        "explorer": {
+          "$ref": "#/$defs/StageConfig"
+        },
+        "mapping_resolver": {
+          "$ref": "#/$defs/StageConfig"
+        },
+        "max_pages": {
+          "default": 50,
+          "minimum": 1,
+          "title": "Max Pages",
+          "type": "integer"
+        },
+        "max_actions_per_page": {
+          "default": 20,
+          "minimum": 1,
+          "title": "Max Actions Per Page",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "base_url"
+      ],
+      "title": "UiInputConfig",
+      "type": "object"
+    },
+    "UiTaggingConfig": {
+      "additionalProperties": false,
+      "description": "Controls conservative, static code-to-route candidate tags.",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "max_dependency_hops": {
+          "default": 12,
+          "maximum": 50,
+          "minimum": 1,
+          "title": "Max Dependency Hops",
+          "type": "integer"
+        },
+        "max_routes_per_file": {
+          "default": 10,
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Max Routes Per File",
+          "type": "integer"
+        }
+      },
+      "title": "UiTaggingConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "repository": {
+      "$ref": "#/$defs/RepositoryConfig"
+    },
+    "baseline_url": {
+      "title": "Baseline Url",
+      "type": "string"
+    },
+    "scope": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Scope",
+      "type": "array"
+    },
+    "excluded_inputs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Excluded Inputs",
+      "type": "array"
+    },
+    "documents": {
+      "$ref": "#/$defs/DocumentsConfig"
+    },
+    "code": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CodeInputConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "ui": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/UiInputConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "repository",
+    "baseline_url",
+    "scope",
+    "documents"
+  ],
+  "title": "InputConfig",
+  "type": "object"
+}\n

@@ -1,7 +1,0 @@
-{
-  "$schema": "../../schemas/graph.schema.json",
-  "schema_version": 1,
-  "provider": "neo4j",
-  "baseline_snapshot_file": "../../../../artifacts/code/saleor-baseline-attested.json",
-  "patched_snapshot_file": "../../../../artifacts/code/saleor-patched-attested-ui.json"
-}

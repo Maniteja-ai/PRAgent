@@ -1,0 +1,10 @@
+{
+  "provider": "qdrant",
+  "project": "saleor-storefront",
+  "retrieval_profile": "balanced",
+  "max_evidence": 12,
+  "qdrant_url_env": null,
+  "qdrant_api_key_env": null,
+  "qdrant_path": "../ingestion/.vector-store",
+  "collection": "saleor_knowledge"
+}

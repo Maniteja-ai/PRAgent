@@ -1,0 +1,213 @@
+{
+  "$defs": {
+    "EmbeddingConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "implementation": {
+          "title": "Implementation",
+          "type": "string"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModelInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "task_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Type"
+        },
+        "batch_size": {
+          "default": 16,
+          "minimum": 1,
+          "title": "Batch Size",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "implementation"
+      ],
+      "title": "EmbeddingConfig",
+      "type": "object"
+    },
+    "EvaluationJudgeConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "implementation": {
+          "default": "gemini",
+          "title": "Implementation",
+          "type": "string"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModelInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "temperature": {
+          "default": 0,
+          "maximum": 2,
+          "minimum": 0,
+          "title": "Temperature",
+          "type": "number"
+        }
+      },
+      "title": "EvaluationJudgeConfig",
+      "type": "object"
+    },
+    "ModelInput": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "api_key_env": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Api Key Env"
+        },
+        "thinking_level": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Thinking Level"
+        },
+        "max_output_tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Output Tokens"
+        },
+        "requests_per_minute": {
+          "default": 10,
+          "minimum": 1,
+          "title": "Requests Per Minute",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "provider",
+        "name"
+      ],
+      "title": "ModelInput",
+      "type": "object"
+    },
+    "RequirementExtractionConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "implementation": {
+          "title": "Implementation",
+          "type": "string"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModelInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_chunks": {
+          "default": 1000,
+          "minimum": 1,
+          "title": "Max Chunks",
+          "type": "integer"
+        },
+        "batch_size": {
+          "default": 10,
+          "maximum": 50,
+          "minimum": 1,
+          "title": "Batch Size",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "implementation"
+      ],
+      "title": "RequirementExtractionConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "embedding": {
+      "$ref": "#/$defs/EmbeddingConfig"
+    },
+    "requirement_extraction": {
+      "$ref": "#/$defs/RequirementExtractionConfig"
+    },
+    "evaluation_judge": {
+      "$ref": "#/$defs/EvaluationJudgeConfig"
+    },
+    "$schema": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "embedding",
+    "requirement_extraction"
+  ],
+  "title": "ModelsConfig",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

@@ -1,0 +1,6 @@
+{
+  "require_evidence_for_findings": true,
+  "block_untrusted_instructions": true,
+  "redact_sensitive_values": true,
+  "max_evidence_characters": 200000
+}

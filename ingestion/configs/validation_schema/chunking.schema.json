@@ -1,0 +1,32 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "provider": {
+      "default": "section",
+      "enum": [
+        "section",
+        "fixed_size"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "code_provider": {
+      "default": "syntax_aware",
+      "enum": [
+        "section",
+        "syntax_aware"
+      ],
+      "title": "Code Provider",
+      "type": "string"
+    },
+    "max_chunk_chars": {
+      "default": 8000,
+      "maximum": 100000,
+      "minimum": 100,
+      "title": "Max Chunk Chars",
+      "type": "integer"
+    }
+  },
+  "title": "ChunkingStrategyConfig",
+  "type": "object"
+}

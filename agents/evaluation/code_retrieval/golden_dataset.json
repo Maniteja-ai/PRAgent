@@ -1,0 +1,76 @@
+{
+  "dataset_id": "saleor-code-impact-draft-v0.1",
+  "status": "DRAFT_PENDING_HUMAN_REVIEW",
+  "indexed_revision": "1b5d6545d34fda38c1fb24712ed4bf3dffc684b8",
+  "label_basis": "Direct code-file dependency edges from the pinned Saleor ingestion graph. Expected paths are consumers of the changed file (incoming IMPORTS/CALLS/RENDERS edges). These labels measure direct dependency recovery, not complete behavioral impact.",
+  "cases": [
+    {
+      "id": "cart-drawer-consumers",
+      "changed_path": "src/ui/components/cart/cart-drawer.tsx",
+      "title": "Cart drawer component change",
+      "query": "Identify the code entry points that consume the changed cart drawer component and could be affected by a rendering or interaction change.",
+      "expected_paths": [
+        "src/ui/components/cart/cart-drawer-wrapper.tsx",
+        "src/ui/components/cart/index.ts"
+      ],
+      "label_evidence": "Pinned graph has direct IMPORTS edges from cart-drawer-wrapper.tsx and cart/index.ts to cart-drawer.tsx."
+    },
+    {
+      "id": "cart-actions-consumers",
+      "changed_path": "src/ui/components/cart/actions.ts",
+      "title": "Cart action behavior change",
+      "query": "Identify the UI components that call or import the changed cart action module and could be affected by a change to cart operations.",
+      "expected_paths": [
+        "src/ui/components/cart/cart-drawer.tsx",
+        "src/ui/components/cart/index.ts"
+      ],
+      "label_evidence": "Pinned graph has direct IMPORTS edges from cart-drawer.tsx and cart/index.ts to cart/actions.ts."
+    },
+    {
+      "id": "checkout-summary-consumers",
+      "changed_path": "src/checkout/views/saleor-checkout/checkout-summary-context.tsx",
+      "title": "Checkout summary state change",
+      "query": "Identify checkout steps that consume the checkout summary state, including possible effects on totals or checkout progression.",
+      "expected_paths": [
+        "src/checkout/views/saleor-checkout/payment-step.tsx",
+        "src/checkout/views/saleor-checkout/shipping-step.tsx"
+      ],
+      "label_evidence": "Pinned graph has direct IMPORTS edges from payment-step.tsx and shipping-step.tsx to checkout-summary-context.tsx."
+    },
+    {
+      "id": "shipping-step-consumers",
+      "changed_path": "src/checkout/views/saleor-checkout/shipping-step.tsx",
+      "title": "Shipping step change",
+      "query": "Identify the parent checkout flow that composes the shipping step and could be affected by a shipping UI or state change.",
+      "expected_paths": [
+        "src/checkout/views/saleor-checkout/saleor-checkout.tsx"
+      ],
+      "label_evidence": "Pinned graph has a direct IMPORTS edge from saleor-checkout.tsx to shipping-step.tsx."
+    },
+    {
+      "id": "variant-selector-consumers",
+      "changed_path": "src/ui/components/pdp/variant-selection/variant-selector.tsx",
+      "title": "Product variant selector change",
+      "query": "Identify components that compose the variant selector, which may be affected by changes to product option selection.",
+      "expected_paths": [
+        "src/ui/components/pdp/variant-selection/index.ts",
+        "src/ui/components/pdp/variant-selection/variant-selection-section.tsx"
+      ],
+      "label_evidence": "Pinned graph has direct IMPORTS edges from variant-selection/index.ts and variant-selection-section.tsx to variant-selector.tsx."
+    },
+    {
+      "id": "product-filter-consumers",
+      "changed_path": "src/ui/components/plp/filter-utils.ts",
+      "title": "Product listing filter logic change",
+      "query": "Identify product listing pages and UI consumers of the shared filter logic that could be affected by a filtering change.",
+      "expected_paths": [
+        "src/app/[channel]/(main)/categories/[slug]/page.tsx",
+        "src/app/[channel]/(main)/collections/[slug]/page.tsx",
+        "src/app/[channel]/(main)/products/page.tsx",
+        "src/ui/components/plp/index.ts",
+        "src/ui/components/plp/use-product-filters.ts"
+      ],
+      "label_evidence": "Pinned graph has direct IMPORTS edges from the three listing pages, plp/index.ts, and use-product-filters.ts to filter-utils.ts. A test file is intentionally excluded from impact labels."
+    }
+  ]
+}

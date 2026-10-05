@@ -1,0 +1,103 @@
+{
+  "$defs": {
+    "EvaluationMetricsConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "requirement_grounding": {
+          "default": false,
+          "title": "Requirement Grounding",
+          "type": "boolean"
+        },
+        "vector_retrieval": {
+          "default": false,
+          "title": "Vector Retrieval",
+          "type": "boolean"
+        },
+        "graph_retrieval": {
+          "default": false,
+          "title": "Graph Retrieval",
+          "type": "boolean"
+        },
+        "mapping_precision": {
+          "default": false,
+          "title": "Mapping Precision",
+          "type": "boolean"
+        },
+        "mapping_recall": {
+          "default": false,
+          "title": "Mapping Recall",
+          "type": "boolean"
+        }
+      },
+      "title": "EvaluationMetricsConfig",
+      "type": "object"
+    },
+    "EvaluationRecordingConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "provider": {
+          "default": "jsonl",
+          "title": "Provider",
+          "type": "string"
+        },
+        "directory": {
+          "anyOf": [
+            {
+              "format": "path",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Directory"
+        },
+        "include_payloads": {
+          "default": false,
+          "title": "Include Payloads",
+          "type": "boolean"
+        }
+      },
+      "title": "EvaluationRecordingConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "recording": {
+      "$ref": "#/$defs/EvaluationRecordingConfig"
+    },
+    "dataset_manifest": {
+      "anyOf": [
+        {
+          "format": "path",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Path to the evaluation dataset manifest, relative to evaluation.json.",
+      "title": "Dataset Manifest"
+    },
+    "metrics": {
+      "$ref": "#/$defs/EvaluationMetricsConfig"
+    },
+    "$schema": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "recording"
+  ],
+  "title": "EvaluationConfig",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

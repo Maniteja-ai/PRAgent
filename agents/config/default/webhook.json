@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "secret_env": "GITHUB_WEBHOOK_SECRET",
+  "accepted_event": "pull_request",
+  "accepted_actions": ["opened", "synchronize", "reopened"],
+  "max_body_bytes": 2000000,
+  "database_path": "data/webhook-jobs.sqlite3"
+}

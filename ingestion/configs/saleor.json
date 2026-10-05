@@ -1,0 +1,17 @@
+{
+  "$schema": "validation_schema/ingestion.schema.json",
+  "schema_version": 1,
+  "env_file": "../.env",
+  "project": {
+    "id": "saleor-storefront",
+    "name": "Saleor storefront baseline"
+  },
+  "files": {
+    "input": "saleor/input.json",
+    "models": "saleor/models.json",
+    "chunking": "saleor/chunking.json",
+    "storage": "saleor/storage.json",
+    "constraints": "saleor/constraints.json",
+    "evaluation": "saleor/evaluation.json"
+  }
+}

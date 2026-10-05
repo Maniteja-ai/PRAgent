@@ -1,7 +1,0 @@
-{
-  "schema_version": 1,
-  "project_id": "saleor-demo",
-  "repository": "saleor/storefront",
-  "pull_request": 1199,
-  "question": "Which voucher UI flows could this change affect?"
-}
