@@ -12,6 +12,37 @@ JSON config -> ConfigLoader -> BeanContainer -> IngestionPipeline
                                               `-> stage result ---------------------> EvaluationRecorder
 ```
 
+## Run ingestion
+
+Use Python 3.11–3.14 and `uv`. From this directory:
+
+```powershell
+uv sync --group dev
+Copy-Item .env.example .env   # only the first time
+# Set GEMINI_API_KEY and Neo4j connection values in .env.
+# Qdrant uses the local .vector-store unless a remote URL is configured.
+uv run playwright install chromium
+```
+
+The Saleor config expects the source checkout at `work/saleor-storefront-upstream`; change
+`configs/saleor/input.json` if your checkout is elsewhere. Then choose a run mode:
+
+```powershell
+# Full documents + code + embeddings + requirements + UI observations
+uv run ingest configs/saleor.json
+
+# Refresh code relationships and browser route mappings only (no embedding calls)
+uv run ingest configs/saleor.json --code-ui-only
+
+# Refresh code chunks/vectors and code graph (does call the configured embedding model)
+uv run ingest configs/saleor.json --code-index-only
+
+# Resume after embedding from saved artifacts
+uv run ingest configs/saleor.json --resume-after-embedding
+```
+
+Only one mode flag can be used per command. A full run may call Gemini, use API quota, and write to Qdrant and Neo4j. The selected mode, config and credentials are kept separate: model/provider settings are in `configs/saleor/models.json`, while credentials stay in `.env`. Run the ingestion tests with `uv run pytest -q`; they do not require live model or database credentials.
+
 ## Folder map
 
 - `config_loader/`: interface, typed config models and JSON implementation.

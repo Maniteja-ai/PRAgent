@@ -18,7 +18,11 @@ def create_webhook_app(
 ) -> FastAPI:
     """Build a small API app with receiver and queue dependencies injected."""
 
-    app = FastAPI(title="Testsigma PR Impact Agent Webhook", docs_url=None, redoc_url=None)
+    app = FastAPI(title="PRAgent Webhook", docs_url=None, redoc_url=None)
+
+    @app.get("/health")
+    async def health() -> JSONResponse:
+        return JSONResponse(status_code=200, content={"status": "ok"})
 
     @app.post("/webhooks/github", status_code=202)
     async def receive_github_webhook(request: Request) -> JSONResponse:

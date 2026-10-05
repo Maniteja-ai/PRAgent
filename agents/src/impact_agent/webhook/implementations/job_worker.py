@@ -8,6 +8,7 @@ from typing import Literal
 from impact_agent.config.validation.runtime import RuntimeConfig
 from impact_agent.domain.models import WorkerExecution
 from impact_agent.pipeline.interface.agent_pipeline import AgentPipeline
+from impact_agent.pull_request.interface.report_commenter import ReportCommenter
 from impact_agent.webhook.interface.webhook_job_handler import WebhookJobQueue
 
 LOGGER = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ class WebhookJobWorker:
     queue: WebhookJobQueue
     pipeline: AgentPipeline
     runtime: RuntimeConfig
+    report_commenter: ReportCommenter | None = None
 
     def run_once(self) -> WorkerExecution:
         job = self.queue.claim_next(self.runtime.job_lease_seconds)
@@ -27,7 +29,9 @@ class WebhookJobWorker:
             return WorkerExecution("IDLE")
 
         try:
-            self.pipeline.run(job.reference, job.run_id)
+            report = self.pipeline.run(job.reference, job.run_id)
+            if self.report_commenter is not None:
+                self.report_commenter.publish(job.reference, report)
         except Exception as error:
             outcome = self.queue.fail(
                 job.delivery_id,

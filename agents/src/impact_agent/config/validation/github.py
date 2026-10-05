@@ -11,6 +11,7 @@ class GitHubConfig(StrictSettings):
     provider: Literal["github_api"] = "github_api"
     api_url: str = "https://api.github.com"
     token_env: str = "GITHUB_TOKEN"
+    publish_report_comment: bool = False
     timeout_seconds: float = Field(default=20, gt=0, le=120)
     max_changed_files: int = Field(default=1000, ge=1, le=3000)
     max_diff_bytes: int = Field(default=1_000_000, ge=1_000, le=10_000_000)

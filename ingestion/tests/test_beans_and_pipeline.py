@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+from ingestion.storage.artifacts.implementation.local_artifact_store import LocalArtifactStore
 
 from ingestion import JsonConfigLoader, create_pipeline
 from ingestion.beans.container import BeanContainer
@@ -26,7 +27,6 @@ from ingestion.extractor.code.implementation.typescript_code_extractor import Ty
 from ingestion.mapping.implementation.evidence_mapping import EvidenceMappingResolver
 from ingestion.mapping.implementation.nextjs_route_mapping import NextJsRouteMappingResolver
 from ingestion.mapping.implementation.static_dependency_ui_tagger import StaticDependencyUiTagger
-from ingestion.storage.artifacts.implementation.local_artifact_store import LocalArtifactStore
 from ingestion.storage.implementation.in_memory import InMemoryGraphStore, InMemoryVectorStore
 from ingestion.storage.implementation.qdrant_vector_store import QdrantVectorStore
 

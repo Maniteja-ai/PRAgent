@@ -1,5 +1,5 @@
 {
-  "name": "testsigma-pr-impact-agent",
+  "name": "pragent",
   "schema_version": 1,
   "env_file": ".env",
   "browser_enabled": true,

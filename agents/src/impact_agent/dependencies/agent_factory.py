@@ -10,6 +10,7 @@ from impact_agent.pipeline.implementations.langgraph_agent_pipeline import (
 )
 from impact_agent.pipeline.interface.agent_pipeline import AgentPipeline
 from impact_agent.pull_request.interface.pull_request_provider import PullRequestProvider
+from impact_agent.pull_request.interface.report_commenter import ReportCommenter
 from impact_agent.report.interface.report_formatter import ReportFormatter
 from impact_agent.run_history.interface.run_store import RunStore
 from impact_agent.tools.behavior.interface.behavior_verifier import BehaviorVerifier
@@ -36,6 +37,7 @@ class AgentFactory:
         report_formatter: ReportFormatter,
         run_store: RunStore,
         stage_recorder: StageRecorder,
+        report_commenter: ReportCommenter | None = None,
         browser: BrowserExplorer | None = None,
         behavior_verifier: BehaviorVerifier | None = None,
     ) -> AgentBeans:
@@ -55,7 +57,9 @@ class AgentFactory:
             browser=browser,
             behavior_verifier=behavior_verifier,
         )
-        worker = WebhookJobWorker(webhook_jobs, pipeline, settings.runtime)
+        worker = WebhookJobWorker(
+            webhook_jobs, pipeline, settings.runtime, report_commenter=report_commenter
+        )
         return AgentBeans(
             settings=settings,
             pipeline=pipeline,

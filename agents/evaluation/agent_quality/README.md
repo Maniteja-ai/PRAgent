@@ -1,12 +1,25 @@
 # PR agent quality evaluation
 
-Run the evaluator from the `agents` directory:
+## Run it
+
+From the project root, install the agent's dependencies and set up the local environment file if you have not already:
+
+```powershell
+cd agents
+uv sync --extra dev
+Copy-Item .env.example .env   # only the first time
+# Set GEMINI_API_KEY in .env.
+```
+
+Run the evaluator using the run ID already labeled in `golden_dataset.json`:
 
 ```powershell
 uv run python evaluation/agent_quality/run_quality_eval.py --run-id live-e2e-pr1-scope-gap-20261005
 ```
 
-It reads a successful completed report (`COMPLETED` or `COMPLETED_WITH_GAPS`) and evidence from `data/agent-runs.sqlite3`, compares the report to `golden_dataset.json`, and makes one Gemini judge request. It does not run the agent, call Neo4j or Qdrant, or rerun ingestion. Results are written under `evaluation/agent_quality/results/<run-id>/` as `summary.md` and `evaluation.json`.
+The command expects the matching completed run (`COMPLETED` or `COMPLETED_WITH_GAPS`) in `data/agent-runs.sqlite3`; that database is created by the local webhook service and is not checked in. The pinned run ID is the only case in the current draft dataset. To score a different PR, first add and independently review its case in `golden_dataset.json`.
+
+The evaluator reads the saved report and evidence, then makes one Gemini judge request. It does not run the agent, call Neo4j or Qdrant, or rerun ingestion. Results are written under `evaluation/agent_quality/results/<run-id>/` as `summary.md` and `evaluation.json`.
 
 The summary includes:
 

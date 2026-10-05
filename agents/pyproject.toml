@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "testsigma-pr-impact-agent"
+name = "pragent"
 version = "0.1.0"
 description = "A modular, webhook-driven pull request impact analysis agent"
 requires-python = ">=3.11,<3.15"
@@ -17,6 +17,7 @@ dependencies = [
   "playwright>=1.50,<2",
   "python-dotenv>=1.1,<2",
   "qdrant-client>=1.15,<2",
+  "uvicorn[standard]>=0.34,<1",
 ]
 
 [project.optional-dependencies]

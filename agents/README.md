@@ -1,4 +1,4 @@
-# Testsigma PR Impact Agent
+# PRAgent
 
 This folder contains the webhook-driven agent. Ingestion is maintained separately in `../ingestion/`.
 
@@ -11,6 +11,28 @@ GitHub PR webhook -> validate signature -> durable SQLite queue -> worker
 ```
 
 `src/impact_agent/dependencies/agent_bootstrap.py` is the startup entry point. `AgentBootstrap.create(...)` loads and validates the separate JSON settings, builds the concrete adapters, and returns the webhook app, worker, and services. The LangGraph stage order is in `src/impact_agent/pipeline/implementations/langgraph_agent_pipeline.py`.
+
+## Run locally and receive a PR
+
+Use Python 3.11–3.14 and `uv`. From this directory, install the agent and create its local environment file:
+
+```powershell
+uv sync --extra dev
+Copy-Item .env.example .env   # only the first time
+```
+
+Edit `.env` and set `GITHUB_TOKEN`, `GITHUB_WEBHOOK_SECRET`, `GEMINI_API_KEY`, `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, and `NEO4J_DATABASE`. The token needs to read pull requests and create/update issue comments in the target repository. Qdrant is read from the sibling ingestion store by default, so no Qdrant credentials are needed for this local setup. Never commit `.env`.
+
+Install the Playwright browser once, then start the API and worker:
+
+```powershell
+uv run playwright install chromium
+uv run python run_local.py
+```
+
+The API listens on `127.0.0.1:8000`; check `http://127.0.0.1:8000/health`. GitHub cannot call a loopback address, so expose port 8000 using a public HTTPS tunnel (for example `ngrok http 8000`). Add a webhook to the target GitHub repository with URL `<tunnel-url>/webhooks/github`, content type `application/json`, the same webhook secret, and the **Pull requests** event. `webhook.json` accepts `opened`, `synchronize`, and `reopened`. Open a fresh test PR to trigger a run. Keep the server and tunnel running until the report comment appears; use `Ctrl+C` to stop the local server.
+
+The webhook is acknowledged and queued first; the worker then runs the agent pipeline asynchronously. Reports and stage history are stored in `data/agent-runs.sqlite3`; webhook deliveries and retries are stored in `data/webhook-jobs.sqlite3`. GitHub PR comments are created on the first run and updated on later runs.
 
 ## Configuration
 
@@ -54,7 +76,10 @@ Code indexing stores files and symbols in Neo4j with typed `IMPORTS`, `DECLARES`
 returns related symbol names and source line ranges, with `graph_database.json` setting the maximum
 call-chain depth. Qdrant code chunks are split by function, method, component, or class context and
 carry symbol and line metadata alongside source text. These changes take effect in the hosted stores
-only after a code-index refresh; this implementation did not run embedding or live Gemini calls.
+only after a code-index refresh. Run that refresh from the sibling `ingestion/` directory with
+`uv run ingest configs/saleor.json --code-index-only`; it uses the configured embedding provider and
+updates the vector and graph stores. Use `--code-ui-only` for graph and browser-route refreshes that
+do not make embedding calls.
 
 The mappings currently prove **which page route is connected to the code**, not which exact controls
 appear on that page. Behavior scenarios are selected automatically: a scenario runs only when a PR
@@ -73,7 +98,7 @@ cd ..\ingestion
 uv run ingest configs/saleor.json --code-ui-only
 ```
 
-After installing dependencies, install the browser binary with `uv run playwright install chromium`.
+The local-run instructions above install the browser binary with `uv run playwright install chromium`.
 
 ## Run checks
 
@@ -86,7 +111,7 @@ uv run mypy src
 uv run pytest -q
 ```
 
-The automated tests mock external services. A live end-to-end run on `Maniteja-ai/storefront#1`
+The automated tests mock external services. A live end-to-end run on a sample storefront pull request
 (`live-e2e-pr1-scope-gap-20261005`) exercised GitHub PR loading, Gemini query planning, Neo4j and
 Qdrant retrieval, Gemini impact analysis, and the configured Playwright checks. The run completed
 with a coverage gap because the browser scenario checks control presence and URL only. The report

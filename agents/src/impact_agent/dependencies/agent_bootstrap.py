@@ -21,6 +21,9 @@ from impact_agent.model.implementations.gemini_decision_model import GeminiDecis
 from impact_agent.pull_request.implementations.github_api_provider import (
     GitHubPullRequestProviderFactory,
 )
+from impact_agent.pull_request.implementations.github_report_commenter import (
+    GitHubReportCommenterFactory,
+)
 from impact_agent.report.implementations.markdown_report_formatter import MarkdownReportFormatter
 from impact_agent.run_history.implementations.sqlite_run_history_store import SQLiteRunHistoryStore
 from impact_agent.tools.behavior.interface.behavior_verifier import BehaviorVerifier
@@ -112,6 +115,11 @@ class AgentBootstrap:
                 settings.github, runtime_environment
             )
             resources.append(pull_requests)
+            report_commenter = GitHubReportCommenterFactory.create(
+                settings.github, runtime_environment
+            )
+            if report_commenter is not None:
+                resources.append(report_commenter)
             decision_model = GeminiDecisionModelFactory.create(
                 settings.models, settings.runtime.request_timeout_seconds, runtime_environment
             )
@@ -166,6 +174,7 @@ class AgentBootstrap:
                 report_formatter=MarkdownReportFormatter(),
                 run_store=history,
                 stage_recorder=stage_recorder,
+                report_commenter=report_commenter,
                 browser=browser,
                 behavior_verifier=behavior_verifier,
             )

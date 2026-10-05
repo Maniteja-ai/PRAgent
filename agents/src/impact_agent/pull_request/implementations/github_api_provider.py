@@ -62,7 +62,7 @@ class GitHubApiPullRequestProvider(PullRequestProvider):
                 "Authorization": f"Bearer {token}",
                 "Accept": "application/vnd.github+json",
                 "X-GitHub-Api-Version": "2022-11-28",
-                "User-Agent": "testsigma-pr-impact-agent",
+                "User-Agent": "pragent",
             },
         )
 

@@ -8,7 +8,7 @@ from impact_agent.config.validation.common import StrictSettings
 
 
 class AgentConfig(StrictSettings):
-    name: str = "testsigma-pr-impact-agent"
+    name: str = "pragent"
     schema_version: int = Field(default=1, ge=1)
     env_file: Path | None = None
     browser_enabled: bool = False

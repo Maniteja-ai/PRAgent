@@ -1,31 +1,22 @@
-# Saleor evaluation data
+# Ingestion evaluation data
 
-`evaluation.json` points to `datasets/saleor-retrieval-v0.1/manifest.json`. The manifest identifies
-one versioned dataset bundle; each file under that folder has a defined role and frozen hashes.
+This folder contains the draft retrieval dataset referenced by `configs/saleor/evaluation.json`. It is input and reference material, not a standalone scoring command. There is currently **no ingestion retrieval scorer** that calculates precision, recall, or faithfulness for this dataset; stage execution is recorded separately by the configured evaluation decorator.
 
-## What is already here
+## Run ingestion and its tests
 
-- 40 vector retrieval cases with graded relevance labels and 30 frozen passages.
-- 20 Neo4j retrieval cases over a synthetic graph fixture.
-- Combined, isolation and failure-contract cases, plus source snapshots and a human review packet.
+From the project root, set up and run the ingestion component as described in the [ingestion README](../README.md):
 
-This is a useful starting dataset for retrieval. It is **not an approved golden release**: the
-manifest is `DRAFT_PENDING_HUMAN_REVIEW`, all cases are development cases, and there are no held-out
-cases. The graph suite checks the retrieval contract on synthetic relationships; it does not prove
-real Saleor code-to-UI mapping quality.
+```powershell
+cd ingestion
+uv sync --group dev
+uv run pytest -q
+```
 
-The manually prepared [Saleor requirements](../examples/saleor/reference-requirements.json) are
-separate reference material. They are not ground-truth labels yet because some acceptance statements
-are inferred from backend documentation and still need review against the storefront.
+To execute the configured pipeline against the Saleor sources and stores, run `uv run ingest configs/saleor.json`. This may call Gemini and write to Qdrant and Neo4j. Use `--code-ui-only` for a code/route refresh without embedding calls. See the [dataset README](datasets/saleor-retrieval-v0.1/README.md) for cases, labels, provenance and review status.
 
-## Current project capability
+## What is evaluated today
 
-The `@record_stage` decorator records stage status, duration and result hashes. The current project
-has not yet implemented a dataset validator or a scoring runner. Therefore, `dataset_manifest` keeps
-this draft dataset discoverable in configuration, but no precision, recall, grounding or
-faithfulness scores are produced yet. Review the dataset, then add a validator and offline scorer
-before reporting quality metrics.
-
-See [the dataset review guide](datasets/saleor-retrieval-v0.1/README.md) for case formats and review
-instructions.
-
+- The dataset bundle is `datasets/saleor-retrieval-v0.1/`; its manifest includes counts, schemas, hashes, and boundaries between target inputs and scorer-only labels.
+- Vector and graph examples are drafts. The graph cases use a synthetic fixture; they do not certify the real Saleor graph or UI mappings.
+- Cases remain `DRAFT_PENDING_HUMAN_REVIEW`; there are no held-out cases. Do not present draft scores as a validated benchmark.
+- The separate agent report-quality and code-graph evaluation commands are documented under [`agents/evaluation/`](../../agents/evaluation/).

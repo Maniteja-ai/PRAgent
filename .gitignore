@@ -30,3 +30,14 @@
 .DS_Store
 Thumbs.db
 *.log
+
+# PRAgent local runtime and ingestion outputs
+**/.mypy_cache/
+**/.ruff_cache/
+**/.vector-store*/
+agents/data/
+agents/outputs/
+ingestion/artifacts/
+ingestion/history/
+ingestion/runs/
+ingestion/work/

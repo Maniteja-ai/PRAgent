@@ -2,6 +2,8 @@
 
 This package is the first dataset deliverable for reviewing Neo4j and vector retrieval. It contains real frozen documentation passages, synthetic graph cases, input-only files, expected results, schema definitions and a human-review queue. It contains no evaluation runner and no measured precision or recall.
 
+To set up or run the ingestion pipeline and its tests, start with the [ingestion README](../../../README.md). This dataset is not executable by itself: the ingestion project currently has no scorer for these labels. Agent-level report and code-graph evaluation commands are described in [`agents/evaluation`](../../../../agents/evaluation/).
+
 **Status: assistant-authored, evidence-checked draft. Human review is pending. It is not approved golden data.** All cases belong to the development split because these sources and PR 1199 have already been inspected. No held-out accuracy claim is supported.
 
 ## Start here
