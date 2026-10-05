@@ -23,7 +23,7 @@ uv sync --group dev
 uv run pytest -q
 ```
 
-The current local verification is 82 agent tests and 28 ingestion tests. Automated tests mock external services; they do not by themselves prove live Neo4j, Qdrant, browser, or GitHub behavior.
+Latest local verification: **87 agent tests** and **28 ingestion tests** pass. Automated tests mostly mock external services; the separate live PR run described below exercises configured external integrations for one PR but is not broad production validation.
 
 For ingestion, configure `ingestion/.env` and review `ingestion/configs/saleor.json` plus the six files it references before running:
 
@@ -39,4 +39,12 @@ That command may call configured model providers and write to the configured sto
 - The ingestion retrieval dataset is in `ingestion/evaluation/datasets/saleor-retrieval-v0.1/` and is still a draft pending human review.
 - The saved PR-report evaluator is in `agents/evaluation/agent_quality/`. Its current one-case LLM-judge result is diagnostic, not a validated benchmark.
 
-Known limitations include incomplete requirement-to-UI/code graph links, configured Playwright journeys rather than autonomous exploration, and report claims that need stronger code citations and narrower statements about behavior actually tested. See the component READMEs and evaluation notes for details.
+The latest live run is `live-e2e-pr1-scope-gap-20261005` for `Maniteja-ai/storefront#1`. It loaded GitHub PR data, queried Gemini, Neo4j and Qdrant, ran the configured Playwright smoke checks, and produced a report with a coverage gap. It verified the checkout URL and the presence of the discount-code input and Apply button; it did **not** submit a code, verify invalid-code handling, remove a voucher, or compare totals. Its one-case judge scores are draft diagnostics.
+
+Assessment deliverables:
+
+- [Design document](docs/assessment/design-document.md)
+- [QA-facing sample PR impact report](docs/assessment/sample-pr-impact-report.md)
+- [5–10 minute demo runbook](docs/assessment/demo-runbook.md)
+
+Known limitations include incomplete requirement-to-UI/code relationships, configured Playwright journeys rather than autonomous exploration, and a draft one-case evaluation dataset. The current live report has direct PR-diff citations and makes the smoke-test scope explicit. See the component READMEs and assessment documents for details.
