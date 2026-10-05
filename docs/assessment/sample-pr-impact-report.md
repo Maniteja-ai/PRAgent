@@ -1,8 +1,8 @@
 # Sample PR impact report — Saleor checkout voucher
 
-**Pull request:** [Maniteja-ai/storefront#1](https://github.com/Maniteja-ai/storefront/pull/1)  
-**Analysis run:** `live-e2e-pr1-scope-gap-20261005`  
-**Run status:** **Completed with gaps**  
+**Pull request:** [Maniteja-ai/storefront#1](https://github.com/Maniteja-ai/storefront/pull/1)
+**Analysis run:** `live-e2e-pr1-scope-gap-20261005`
+**Run status:** **Completed with gaps**
 **Audience:** QA and product reviewers
 
 ## What changed

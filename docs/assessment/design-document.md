@@ -1,8 +1,8 @@
 # Testsigma PR Impact Agent — Design Document
 
-**Assessment project:** Testsigma AI Engineer assignment  
-**Implementation:** webhook-driven PR impact analysis with separate knowledge ingestion  
-**Status:** working prototype; one live PR run completed with an explicit browser-coverage gap  
+**Assessment project:** Testsigma AI Engineer assignment
+**Implementation:** webhook-driven PR impact analysis with separate knowledge ingestion
+**Status:** working prototype; one live PR run completed with an explicit browser-coverage gap
 **Date:** 5 October 2026
 
 ## 1. Executive summary
