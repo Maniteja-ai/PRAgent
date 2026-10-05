@@ -14,6 +14,7 @@ class GitHubConfig(StrictSettings):
     timeout_seconds: float = Field(default=20, gt=0, le=120)
     max_changed_files: int = Field(default=1000, ge=1, le=3000)
     max_diff_bytes: int = Field(default=1_000_000, ge=1_000, le=10_000_000)
+    max_diff_evidence_characters: int = Field(default=60_000, ge=1_000, le=500_000)
 
     @model_validator(mode="after")
     def validate_github_api_url(self) -> "GitHubConfig":

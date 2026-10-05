@@ -19,7 +19,7 @@ Each file under `config/default/` has one purpose, with a matching validator und
 | File | Purpose |
 | --- | --- |
 | `agent.json` | Which analysis stages are enabled |
-| `github.json` | GitHub API, PR file and diff limits |
+| `github.json` | GitHub API, changed-file limit, diff size and citable-code-evidence budget |
 | `webhook.json` | Accepted events, signature secret, request size and queue database |
 | `models.json` | Decision model and embedding model settings |
 | `knowledge.json` | Qdrant project, collection and retrieval limit |
@@ -60,10 +60,11 @@ The mappings currently prove **which page route is connected to the code**, not 
 appear on that page. Behavior scenarios are selected automatically: a scenario runs only when a PR
 changed file has a confirmed Neo4j mapping to the scenario's route. No PR-specific file patterns are
 required in `behavior.json`. If a changed file maps to a route with no configured scenario, the run
-records a coverage gap for that route only. The deployed checkout page was captured in its
-`Loading...` state, so voucher input, apply/remove and total behavior remain unverified. The current
-configured scenarios cover the product list and empty cart. Browser navigation and redirects are
-restricted to the HTTPS host allowlist in `browser.json`.
+records a coverage gap for that route only. The checkout scenario adds a product, opens checkout, and
+checks that the discount input, Apply button, and checkout URL are present. It does not submit or
+remove a voucher, validate an error, or verify changed totals. The verifier reports this smoke-test
+scope as a coverage gap; the report lists each assertion that passed. Browser navigation and redirects
+are restricted to the HTTPS host allowlist in `browser.json`.
 
 Refresh the code and UI graph without making LLM, embedding or Qdrant calls from the sibling folder:
 
@@ -85,7 +86,13 @@ uv run mypy src
 uv run pytest -q
 ```
 
-The automated tests mock external services, including Gemini query planning and Neo4j. The
-previous live smoke run exercised the old fixed-query graph adapter; it does not verify the new
-LLM-generated query against Neo4j. No live Gemini request or generated query execution was made as
-part of this implementation.
+The automated tests mock external services. A live end-to-end run on `Maniteja-ai/storefront#1`
+(`live-e2e-pr1-scope-gap-20261005`) exercised GitHub PR loading, Gemini query planning, Neo4j and
+Qdrant retrieval, Gemini impact analysis, and the configured Playwright checks. The run completed
+with a coverage gap because the browser scenario checks control presence and URL only. The report
+and one-case LLM-judge evaluation are preserved in
+`evaluation/agent_quality/snapshots/2026-10-05-saleor-pr-1/`. Precision, recall, and faithfulness
+scored 100% for this draft case; evidence relevance scored 56.2%. The judge marked browser-scope
+reporting honest.
+The dataset remains `DRAFT_PENDING_HUMAN_REVIEW`; review the labels before treating these scores as a
+benchmark.

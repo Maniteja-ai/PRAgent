@@ -113,6 +113,7 @@ class BehaviorResult:
     status: Literal["PASS", "FAIL", "NOT_RUN", "BLOCKED"]
     summary: str
     evidence_ids: tuple[str, ...] = ()
+    verified_checks: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

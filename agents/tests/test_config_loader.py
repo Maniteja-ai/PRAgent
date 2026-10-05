@@ -14,6 +14,7 @@ def test_loads_separate_configuration_as_typed_settings():
     settings = JsonConfigLoader().load(CONFIG)
 
     assert settings.models.model == "gemini-3.8-flash"
+    assert settings.github.max_diff_evidence_characters == 60_000
     assert settings.runtime.max_calls_per_tool == 5
     assert settings.browser.allowed_hosts == ("testsigma-saleor-patched.vercel.app",)
     assert settings.agent.browser_enabled

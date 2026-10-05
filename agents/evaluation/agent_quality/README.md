@@ -3,10 +3,10 @@
 Run the evaluator from the `agents` directory:
 
 ```powershell
-uv run python evaluation/agent_quality/run_quality_eval.py --run-id live-e2e-pr1-all-routes-20261005-0826
+uv run python evaluation/agent_quality/run_quality_eval.py --run-id live-e2e-pr1-scope-gap-20261005
 ```
 
-It reads the completed report and evidence from `data/agent-runs.sqlite3`, compares the report to `golden_dataset.json`, and makes one Gemini judge request. It does not run the agent, call Neo4j or Qdrant, or rerun ingestion. Results are written under `evaluation/agent_quality/results/<run-id>/` as `summary.md` and `evaluation.json`.
+It reads a successful completed report (`COMPLETED` or `COMPLETED_WITH_GAPS`) and evidence from `data/agent-runs.sqlite3`, compares the report to `golden_dataset.json`, and makes one Gemini judge request. It does not run the agent, call Neo4j or Qdrant, or rerun ingestion. Results are written under `evaluation/agent_quality/results/<run-id>/` as `summary.md` and `evaluation.json`.
 
 The summary includes:
 

@@ -59,6 +59,30 @@ def test_evidence_citations_must_exist_and_findings_must_have_citations():
         )
 
 
+def test_findings_must_cite_changed_code_when_pr_diff_evidence_is_available():
+    guardrail = create_guardrail()
+    documentation = make_evidence("Checkout supports vouchers.")
+    diff_content = "Changed file: cart.py\nPatch: update totals"
+    diff = Evidence(
+        "pr-diff:cart",
+        "pr-diff://cart.py",
+        diff_content,
+        hashlib.sha256(diff_content.encode()).hexdigest(),
+    )
+
+    with pytest.raises(ValueError, match="changed PR code evidence"):
+        guardrail.validate_decision(
+            Decision("Summary", (Finding("Finding", "Reason", (documentation.evidence_id,)),)),
+            (documentation, diff),
+        )
+
+    decision = Decision(
+        "Summary",
+        (Finding("Finding", "Reason", (documentation.evidence_id, diff.evidence_id)),),
+    )
+    assert guardrail.validate_decision(decision, (documentation, diff)) == decision
+
+
 def test_obvious_instruction_injection_is_rejected_and_evidence_size_is_bounded():
     guardrail = create_guardrail()
     with pytest.raises(ValueError, match="blocked instruction"):

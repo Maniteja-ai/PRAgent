@@ -21,6 +21,7 @@ from impact_agent.config.loader.implementations.json_config_loader import JsonCo
 AGENT_ROOT = Path(__file__).resolve().parents[2]
 DATASET_PATH = Path(__file__).with_name("golden_dataset.json")
 RESULTS_ROOT = Path(__file__).with_name("results")
+_EVALUABLE_RUN_STATUSES = frozenset({"COMPLETED", "COMPLETED_WITH_GAPS"})
 
 
 class ExpectedImpact(BaseModel):
@@ -132,6 +133,11 @@ def _read_saved_run(database_path: Path, run_id: str) -> tuple[str, dict[str, ob
     if not isinstance(report, dict):
         raise RuntimeError(f"Saved report for '{run_id}' has an invalid shape")
     return str(row[0]), report
+
+
+def _is_evaluable_run_status(status: str) -> bool:
+    """Permit successful reports with explicit coverage gaps in quality evaluation."""
+    return status in _EVALUABLE_RUN_STATUSES
 
 
 def _judge(
@@ -493,8 +499,10 @@ def main() -> int:
     if not database_path.is_absolute():
         database_path = AGENT_ROOT / database_path
     run_status, report = _read_saved_run(database_path, case.run_id)
-    if run_status != "COMPLETED":
-        raise ValueError(f"Quality evaluation requires a completed run; got {run_status}")
+    if not _is_evaluable_run_status(run_status):
+        raise ValueError(
+            f"Quality evaluation requires a successful completed run; got {run_status}"
+        )
     if report.get("run_id") != case.run_id:
         raise ValueError("Run ID in saved report does not match the selected golden case")
 

@@ -132,17 +132,23 @@ class PlaywrightBehaviorVerifier(BehaviorVerifier):
             route for scenario in applicable_scenarios for route in self._scenario_routes(scenario)
         }
         uncovered_routes = sorted(mapped_routes - covered_routes)
-        coverage_gaps = (
-            (
+        coverage_gaps: list[str] = []
+        if uncovered_routes:
+            coverage_gaps.append(
                 "No configured behavior scenario covers the confirmed UI route(s): "
-                + ", ".join(uncovered_routes),
+                + ", ".join(uncovered_routes)
             )
-            if uncovered_routes
-            else ()
-        )
+        for scenario in applicable_scenarios:
+            if all(
+                assertion.kind in {"visible", "url_contains"} for assertion in scenario.assertions
+            ):
+                coverage_gaps.append(
+                    f"Behavior scenario '{scenario.scenario_id}' checks page/control presence or "
+                    "URL only; business behavior outcomes are unverified."
+                )
         return BehaviorVerification(
             results=tuple(self._run_scenario(scenario) for scenario in applicable_scenarios),
-            coverage_gaps=coverage_gaps,
+            coverage_gaps=tuple(coverage_gaps),
         )
 
     @classmethod
@@ -161,6 +167,7 @@ class PlaywrightBehaviorVerifier(BehaviorVerifier):
         return urlsplit(url).path.rstrip("/") or "/"
 
     def _run_scenario(self, scenario: BehaviorScenarioConfig) -> BehaviorResult:
+        verified_checks: list[str] = []
         try:
             with sync_playwright() as playwright:
                 try:
@@ -180,30 +187,35 @@ class PlaywrightBehaviorVerifier(BehaviorVerifier):
                     for assertion in scenario.assertions:
                         self._validate_current_url(page)
                         self._check_assertion(page, assertion)
+                        verified_checks.append(self._describe_assertion(assertion))
                 finally:
                     browser.close()
             return BehaviorResult(
                 scenario_id=scenario.scenario_id,
                 status="PASS",
                 summary=f"All {len(scenario.assertions)} configured assertions passed.",
+                verified_checks=tuple(verified_checks),
             )
         except _ScenarioAssertionError as error:
             return BehaviorResult(
                 scenario_id=scenario.scenario_id,
                 status="FAIL",
                 summary=str(error),
+                verified_checks=tuple(verified_checks),
             )
         except PlaywrightError as error:
             return BehaviorResult(
                 scenario_id=scenario.scenario_id,
                 status="FAIL",
                 summary=f"A browser action or assertion failed ({type(error).__name__}).",
+                verified_checks=tuple(verified_checks),
             )
         except PlaywrightAdapterError as error:
             return BehaviorResult(
                 scenario_id=scenario.scenario_id,
                 status="BLOCKED",
                 summary=str(error),
+                verified_checks=tuple(verified_checks),
             )
 
     def _apply_action(self, page: Page, action: BehaviorActionConfig) -> None:
@@ -249,6 +261,16 @@ class PlaywrightBehaviorVerifier(BehaviorVerifier):
                 raise PlaywrightAdapterError("Configured value assertion is missing its value")
             if element.input_value(timeout=self._timeout_ms) != expected:
                 raise _ScenarioAssertionError("Input value did not equal the expected value")
+
+    @staticmethod
+    def _describe_assertion(assertion: BehaviorAssertionConfig) -> str:
+        if assertion.kind == "url_contains":
+            return f"URL contains {assertion.expected!r}"
+        if assertion.kind == "visible":
+            return f"{assertion.selector} is visible"
+        if assertion.kind == "text_contains":
+            return f"{assertion.selector} text contains {assertion.expected!r}"
+        return f"{assertion.selector} value equals {assertion.expected!r}"
 
     @property
     def _timeout_ms(self) -> int:

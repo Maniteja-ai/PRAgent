@@ -57,7 +57,10 @@ class BehaviorScenarioConfig(StrictSettings):
 
     @model_validator(mode="after")
     def validate_target_routes(self) -> "BehaviorScenarioConfig":
-        if any(not route.startswith("/") or "?" in route or "#" in route for route in self.target_routes):
+        if any(
+            not route.startswith("/") or "?" in route or "#" in route
+            for route in self.target_routes
+        ):
             raise ValueError("target_routes must contain stable route paths without query strings")
         return self
 

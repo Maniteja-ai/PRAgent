@@ -47,7 +47,15 @@ PULL_REQUEST = PullRequestSnapshot(
     "Refresh checkout after applying a voucher.",
     "base-sha",
     "head-sha",
-    (ChangedFile("src/cart.ts", "modified", 4, 1),),
+    (
+        ChangedFile(
+            "src/cart.ts",
+            "modified",
+            4,
+            1,
+            "@@ -10,1 +10,4 @@\n+export function applyVoucher() {\n+  refreshCheckout();\n+}",
+        ),
+    ),
     "diff --git a/src/cart.ts b/src/cart.ts",
 )
 
@@ -96,9 +104,7 @@ class _Driver:
         self.records = [
             _Record(
                 changed_path="src/cart.ts",
-                related_files=[
-                    {"path": "src/checkout.ts", "relationship_kinds": ["CALLS"]}
-                ],
+                related_files=[{"path": "src/checkout.ts", "relationship_kinds": ["CALLS"]}],
                 related_symbols=[
                     {
                         "name": "refreshCheckout",
@@ -162,6 +168,7 @@ class _DecisionModel:
         assert pull_request == PULL_REQUEST
         vector_evidence = next(item for item in evidence if item.source.startswith("src/cart.ts ["))
         graph_evidence = next(item for item in evidence if item.source.startswith("neo4j://"))
+        diff_evidence = next(item for item in evidence if item.source.startswith("pr-diff://"))
         assert "applyVoucher" in vector_evidence.content
         assert "refreshCheckout" in graph_evidence.content
         assert graph_evidence.confirmed_code_ui_mappings
@@ -171,7 +178,11 @@ class _DecisionModel:
                 Finding(
                     "Cart totals may be affected",
                     "Applying a voucher calls the checkout refresh function.",
-                    (vector_evidence.evidence_id, graph_evidence.evidence_id),
+                    (
+                        vector_evidence.evidence_id,
+                        graph_evidence.evidence_id,
+                        diff_evidence.evidence_id,
+                    ),
                 ),
             ),
         )
@@ -201,6 +212,7 @@ class _BehaviorVerifier:
                     "cart-voucher-refresh",
                     "PASS",
                     "The configured cart voucher refresh check passed.",
+                    verified_checks=(".discount-label is visible", "URL contains '/cart'"),
                 ),
             )
         )
@@ -330,9 +342,11 @@ def test_retrieval_adapters_flow_through_langgraph_into_persisted_report(tmp_pat
     assert report.status.value == "COMPLETED"
     assert report.gaps == ()
     assert report.behavior_results[0].status == "PASS"
-    assert len(report.evidence) == 3
+    assert len(report.evidence) == 4
     assert "Cart totals may be affected" in report.rendered_report
     assert "cart-voucher-refresh" in report.rendered_report
+    assert ".discount-label is visible" in report.rendered_report
+    assert "only the listed assertions" in report.rendered_report
     assert history.load(report.run_id) == report
     with sqlite3.connect(tmp_path / "runs.sqlite") as connection:
         stages = connection.execute(

@@ -16,6 +16,9 @@ class MarkdownReportFormatter(ReportFormatter):
             report.summary,
             "",
             "## Findings",
+            "",
+            "These findings are evidence-based impact predictions. They do not by themselves prove "
+            "that a runtime failure occurred or that a user flow was tested.",
         ]
         if report.findings:
             for finding in report.findings:
@@ -37,12 +40,30 @@ class MarkdownReportFormatter(ReportFormatter):
         if report.behavior_results:
             for result in report.behavior_results:
                 lines.append(f"- **{result.status}** `{result.scenario_id}` — {result.summary}")
+                if result.verified_checks:
+                    label = (
+                        "Verified checks"
+                        if result.status == "PASS"
+                        else "Checks passed before stop"
+                    )
+                    lines.extend(
+                        [f"  - {label}:", *[f"    - {check}" for check in result.verified_checks]]
+                    )
         else:
             lines.append("- No behavior checks were run.")
+        lines.extend(
+            [
+                "",
+                "A PASS covers only the listed assertions; it does not mean the complete user flow "
+                "was verified.",
+            ]
+        )
 
         lines.extend(["", "## Coverage gaps"])
         if report.gaps:
             lines.extend(f"- {gap}" for gap in report.gaps)
         else:
-            lines.append("- None recorded.")
+            lines.append(
+                "- No gaps were recorded by the configured stages; this does not prove complete coverage."
+            )
         return "\n".join(lines).strip() + "\n"

@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import httpx
@@ -5,6 +6,7 @@ import pytest
 
 from impact_agent.config.loader.implementations.json_config_loader import JsonConfigLoader
 from impact_agent.domain.models import (
+    ChangedFile,
     Evidence,
     PullRequestRef,
     PullRequestSnapshot,
@@ -99,6 +101,31 @@ def test_gemini_rejects_unknown_evidence_citation():
     with pytest.raises(GeminiDecisionModelError, match="evidence that was not provided"):
         model.decide(PULL_REQUEST, EVIDENCE)
     client.close()
+
+
+def test_prompt_cites_changed_file_patch_once_as_direct_evidence():
+    patch = "@@ -1,1 +1,2 @@\n+refreshCheckout() # UNIQUE_PATCH_LINE"
+    pull_request = PullRequestSnapshot(
+        PULL_REQUEST.reference,
+        PULL_REQUEST.title,
+        PULL_REQUEST.description,
+        PULL_REQUEST.base_sha,
+        PULL_REQUEST.head_sha,
+        (ChangedFile("src/cart.ts", "modified", 1, 0, patch),),
+        patch,
+    )
+    code_evidence = Evidence("pr-diff:cart", "pr-diff://src/cart.ts", patch, "hash")
+
+    prompt = GeminiDecisionModel._build_prompt(pull_request, (code_evidence,))
+    payload = json.loads(prompt)
+
+    assert payload["pull_request"]["changed_files"] == [
+        {"path": "src/cart.ts", "change_type": "modified"}
+    ]
+    assert payload["pull_request"]["direct_code_evidence_ids"] == ["pr-diff:cart"]
+    assert "patch" not in payload["pull_request"]
+    assert "diff" not in payload["pull_request"]
+    assert prompt.count("UNIQUE_PATCH_LINE") == 1
 
 
 def test_gemini_rejects_malformed_model_output():

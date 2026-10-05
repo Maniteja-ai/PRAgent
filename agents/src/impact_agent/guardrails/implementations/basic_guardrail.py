@@ -64,6 +64,9 @@ class BasicGuardrail(Guardrail):
 
     def validate_decision(self, decision: Decision, evidence: tuple[Evidence, ...]) -> Decision:
         allowed_ids = {item.evidence_id for item in evidence}
+        direct_code_ids = {
+            item.evidence_id for item in evidence if item.source.startswith("pr-diff://")
+        }
         if self._config.require_evidence_for_findings:
             for finding in decision.findings:
                 if not finding.evidence_ids:
@@ -71,6 +74,8 @@ class BasicGuardrail(Guardrail):
         for finding in decision.findings:
             if not set(finding.evidence_ids).issubset(allowed_ids):
                 raise ValueError(f"Finding cites unknown evidence: {finding.title}")
+            if direct_code_ids and not direct_code_ids.intersection(finding.evidence_ids):
+                raise ValueError(f"Finding does not cite changed PR code evidence: {finding.title}")
         if not self._config.redact_sensitive_values:
             return decision
         return Decision(

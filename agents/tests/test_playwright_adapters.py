@@ -227,7 +227,14 @@ def test_behavior_verifier_runs_only_configured_actions_and_assertions(monkeypat
     assert results.results[0].scenario_id == "apply-voucher"
     assert results.results[0].status == "PASS"
     assert "2 configured assertions passed" in results.results[0].summary
-    assert results.coverage_gaps == ()
+    assert results.results[0].verified_checks == (
+        ".discount-label is visible",
+        "URL contains '/cart'",
+    )
+    assert results.coverage_gaps == (
+        "Behavior scenario 'apply-voucher' checks page/control presence or URL only; "
+        "business behavior outcomes are unverified.",
+    )
 
 
 def test_behavior_verifier_skips_scenario_when_changed_file_has_no_confirmed_route(

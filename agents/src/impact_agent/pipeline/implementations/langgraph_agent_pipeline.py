@@ -28,6 +28,9 @@ from impact_agent.guardrails.interface.guardrail import Guardrail
 from impact_agent.model.interface.decision_model import DecisionModel
 from impact_agent.pipeline.interface.agent_pipeline import AgentPipeline
 from impact_agent.pipeline.interface.pipeline_stage import PipelineStage
+from impact_agent.pull_request.implementations.diff_evidence_builder import (
+    PullRequestDiffEvidenceBuilder,
+)
 from impact_agent.pull_request.interface.pull_request_provider import PullRequestProvider
 from impact_agent.report.interface.report_formatter import ReportFormatter
 from impact_agent.run_history.interface.run_store import RunStore
@@ -141,7 +144,15 @@ class LangGraphAgentPipeline(AgentPipeline):
         gaps = state.get("gaps", ())
         if self.settings.knowledge.provider == "disabled":
             gaps = self._append_gap(state, CoverageGap.VECTOR_RETRIEVAL_DISABLED)
-        evidence = self.knowledge.retrieve(self._pull_request(state))
+        pull_request = self._pull_request(state)
+        retrieved_evidence = self.knowledge.retrieve(pull_request)
+        diff_bundle = PullRequestDiffEvidenceBuilder.build(
+            pull_request, self.settings.github.max_diff_evidence_characters
+        )
+        evidence = retrieved_evidence + diff_bundle.evidence
+        if diff_bundle.uncovered_files:
+            paths = ", ".join(diff_bundle.uncovered_files)
+            gaps += (f"Direct PR code evidence is unavailable or omitted for: {paths}",)
         checked_evidence = self.guardrails.validate_evidence(evidence)
         for item in checked_evidence:
             if item.coverage_gap is not None and item.coverage_gap.value not in gaps:

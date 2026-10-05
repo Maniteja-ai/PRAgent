@@ -1,0 +1,253 @@
+{
+  "created_at": "2026-10-05T03:23:56.837447+00:00",
+  "dataset_id": "saleor-pr-impact-quality-v1",
+  "dataset_status": "DRAFT_PENDING_HUMAN_REVIEW",
+  "case_id": "saleor-pr-1-voucher-impact",
+  "run_id": "live-e2e-pr1-scope-gap-20261005",
+  "run_status": "COMPLETED_WITH_GAPS",
+  "judge_model": "gemini-3.8-flash",
+  "evaluation_status": "COMPLETED",
+  "metrics": {
+    "ground_truth": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "matched_report_claims": 6,
+      "report_claims": 6,
+      "expected_impacts_covered": 3,
+      "expected_impacts": 3,
+      "partial_impacts": 0
+    },
+    "faithfulness": {
+      "score_0_to_1": 1.0,
+      "score_0_to_2_average": 2.0,
+      "fully_supported_claims": 6,
+      "unsupported_claims": 0,
+      "claims": 6
+    },
+    "relevance": {
+      "report_claim_relevance_0_to_1": 1.0,
+      "retrieved_evidence_relevance_0_to_1": 0.5625,
+      "directly_relevant_evidence_count": 3,
+      "evidence_count": 16
+    },
+    "test_scope": {
+      "overstates_test_coverage": false,
+      "unverified_behavior_claims": [
+        "Shoppers attempting to redeem promo codes trigger checkoutAddPromoCode GraphQL mutation",
+        "The UI displays API and checkout validation error messages",
+        "The discount input form is replaced by a badge displaying the applied code and discount name",
+        "Removal button calls the checkoutRemovePromoCode mutation",
+        "SaleorCheckout invokes refetch with network-only policy upon successful promo addition or removal"
+      ],
+      "rationale": "The report accurately notes COMPLETED_WITH_GAPS and identifies that the browser test only validated presence of the discount code input, Apply button, and checkout URL without exercising backend mutations or state updates."
+    }
+  },
+  "judge_details": {
+    "expected_impacts": [
+      {
+        "impact_id": "apply-promo-code",
+        "score": 2,
+        "rationale": "The report accurately details the checkoutAddPromoCode GraphQL mutation call with trimmed promo code input, error state display from API and GraphQL errors, input disabling during mutation, and checkout refresh on success."
+      },
+      {
+        "impact_id": "remove-applied-voucher",
+        "score": 2,
+        "rationale": "The report correctly explains that when checkout.voucherCode is present, a badge showing the code and discount name replaces the input form, and clicking remove executes checkoutRemovePromoCode with error handling and summary refresh."
+      },
+      {
+        "impact_id": "refresh-mobile-and-desktop-checkout",
+        "score": 2,
+        "rationale": "The report accurately covers passing the onCheckoutChange callback with a network-only refetch policy to both mobile and desktop OrderSummary component instances in SaleorCheckout."
+      }
+    ],
+    "claims": [
+      {
+        "finding_title": "Checkout Promo Code Submission and Error Handling",
+        "claim": "Shoppers redeeming promo codes in the checkout summary trigger the checkoutAddPromoCode GraphQL mutation rather than mock state.",
+        "matched_impact_ids": [
+          "apply-promo-code"
+        ],
+        "faithfulness_score": 2,
+        "relevance_score": 2,
+        "cited_evidence_ids": [
+          "pr-diff:7cad3022154da2647ff11d86f8b051ae6161b47f60de78a5e45906745b9e0925",
+          "c598135bac2d5a79a49b8956bd7033e372485535b5bb492cc4e56a78ac19d3bd",
+          "neo4j:89c4b5becd48c97277de2b4615bd2b3278ebb19dbfa509013533ff322e889f92"
+        ],
+        "rationale": "Directly supported by the OrderSummary diff replacing the mock 'saleor10' check with the useCheckoutAddPromoCodeMutation call."
+      },
+      {
+        "finding_title": "Checkout Promo Code Submission and Error Handling",
+        "claim": "The UI displays API and checkout validation error messages and disables input controls while the promo code mutation is in flight.",
+        "matched_impact_ids": [
+          "apply-promo-code"
+        ],
+        "faithfulness_score": 2,
+        "relevance_score": 2,
+        "cited_evidence_ids": [
+          "pr-diff:7cad3022154da2647ff11d86f8b051ae6161b47f60de78a5e45906745b9e0925",
+          "c598135bac2d5a79a49b8956bd7033e372485535b5bb492cc4e56a78ac19d3bd",
+          "neo4j:89c4b5becd48c97277de2b4615bd2b3278ebb19dbfa509013533ff322e889f92"
+        ],
+        "rationale": "Directly confirmed by the diff adding getCheckoutErrorMessage, promoError alert rendering, and disabled={isPromoBusy} attributes."
+      },
+      {
+        "finding_title": "Applied Voucher Display and Removal in Order Summary",
+        "claim": "When an active voucher exists on checkout, the discount input form is replaced by a badge showing the applied code and discount name.",
+        "matched_impact_ids": [
+          "remove-applied-voucher"
+        ],
+        "faithfulness_score": 2,
+        "relevance_score": 2,
+        "cited_evidence_ids": [
+          "pr-diff:7cad3022154da2647ff11d86f8b051ae6161b47f60de78a5e45906745b9e0925",
+          "c598135bac2d5a79a49b8956bd7033e372485535b5bb492cc4e56a78ac19d3bd",
+          "neo4j:89c4b5becd48c97277de2b4615bd2b3278ebb19dbfa509013533ff322e889f92"
+        ],
+        "rationale": "Directly verified by the conditional rendering in order-summary.tsx checking appliedPromoCode to display the green badge."
+      },
+      {
+        "finding_title": "Applied Voucher Display and Removal in Order Summary",
+        "claim": "The applied voucher badge provides a removal button that executes checkoutRemovePromoCode mutation.",
+        "matched_impact_ids": [
+          "remove-applied-voucher"
+        ],
+        "faithfulness_score": 2,
+        "relevance_score": 2,
+        "cited_evidence_ids": [
+          "pr-diff:7cad3022154da2647ff11d86f8b051ae6161b47f60de78a5e45906745b9e0925",
+          "c598135bac2d5a79a49b8956bd7033e372485535b5bb492cc4e56a78ac19d3bd",
+          "neo4j:89c4b5becd48c97277de2b4615bd2b3278ebb19dbfa509013533ff322e889f92"
+        ],
+        "rationale": "Directly supported by the handleRemovePromo function invoking removePromoCode upon clicking the removal button."
+      },
+      {
+        "finding_title": "Live Checkout Summary Synchronization on Add or Remove",
+        "claim": "SaleorCheckout passes an onCheckoutChange callback to OrderSummary on both desktop and mobile viewports.",
+        "matched_impact_ids": [
+          "refresh-mobile-and-desktop-checkout"
+        ],
+        "faithfulness_score": 2,
+        "relevance_score": 2,
+        "cited_evidence_ids": [
+          "pr-diff:262aa2faa4b6c8c817b48d03473a42b40ed2953012aae1b4f1e085e78e3b0c6b",
+          "pr-diff:7cad3022154da2647ff11d86f8b051ae6161b47f60de78a5e45906745b9e0925",
+          "neo4j:d02e46ac4aff541b8d5f4e8b1a30379558a33db138c0af47d5a0eb1079649026"
+        ],
+        "rationale": "Directly supported by the diff in saleor-checkout.tsx wiring onCheckoutChange to both OrderSummary components."
+      },
+      {
+        "finding_title": "Live Checkout Summary Synchronization on Add or Remove",
+        "claim": "The onCheckoutChange callback invokes refetch with a network-only request policy to update totals, taxes, and shipping.",
+        "matched_impact_ids": [
+          "refresh-mobile-and-desktop-checkout",
+          "apply-promo-code",
+          "remove-applied-voucher"
+        ],
+        "faithfulness_score": 2,
+        "relevance_score": 2,
+        "cited_evidence_ids": [
+          "pr-diff:262aa2faa4b6c8c817b48d03473a42b40ed2953012aae1b4f1e085e78e3b0c6b",
+          "pr-diff:7cad3022154da2647ff11d86f8b051ae6161b47f60de78a5e45906745b9e0925",
+          "neo4j:d02e46ac4aff541b8d5f4e8b1a30379558a33db138c0af47d5a0eb1079649026"
+        ],
+        "rationale": "Directly supported by the callback definition refetch({ requestPolicy: 'network-only' }) in saleor-checkout.tsx."
+      }
+    ],
+    "evidence_relevance": [
+      {
+        "evidence_id": "neo4j:89c4b5becd48c97277de2b4615bd2b3278ebb19dbfa509013533ff322e889f92",
+        "score": 1,
+        "rationale": "Provides code graph relationships and route reachability for order-summary.tsx."
+      },
+      {
+        "evidence_id": "neo4j:d02e46ac4aff541b8d5f4e8b1a30379558a33db138c0af47d5a0eb1079649026",
+        "score": 1,
+        "rationale": "Provides code graph relationships and route reachability for saleor-checkout.tsx."
+      },
+      {
+        "evidence_id": "27948db9d7277a3c9693f9fba07ed48bf370cd1d4bc7b024bde34f208b8b217d",
+        "score": 1,
+        "rationale": "Shows base pre-change implementation of OrderSummary component and type definitions."
+      },
+      {
+        "evidence_id": "c598135bac2d5a79a49b8956bd7033e372485535b5bb492cc4e56a78ac19d3bd",
+        "score": 2,
+        "rationale": "Contains checkoutAddPromoCode and checkoutRemovePromoCode GraphQL mutation definitions used in the PR."
+      },
+      {
+        "evidence_id": "f873df297f281d7cdf69ef67697160c3d4517e9cf06ba88a96d3f4a1bed609cd",
+        "score": 1,
+        "rationale": "External documentation describing arguments for checkoutRemovePromoCode."
+      },
+      {
+        "evidence_id": "a8f8ccaf7d00c8c79f279c85858ee48cc85dfe398c2764729ff4b1bdc0551b3c",
+        "score": 1,
+        "rationale": "External documentation describing arguments for checkoutAddPromoCode."
+      },
+      {
+        "evidence_id": "fbdbe43e8de5642d531c932a95ed0f8441bfa9d228a2db76b78a233a31461358",
+        "score": 1,
+        "rationale": "External documentation showing example responses for applying vouchers."
+      },
+      {
+        "evidence_id": "7cea8602af6e90010c08cf8267836f95f0e94015ac9633c5c630f1f040414f55",
+        "score": 0,
+        "rationale": "External documentation page footer and copyright boilerplate with no relevance to PR functionality."
+      },
+      {
+        "evidence_id": "1422c27b307593a8212669048de99097e6618c3fa42f885ab12c667567df500c",
+        "score": 1,
+        "rationale": "GraphQL definition file showing related checkout schema fragments, though not promo code mutations directly."
+      },
+      {
+        "evidence_id": "4cbf50520a770da3c04ec0b033ca5449119384ae05bcd76578a3b5455753f6a7",
+        "score": 1,
+        "rationale": "External documentation illustrating error handling structure for checkoutAddPromoCode."
+      },
+      {
+        "evidence_id": "5454f4ddc377d11d658f86e30a4cb181d292e8a7b6389058e0c4a8ecf2cf0628",
+        "score": 1,
+        "rationale": "External documentation describing the checkoutAddPromoCode mutation and webhooks."
+      },
+      {
+        "evidence_id": "e98d0d6969285968fee458166a53190ee86859081ecab80061fda82817705b07",
+        "score": 1,
+        "rationale": "External documentation illustrating the GraphQL query syntax for checkoutAddPromoCode."
+      },
+      {
+        "evidence_id": "pr-diff:7cad3022154da2647ff11d86f8b051ae6161b47f60de78a5e45906745b9e0925",
+        "score": 2,
+        "rationale": "Primary diff implementing promo code addition, removal, error display, and badge replacement in OrderSummary."
+      },
+      {
+        "evidence_id": "pr-diff:262aa2faa4b6c8c817b48d03473a42b40ed2953012aae1b4f1e085e78e3b0c6b",
+        "score": 2,
+        "rationale": "Primary diff wiring the network-only checkout refetch callback to mobile and desktop summary instances."
+      },
+      {
+        "evidence_id": "browser:c3b84d117442272e30c6",
+        "score": 1,
+        "rationale": "Browser crawl of storefront home page showing navigation context leading into cart and checkout."
+      },
+      {
+        "evidence_id": "browser:5edec0e3223e7922bbbd",
+        "score": 1,
+        "rationale": "Browser crawl of the cart page verifying progression towards checkout."
+      }
+    ],
+    "test_scope": {
+      "overstates_test_coverage": false,
+      "unverified_behavior_claims": [
+        "Shoppers attempting to redeem promo codes trigger checkoutAddPromoCode GraphQL mutation",
+        "The UI displays API and checkout validation error messages",
+        "The discount input form is replaced by a badge displaying the applied code and discount name",
+        "Removal button calls the checkoutRemovePromoCode mutation",
+        "SaleorCheckout invokes refetch with network-only policy upon successful promo addition or removal"
+      ],
+      "rationale": "The report accurately notes COMPLETED_WITH_GAPS and identifies that the browser test only validated presence of the discount code input, Apply button, and checkout URL without exercising backend mutations or state updates."
+    }
+  },
+  "caveat": "LLM-judge metrics are diagnostic and draft; labels require human review."
+}
